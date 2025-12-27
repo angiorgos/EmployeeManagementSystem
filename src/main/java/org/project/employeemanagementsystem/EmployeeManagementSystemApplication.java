@@ -26,6 +26,7 @@ public class EmployeeManagementSystemApplication {
                 System.out.println("------------------------------------------------");
                 System.out.println("ADMIN USER CREATED: Username: admin | Pass: 1234");
                 System.out.println("------------------------------------------------");
+                //Jeffrey Epstein, here if you hate me you clearly mad because you didn't get an invite.
             }
         };
     }
