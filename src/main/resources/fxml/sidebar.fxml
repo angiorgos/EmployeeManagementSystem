@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.*?>
+
+<VBox prefHeight="600.0" prefWidth="240.0" styleClass="sidebar" stylesheets="@../theme.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.project.employeemanagementsystem.controller.SidebarController">
+
+    <children>
+        <VBox prefHeight="20.0" />
+
+        <ToggleButton fx:id="dashboardBtn" mnemonicParsing="false" onAction="#goToDashboard" prefHeight="45.0" prefWidth="230.0" text="Dashboard">
+            <graphic> <FontIcon iconLiteral="mdi2v-view-dashboard" /> </graphic>
+            <toggleGroup> <ToggleGroup fx:id="sidebarGroup" /> </toggleGroup>
+        </ToggleButton>
+
+        <VBox prefHeight="20.0" />
+
+        <Label styleClass="sidebar-header" text="WORKFORCE" />
+
+        <ToggleButton fx:id="employeesBtn" mnemonicParsing="false" onAction="#goToEmployees" prefHeight="45.0" prefWidth="230.0" text="Employees" toggleGroup="$sidebarGroup">
+            <graphic> <FontIcon iconLiteral="mdi2a-account-group" /> </graphic>
+        </ToggleButton>
+
+        <ToggleButton fx:id="departmentsBtn" mnemonicParsing="false" onAction="#goToDepartments" prefHeight="45.0" prefWidth="230.0" text="Departments" toggleGroup="$sidebarGroup">
+            <graphic> <FontIcon iconLiteral="mdi2d-domain" /> </graphic>
+        </ToggleButton>
+
+        <ToggleButton fx:id="usersBtn" mnemonicParsing="false" onAction="#goToUsers" prefHeight="45.0" prefWidth="230.0" text="System Users" toggleGroup="$sidebarGroup">
+            <graphic> <FontIcon iconLiteral="mdi2a-account-key" /> </graphic>
+        </ToggleButton>
+
+        <VBox prefHeight="20.0" />
+
+        <Label styleClass="sidebar-header" text="TIME &amp; ATTENDANCE" />
+
+        <ToggleButton fx:id="scheduleBtn" mnemonicParsing="false" onAction="#goToSchedule" prefHeight="45.0" prefWidth="230.0" text="Schedule" toggleGroup="$sidebarGroup">
+            <graphic> <FontIcon iconLiteral="mdi2c-calendar-month" /> </graphic>
+        </ToggleButton>
+
+        <ToggleButton fx:id="attendanceBtn" mnemonicParsing="false" onAction="#goToAttendance" prefHeight="45.0" prefWidth="230.0" text="Attendance" toggleGroup="$sidebarGroup">
+            <graphic> <FontIcon iconLiteral="mdi2c-clock-check" /> </graphic>
+        </ToggleButton>
+
+        <ToggleButton fx:id="leavesBtn" mnemonicParsing="false" onAction="#goToLeaves" prefHeight="45.0" prefWidth="230.0" text="Leave Requests" toggleGroup="$sidebarGroup">
+            <graphic> <FontIcon iconLiteral="mdi2b-beach" /> </graphic>
+        </ToggleButton>
+
+        <ToggleButton fx:id="holidaysBtn" mnemonicParsing="false" onAction="#goToHolidays" prefHeight="45.0" prefWidth="230.0" text="Holidays" toggleGroup="$sidebarGroup">
+            <graphic> <FontIcon iconLiteral="mdi2b-balloon" /> </graphic>
+        </ToggleButton>
+
+        <VBox prefHeight="20.0" />
+
+        <Label styleClass="sidebar-header" text="FINANCIALS" />
+
+        <ToggleButton fx:id="payrollBtn" mnemonicParsing="false" onAction="#goToPayroll" prefHeight="45.0" prefWidth="230.0" text="Payroll" toggleGroup="$sidebarGroup">
+            <graphic> <FontIcon iconLiteral="mdi2c-cash-multiple" /> </graphic>
+        </ToggleButton>
+
+        <VBox prefHeight="20.0" />
+
+        <Label styleClass="sidebar-header" text="SYSTEM" />
+
+        <ToggleButton fx:id="logsBtn" mnemonicParsing="false" onAction="#goToLogs" prefHeight="45.0" prefWidth="230.0" text="Logs &amp; Audit" toggleGroup="$sidebarGroup">
+            <graphic> <FontIcon iconLiteral="mdi2h-history" /> </graphic>
+        </ToggleButton>
+
+        <ToggleButton mnemonicParsing="false" onAction="#handleLogout" prefHeight="45.0" prefWidth="230.0" text="Logout" toggleGroup="$sidebarGroup">
+            <graphic> <FontIcon iconLiteral="mdi2l-logout" /> </graphic>
+        </ToggleButton>
+
+    </children>
+</VBox>

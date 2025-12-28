@@ -36,13 +36,4 @@ public abstract class BaseController {
         }
     }
 
-    //NAVIGATION ACTIONS
-
-    @FXML public void goToDashboard() { navigator.goToDashboard(); }
-    @FXML public void goToEmployees() { navigator.goToEmployees(); }
-
-    @FXML
-    public void handleLogout() {
-        navigator.logout();
-    }
 }

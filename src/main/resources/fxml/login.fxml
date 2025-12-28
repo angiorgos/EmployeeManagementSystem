@@ -8,28 +8,37 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox alignment="CENTER" spacing="15.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.project.employeemanagementsystem.controller.LoginController">
+<VBox alignment="CENTER" prefHeight="550.0" prefWidth="500.0" spacing="25.0"
+      style="-fx-background-color: white;"
+      stylesheets="@../theme.css"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.project.employeemanagementsystem.controller.LoginController">
+
     <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
     </padding>
 
-    <Label text="Employee Management System">
+    <Label text="Employee Management System" textFill="#111827">
         <font>
-            <Font name="System Bold" size="18.0" />
+            <Font name="System Bold" size="24.0" />
         </font>
     </Label>
 
-    <Label text="Login" textFill="#5e5e5e">
+    <Label text="Login" textFill="#6B7280">
         <font>
-            <Font size="14.0" />
+            <Font size="16.0" />
         </font>
     </Label>
 
-    <TextField fx:id="usernameField" promptText="Username" maxWidth="250.0" />
+    <TextField fx:id="usernameField" promptText="Username" maxWidth="350.0" prefHeight="45.0" style="-fx-font-size: 14px;" />
 
-    <PasswordField fx:id="passwordField" promptText="Password" maxWidth="250.0" />
+    <PasswordField fx:id="passwordField" promptText="Password" maxWidth="350.0" prefHeight="45.0" style="-fx-font-size: 14px;" />
 
-    <Button text="Είσοδος" onAction="#handleLogin" prefWidth="250.0" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-cursor: hand;" />
+    <Button text="Είσοδος" onAction="#handleLogin" maxWidth="350.0" prefHeight="50.0" styleClass="btn-primary">
+        <font>
+            <Font name="System Bold" size="16.0"/>
+        </font>
+    </Button>
 
-    <Label fx:id="errorLabel" textFill="RED" />
+    <Label fx:id="errorLabel" textFill="#EF4444" style="-fx-font-size: 14px;" />
 </VBox>
