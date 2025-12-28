@@ -62,7 +62,7 @@
 
         <Label styleClass="sidebar-header" text="SYSTEM" />
 
-        <ToggleButton fx:id="logsBtn" mnemonicParsing="false" onAction="#goToLogs" prefHeight="45.0" prefWidth="230.0" text="Logs &amp; Audit" toggleGroup="$sidebarGroup">
+        <ToggleButton fx:id="logsBtn" mnemonicParsing="false" onAction="#goToLogs" prefHeight="45.0" prefWidth="230.0" text="Logs" toggleGroup="$sidebarGroup">
             <graphic> <FontIcon iconLiteral="mdi2h-history" /> </graphic>
         </ToggleButton>
 
