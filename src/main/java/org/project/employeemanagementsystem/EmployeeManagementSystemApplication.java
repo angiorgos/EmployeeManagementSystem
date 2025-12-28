@@ -1,16 +1,15 @@
 package org.project.employeemanagementsystem;
 
+import javafx.application.Application;
+import org.project.employeemanagementsystem.util.JavaFxApplication; // Θα το φτιάξουμε στο βήμα 2
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.project.employeemanagementsystem.model.User;
-import org.project.employeemanagementsystem.repository.UserRepository;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
+
 @SpringBootApplication
 public class EmployeeManagementSystemApplication {
 
     public static void main(String[] args) {
-        // Application.launch(JavaFxApplication.class, args);
-        javafx.application.Application.launch(JavaFxApplication.class, args);
+        // Αντί να τρέξει το Spring απευθείας, λέμε στο JavaFX να ξεκινήσει
+        // και του δίνουμε την κλάση που διαχειρίζεται τα γραφικά (JavaFxApplication)
+        Application.launch(JavaFxApplication.class, args);
     }
-
 }

@@ -26,9 +26,17 @@ public class Employee {
     @Column(unique = true, nullable = false)
     private String email;
 
+    @Column(unique = true, nullable = false)
     private String phone;
+
+    @Column
     private Double salary;
+
+    @Column(nullable = false)
     private LocalDate hireDate;
+
+    @Column
+    private LocalDate exitDate;
 
 
     @ManyToOne

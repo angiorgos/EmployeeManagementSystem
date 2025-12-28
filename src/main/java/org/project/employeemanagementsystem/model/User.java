@@ -27,4 +27,13 @@ public class User {
 
     @OneToOne(mappedBy = "user")
     private Employee employee;
+
+    public boolean isActive(){
+        // Για admin λογαριασμό που δεν αντιστοιχεί απαραίτητα σε υπάλληλο
+        if(this.employee == null){
+            return true;
+        }
+        //Είσοδος μόνο αν δεν έχει ημερομηνία εξόδου.
+        return this.employee.getExitDate() == null;
+    }
 }
