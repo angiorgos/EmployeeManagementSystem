@@ -1,9 +1,11 @@
 package org.project.employeemanagementsystem.util;
 
+import lombok.Data;
 import org.project.employeemanagementsystem.model.User;
 import org.springframework.stereotype.Component;
 
 @Component
+@Data
 public class UserSession {
 
     private User currentUser;
@@ -16,7 +18,4 @@ public class UserSession {
         this.currentUser = null;
     }
 
-    public User getCurrentUser() {
-        return currentUser;
-    }
 }

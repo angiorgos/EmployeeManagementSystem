@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<HBox prefHeight="81.0" prefWidth="1366.0" styleClass="top-bar" BorderPane.alignment="CENTER"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.project.employeemanagementsystem.controller.TopbarController">
+
+    <children>
+        <HBox alignment="CENTER" prefHeight="80.0" prefWidth="214.0">
+            <children>
+                <Label styleClass="page-title" text="EMS System">
+                    <graphic>
+                        <FontIcon iconLiteral="mdi2a-account-tie" />
+                    </graphic>
+                </Label>
+            </children>
+        </HBox>
+
+        <HBox prefHeight="100.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
+
+        <HBox alignment="CENTER_LEFT" prefHeight="80.0" prefWidth="169.0">
+            <children>
+                <FontIcon iconLiteral="mdi2a-account-circle" iconSize="32" styleClass="user-icon" />
+
+                <VBox alignment="CENTER_LEFT" prefHeight="80.0" prefWidth="181.0" style="-fx-padding: 0 0 0 10;">
+                    <children>
+                        <Label fx:id="userNameLabel" styleClass="user-name" text="username" />
+                        <Label fx:id="userRoleLabel" styleClass="user-role" text="Role" />
+                    </children>
+                </VBox>
+            </children>
+        </HBox>
+    </children>
+</HBox>
