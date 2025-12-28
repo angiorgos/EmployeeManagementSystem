@@ -7,6 +7,7 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    // Custom μέθοδος DAO (αντί για SQL: SELECT * FROM users WHERE username = ?)
+    // Βρίσκει τον χρήστη για το Login
     Optional<User> findByUsername(String username);
+
 }

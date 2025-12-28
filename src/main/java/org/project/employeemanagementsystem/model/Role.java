@@ -1,17 +1,22 @@
 package org.project.employeemanagementsystem.model;
 
-public enum Role {
-    ADMIN("Διαχειριστής Συστήματος"),
-    HR("HR Manager"),
-    ACCOUNTANT("Λογιστής");
+import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
-    private final String label;
+@Entity
+@Table(name = "roles")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Role {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    Role(String label) {
-        this.label = label;
-    }
+    @Column(unique = true, nullable = false)
+    private String name;
 
-    public String getLabel() {
-        return label;
-    }
+    private String description;
 }

@@ -12,15 +12,16 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Department {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String name;
+    @Column(unique = true, nullable = false)
+    private String name; // "IT", "Sales"
 
     private String description;
 
-
+    // Ένα τμήμα -> Πολλοί Υπάλληλοι
+    @OneToMany(mappedBy = "department")
+    private List<Employee> employees;
 }

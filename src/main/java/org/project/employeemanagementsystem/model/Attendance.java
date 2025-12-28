@@ -4,27 +4,26 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "attendances")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class Attendance {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String username;
-
     @Column(nullable = false)
-    private String password;
+    private LocalDate date;
+
+    private LocalTime checkInTime;
+    private LocalTime checkOutTime;
 
     @ManyToOne
-    @JoinColumn(name = "role_id", nullable = false)
-    private Role role;
-
-    @OneToOne(mappedBy = "user")
+    @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
 }

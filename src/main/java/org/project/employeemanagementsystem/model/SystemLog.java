@@ -4,17 +4,22 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "leave_statuses")
+@Table(name = "system_logs")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class LeaveStatus {
+public class SystemLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String name; // "PENDING", "APPROVED", "REJECTED"
+    private String action;
+    private LocalDateTime timestamp;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 }
