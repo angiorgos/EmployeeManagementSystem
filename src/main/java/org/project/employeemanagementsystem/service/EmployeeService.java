@@ -17,9 +17,8 @@ public class EmployeeService {
 
     //ΑΠΟΘΗΚΕΥΣΗ (Create / Update)
     public void saveEmployee(Employee employee) {
-        //Έλεγχος αν υπάρχει ήδη το email
         if (employee.getId() == null && employeeRepository.existsByEmail(employee.getEmail())) {
-            throw new IllegalArgumentException("Το email αυτό χρησιμοποιείται ήδη!");
+            throw new IllegalArgumentException("Email already exists");
         }
         employeeRepository.save(employee);
     }
