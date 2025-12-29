@@ -349,34 +349,44 @@
     -fx-text-fill: white;
 }
 
-/* DatePicker Styling */
+/* ============================================================
+   DATE PICKER STYLING (Fixed Background)
+   ============================================================ */
+
 .date-picker {
-    -fx-background-color: transparent;
+    -fx-background-color: transparent; /* Το εξωτερικό container μένει διάφανο */
     -fx-border-color: #E5E7EB;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
     -fx-padding: 0;
 }
 
-.date-picker:focused {
-    -fx-border-color: #3B82F6;
+.date-picker .text-field {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 8 0 0 8;
+    -fx-border-width: 0;
+    -fx-text-fill: #374151;
+    -fx-padding: 8 12;
 }
 
-.date-picker .text-field {
-    -fx-background-color: transparent;
-    -fx-border-width: 0;
-    -fx-background-radius: 8 0 0 8;
-}
 
 .date-picker .arrow-button {
-    -fx-background-color: transparent;
-    -fx-border-width: 0 0 0 1;
-    -fx-border-color: #E5E7EB;
+    -fx-background-color: #F9FAFB;
     -fx-background-radius: 0 8 8 0;
+    -fx-border-color: #E5E7EB;
+    -fx-border-width: 0 0 0 1;
+    -fx-cursor: hand;
 }
 
 .date-picker .arrow-button:hover {
-    -fx-background-color: #F3F4F6;
+    -fx-background-color: #EFF6FF;
+}
+.date-picker .arrow-button .arrow {
+    -fx-background-color: #6B7280;
+}
+
+.date-picker:focused {
+    -fx-border-color: #3B82F6;
 }
 
 /* Generic List View */
