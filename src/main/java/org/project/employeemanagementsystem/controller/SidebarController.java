@@ -24,6 +24,7 @@ public class SidebarController implements Initializable { // Πρόσεξε το
     @FXML private ToggleButton scheduleBtn;
     @FXML private ToggleButton attendanceBtn;
     @FXML private ToggleButton leavesBtn;
+    @FXML private ToggleButton leaveTypeBtn;
     @FXML private ToggleButton holidaysBtn;
     @FXML private ToggleButton payrollBtn;
     @FXML private ToggleButton logsBtn;

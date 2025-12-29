@@ -19,7 +19,7 @@ public class JavaFxApplication extends Application {
     public void start(Stage primaryStage) {
         Navigator navigator = springContext.getBean(Navigator.class);
         navigator.setMainStage(primaryStage);
-        navigator.loadScene(Navigator.LOGIN_VIEW, "Σύστημα Διαχείρισης - Είσοδος");
+        navigator.loadScene(Navigator.LOGIN_VIEW, "Employee Management System - Login");
     }
 
     @Override
