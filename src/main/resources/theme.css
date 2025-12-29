@@ -3,9 +3,9 @@
    ============================================================ */
 
 .root {
-    -fx-background-color: #E5E7EB; /* Light Gray Background */
-    -fx-font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
-    -fx-font-size: 15px;
+    -fx-background-color: #E5E7EB;
+    -fx-font-family: "Segoe UI", "Helvetica Neue", "Arial", sans-serif;
+    -fx-font-size: 14px;
 }
 
 /* ============================================================
