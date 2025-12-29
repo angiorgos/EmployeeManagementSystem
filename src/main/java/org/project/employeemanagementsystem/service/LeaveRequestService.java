@@ -41,7 +41,7 @@ public class LeaveRequestService {
         return maxAllowed - usedDays;
     }
 
-    // Η μέθοδος που επαναφέρει τη λογική για ΣΚ και Αργίες
+
     private int calculateWorkDays(LocalDate start, LocalDate end, List<LocalDate> holidays) {
         int count = 0;
         LocalDate current = start;
