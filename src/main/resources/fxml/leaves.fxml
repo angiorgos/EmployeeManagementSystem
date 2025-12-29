@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="768.0" prefWidth="1366.0" stylesheets="@../theme.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.project.employeemanagementsystem.controller.DashboardController">
+
+    <center>
+
+    </center>
+
+    <top>
+        <fx:include source="topbar.fxml" />
+    </top>
+
+    <left>
+        <fx:include source="sidebar.fxml" />
+    </left>
+</BorderPane>

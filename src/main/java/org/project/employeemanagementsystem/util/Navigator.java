@@ -27,7 +27,6 @@ public class Navigator {
     public static final String SCHEDULE_VIEW    = "/fxml/schedule.fxml";
     public static final String ATTENDANCE_VIEW  = "/fxml/attendance.fxml";
     public static final String HOLIDAYS_VIEW    = "/fxml/holidays.fxml";
-    public static final String LEAVESTYPE_VIEW      = "/fxml/leave_types.fxml";
     public static final String LEAVES_VIEW      = "/fxml/leaves.fxml";
 
     // Financials
@@ -93,12 +92,12 @@ public class Navigator {
         loadScene(HOLIDAYS_VIEW, "Holiday Management");
     }
 
-    public void goToLeaves() {
-        loadScene(LEAVES_VIEW, "Leave Requests");
+    public void goToLeaveTypes() {
+
     }
 
-    public void goToLeaveTypes() {
-        loadScene(LEAVESTYPE_VIEW, "Leave Types Management");
+    public void goToLeaves() {
+        loadScene(LEAVES_VIEW, "Leave Management");
     }
 
     // Financials Methods
@@ -116,6 +115,8 @@ public class Navigator {
         userSession.logout();
         goToLogin();
     }
+
+
 
     //LOADING LOGIC
     public void loadScene(String fxmlPath, String title) {
