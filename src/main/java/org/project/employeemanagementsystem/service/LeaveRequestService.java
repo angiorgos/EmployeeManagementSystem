@@ -5,8 +5,6 @@ import org.project.employeemanagementsystem.repository.HolidayRepository;
 import org.project.employeemanagementsystem.repository.LeaveRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,53 +18,38 @@ public class LeaveRequestService {
     @Autowired
     private HolidayRepository holidayRepository;
 
-    /**
-     * Calculates the remaining days for a specific leave type.
-     */
     public int getRemainingDays(Employee employee, LeaveType leaveType) {
-        if (leaveType.getMaxDays() == null) return 999; // Unlimited (e.g. Sick Leave)
+        int maxAllowed = leaveType.getMaxDays();
 
-        Integer used = leaveRequestRepository.countUsedDays(
-                employee,
-                leaveType,
-                LocalDate.now().getYear()
-        );
+        // 1. Παίρνουμε όλες τις APPROVED αιτήσεις
+        List<LeaveRequest> approvedRequests = leaveRequestRepository
+                .findByEmployeeAndLeaveTypeAndStatus_Name(employee, leaveType, "APPROVED");
 
-        return leaveType.getMaxDays() - (used != null ? used : 0);
-    }
-
-    /**
-     * Core method to submit a new leave request with validation.
-     */
-    @Transactional
-    public LeaveRequest submitRequest(LeaveRequest request) {
-        // 1. Calculate actual duration (excluding weekends and official holidays)
-        int duration = calculateWorkDays(request.getStartDate(), request.getEndDate());
-
-        // 2. Check if employee has enough remaining days
-        int remaining = getRemainingDays(request.getEmployee(), request.getLeaveType());
-        if (duration > remaining) {
-            throw new RuntimeException("Insufficient leave balance. Requested: " + duration + ", Available: " + remaining);
-        }
-
-        // 3. Save the request
-        return leaveRequestRepository.save(request);
-    }
-
-    /**
-     * Helper method to count working days only.
-     */
-    private int calculateWorkDays(LocalDate start, LocalDate end) {
-        List<LocalDate> officialHolidays = holidayRepository.findAll().stream()
+        // 2. Παίρνουμε όλες τις αργίες από τη βάση για να τις εξαιρέσουμε
+        List<LocalDate> holidays = holidayRepository.findAll().stream()
                 .map(Holiday::getDate)
                 .collect(Collectors.toList());
 
+        // 3. Υπολογίζουμε τις πραγματικές μέρες εργασίας που καταναλώθηκαν
+        int usedDays = 0;
+        for (LeaveRequest request : approvedRequests) {
+            if (request.getStartDate().getYear() == LocalDate.now().getYear()) {
+                usedDays += calculateWorkDays(request.getStartDate(), request.getEndDate(), holidays);
+            }
+        }
+
+        return maxAllowed - usedDays;
+    }
+
+    // Η μέθοδος που επαναφέρει τη λογική για ΣΚ και Αργίες
+    private int calculateWorkDays(LocalDate start, LocalDate end, List<LocalDate> holidays) {
         int count = 0;
         LocalDate current = start;
         while (!current.isAfter(end)) {
-            // Check if it's NOT a weekend AND NOT an official holiday
+            // Έλεγχος αν ΔΕΝ είναι Σαββατοκύριακο (6=Σάββατο, 7=Κυριακή)
             boolean isWeekend = (current.getDayOfWeek().getValue() == 6 || current.getDayOfWeek().getValue() == 7);
-            boolean isHoliday = officialHolidays.contains(current);
+            // Έλεγχος αν ΔΕΝ είναι καταχωρημένη αργία
+            boolean isHoliday = holidays.contains(current);
 
             if (!isWeekend && !isHoliday) {
                 count++;

@@ -20,14 +20,6 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     // Find requests by status (e.g., all PENDING requests for the Admin to see)
     List<LeaveRequest> findByStatus(LeaveStatus status);
 
-    // This is the "Magic" query to calculate used days
-    // It sums the days between startDate and endDate for APPROVED requests of a specific type
-    @Query("SELECT SUM(DATEDIFF(l.endDate, l.startDate) + 1) FROM LeaveRequest l " +
-            "WHERE l.employee = :employee " +
-            "AND l.leaveType = :leaveType " +
-            "AND l.status.name = 'APPROVED' " +
-            "AND YEAR(l.startDate) = :year")
-    Integer countUsedDays(@Param("employee") Employee employee,
-                          @Param("leaveType") LeaveType leaveType,
-                          @Param("year") int year);
+    // Βρίσκει όλες τις αιτήσεις ενός υπαλλήλου για συγκεκριμένο τύπο και status
+    List<LeaveRequest> findByEmployeeAndLeaveTypeAndStatus_Name(Employee employee, LeaveType leaveType, String statusName);
 }
