@@ -25,17 +25,26 @@ public class TopbarController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        updateUserDisplay();
+    }
+
+    private void updateUserDisplay() {
         User currentUser = userSession.getCurrentUser();
+
         if (currentUser != null) {
-            userNameLabel.setText(currentUser.getUsername());
+            if (currentUser.getEmployee() != null) {
+                String fullName = currentUser.getEmployee().getFirstName() + " " +
+                        currentUser.getEmployee().getLastName();
+                userNameLabel.setText(fullName);
+            } else {
+                userNameLabel.setText(currentUser.getUsername());
+            }
+
             if (currentUser.getRole() != null) {
                 userRoleLabel.setText(currentUser.getRole().getName());
             } else {
-                userRoleLabel.setText("");
+                userRoleLabel.setText("-");
             }
-        } else {
-            userNameLabel.setText("");
-            userRoleLabel.setText("");
         }
     }
 }

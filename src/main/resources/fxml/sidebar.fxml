@@ -46,9 +46,16 @@
             <graphic> <FontIcon iconLiteral="mdi2b-beach" /> </graphic>
         </ToggleButton>
 
+        <ToggleButton fx:id="leaveTypesBtn" mnemonicParsing="false" onAction="#goToLeaveTypes" prefHeight="45.0" prefWidth="230.0" text="Leave Types" toggleGroup="$sidebarGroup">
+            <graphic>
+                <FontIcon iconLiteral="mdi2f-format-list-bulleted-type" />
+            </graphic>
+        </ToggleButton>
+
         <ToggleButton fx:id="holidaysBtn" mnemonicParsing="false" onAction="#goToHolidays" prefHeight="45.0" prefWidth="230.0" text="Holidays" toggleGroup="$sidebarGroup">
             <graphic> <FontIcon iconLiteral="mdi2b-balloon" /> </graphic>
         </ToggleButton>
+
 
         <VBox prefHeight="20.0" />
 

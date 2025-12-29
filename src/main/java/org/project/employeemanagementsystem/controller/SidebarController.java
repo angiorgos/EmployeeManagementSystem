@@ -69,6 +69,7 @@ public class SidebarController implements Initializable { // Πρόσεξε το
     @FXML public void goToSchedule() { navigator.goToSchedule(); }
     @FXML public void goToAttendance() { navigator.goToAttendance(); }
     @FXML public void goToLeaves() { navigator.goToLeaves(); }
+    @FXML public void goToLeaveTypes() { navigator.goToLeaveTypes(); }
     @FXML public void goToHolidays() { navigator.goToHolidays(); }
     @FXML public void goToPayroll() { navigator.goToPayroll(); }
     @FXML public void goToLogs() { navigator.goToLogs(); }
