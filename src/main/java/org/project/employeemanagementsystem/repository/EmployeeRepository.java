@@ -8,10 +8,7 @@ import java.util.List;
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
-    // Custom query: Βρες υπαλλήλους με βάση το επίθετο (αγνοώντας πεζά/κεφαλαία)
-    // Το Spring γράφει το SQL αυτόματα.
     List<Employee> findByLastNameContainingIgnoreCase(String lastName);
-
-    // Custom query: Βρες με βάση το email (χρήσιμο για ελέγχους να μην διπλοεγγραφούν)
+    List<Employee> findByExitDateIsNull();
     boolean existsByEmail(String email);
 }

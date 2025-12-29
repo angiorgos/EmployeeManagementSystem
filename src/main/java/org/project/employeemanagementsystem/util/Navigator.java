@@ -4,6 +4,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.project.employeemanagementsystem.model.LeaveType;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +29,7 @@ public class Navigator {
     public static final String ATTENDANCE_VIEW  = "/fxml/attendance.fxml";
     public static final String HOLIDAYS_VIEW    = "/fxml/holidays.fxml";
     public static final String LEAVES_VIEW      = "/fxml/leaves.fxml";
-
+    public static final String LEAVESTYPES_VIEW = "/fxml/leavetypes.fxml";
     // Financials
     public static final String PAYROLL_VIEW     = "/fxml/payroll.fxml";
 
@@ -93,11 +94,11 @@ public class Navigator {
     }
 
     public void goToLeaveTypes() {
-
+        loadScene(LEAVESTYPES_VIEW, "Leave Management");
     }
 
     public void goToLeaves() {
-        loadScene(LEAVES_VIEW, "Leave Management");
+        loadScene(LEAVES_VIEW, "Leave Requests");
     }
 
     // Financials Methods
