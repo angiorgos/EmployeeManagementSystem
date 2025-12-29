@@ -4,8 +4,8 @@
 
 .root {
     -fx-background-color: #E5E7EB; /* Light Gray Background */
-    -fx-font-family: "Segoe UI", "Arial", sans-serif; /* Πιο modern font για Windows */
-    -fx-font-size: 14px;
+    -fx-font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+    -fx-font-size: 15px;
 }
 
 /* ============================================================
@@ -18,6 +18,8 @@
     -fx-border-radius: 12;
     -fx-border-color: #E5E7EB;
     -fx-border-width: 1;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 8, 0, 0, 4);
     -fx-padding: 0;
 }
@@ -27,11 +29,13 @@
     -fx-background-radius: 12 12 0 0;
     -fx-border-color: transparent transparent #E5E7EB transparent;
     -fx-border-width: 1;
+    -fx-background-insets: 0;
 }
 
 .table-view .column-header-background .filler {
     -fx-background-color: #F9FAFB;
     -fx-border-color: transparent transparent #E5E7EB transparent;
+    -fx-background-insets: 0;
 }
 
 .table-view .column-header {
@@ -78,7 +82,6 @@
 
 /* ============================================================
    STATUS BADGES
-   Χρησιμοποίησε αυτά στα Tables για Active/Leave/Terminated
    ============================================================ */
 
 .status-badge {
@@ -89,17 +92,17 @@
     -fx-alignment: CENTER;
 }
 
-.status-active {
+.status-active, .status-approved {
     -fx-background-color: #ECFDF5; /* Light Green */
     -fx-text-fill: #047857;        /* Dark Green Text */
 }
 
-.status-warning {  /* Για On Leave / Pending */
+.status-warning, .status-pending, .status-on-leave {
     -fx-background-color: #FFFBEB; /* Light Yellow */
     -fx-text-fill: #B45309;        /* Dark Orange Text */
 }
 
-.status-danger {   /* Για Terminated / Error */
+.status-danger, .status-terminated, .status-rejected {
     -fx-background-color: #FEF2F2; /* Light Red */
     -fx-text-fill: #B91C1C;        /* Dark Red Text */
 }
@@ -118,6 +121,7 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);
     -fx-border-color: #F3F4F6;
     -fx-border-width: 0 0 1 0;
+    -fx-alignment: CENTER_LEFT;
 }
 
 .card {
@@ -133,7 +137,7 @@
     -fx-text-fill: #111827; /* Darker Title */
 }
 
-/* KPI Cards (Τα κουτάκια με τα νούμερα) */
+/* KPI Cards */
 .kpi-card {
     -fx-pref-width: 250;
     -fx-pref-height: 120;
@@ -175,7 +179,7 @@
 }
 .btn-danger:hover { -fx-background-color: #FECACA; }
 
-.btn-success { /* NEW: For Save/Approve */
+.btn-success {
     -fx-background-color: #10B981;
     -fx-text-fill: white;
     -fx-font-weight: bold;
@@ -197,7 +201,32 @@
     -fx-border-color: #3B82F6;
     -fx-background-color: #FFFFFF;
 }
+/* Text Area */
+/* Διόρθωση για το TextArea */
+.text-area {
+    -fx-background-color: #F9FAFB; /* Το χρώμα που θέλεις εξωτερικά */
+    -fx-border-color: #E5E7EB;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 1; /* Πολύ μικρό padding για να μην "χτυπάει" το εσωτερικό στο border */
+}
 
+/* Εξαφάνιση του εσωτερικού κουτιού */
+.text-area .content {
+    -fx-background-color: transparent; /* Κάνει το εσωτερικό διάφανο */
+    -fx-background-radius: 8;
+    -fx-padding: 8; /* Εδώ ορίζεις το κενό του κειμένου από τις άκρες */
+}
+
+/* Styling όταν το TextArea είναι focused */
+.text-area:focused {
+    -fx-border-color: #3B82F6;
+    -fx-background-color: #FFFFFF;
+}
+
+.text-area:focused .content {
+    -fx-background-color: transparent;
+}
 /* ============================================================
    SIDEBAR NAVIGATION
    ============================================================ */
@@ -268,7 +297,154 @@
     -fx-text-fill: #6B7280;
 }
 
-/* User Avatar Icon */
 .user-icon {
     -fx-icon-color: #9CA3AF;
+}
+
+/* ============================================================
+   ADDITIONAL COMPONENTS (ComboBox, DatePicker)
+   ============================================================ */
+
+/* ComboBox Styling */
+.combo-box {
+    -fx-background-color: #F9FAFB;
+    -fx-border-color: #E5E7EB;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 2 10;
+}
+
+.combo-box:hover {
+    -fx-border-color: #3B82F6;
+    -fx-cursor: hand;
+}
+
+.combo-box .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #374151;
+}
+
+.combo-box .arrow-button {
+    -fx-background-color: transparent;
+}
+.combo-box .arrow {
+    -fx-background-color: #6B7280;
+}
+
+/* ComboBox Popup List */
+.combo-box-popup .list-view {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
+    -fx-border-color: #E5E7EB;
+}
+
+.combo-box-popup .list-cell:filled:hover {
+    -fx-background-color: #EFF6FF;
+    -fx-text-fill: #2563EB;
+}
+
+.combo-box-popup .list-cell:filled:selected {
+    -fx-background-color: #2563EB;
+    -fx-text-fill: white;
+}
+
+/* DatePicker Styling */
+.date-picker {
+    -fx-background-color: transparent;
+    -fx-border-color: #E5E7EB;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 0;
+}
+
+.date-picker:focused {
+    -fx-border-color: #3B82F6;
+}
+
+.date-picker .text-field {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-radius: 8 0 0 8;
+}
+
+.date-picker .arrow-button {
+    -fx-background-color: transparent;
+    -fx-border-width: 0 0 0 1;
+    -fx-border-color: #E5E7EB;
+    -fx-background-radius: 0 8 8 0;
+}
+
+.date-picker .arrow-button:hover {
+    -fx-background-color: #F3F4F6;
+}
+
+/* Generic List View */
+.list-view {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 8;
+    -fx-border-color: #E5E7EB;
+}
+
+.list-cell {
+    -fx-padding: 8 10;
+    -fx-text-fill: #374151;
+}
+
+.list-cell:filled:selected, .list-cell:filled:hover {
+    -fx-background-color: #EFF6FF;
+    -fx-text-fill: #2563EB;
+}
+
+/* ============================================================
+   GLOBAL MODERN SCROLLBARS (Applied to everything)
+   ============================================================ */
+
+.viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 10px;
+}
+
+.scroll-bar:horizontal {
+    -fx-background-color: transparent;
+    -fx-pref-height: 10px;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #9CA3AF;
+    -fx-background-radius: 10;
+    -fx-background-insets: 2;
+}
+
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #6B7280;
+}
+
+.scroll-bar .thumb:pressed {
+    -fx-background-color: #4B5563;
+}
+
+
+.scroll-bar .track {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-padding: 0;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+    -fx-opacity: 0;
+    -fx-shape: " ";
+}
+
+.scroll-pane .corner {
+    -fx-background-color: transparent;
 }
