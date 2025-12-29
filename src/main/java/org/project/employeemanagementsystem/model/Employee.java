@@ -1,9 +1,8 @@
 package org.project.employeemanagementsystem.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -46,6 +45,8 @@ public class Employee {
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private User user;
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)

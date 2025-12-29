@@ -1,9 +1,7 @@
 package org.project.employeemanagementsystem.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "users")
@@ -26,6 +24,8 @@ public class User {
     private Role role;
 
     @OneToOne(mappedBy = "user")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Employee employee;
 
     public boolean isActive(){
