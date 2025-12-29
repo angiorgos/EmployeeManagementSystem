@@ -5,12 +5,12 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.ToggleButton;
 import org.project.employeemanagementsystem.util.Navigator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
-@Component
+@Controller
 public class SidebarController implements Initializable { // Πρόσεξε το implements Initializable
 
     @Autowired

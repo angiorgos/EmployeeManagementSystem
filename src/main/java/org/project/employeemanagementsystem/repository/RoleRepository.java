@@ -9,4 +9,6 @@ import java.util.Optional;
 public interface RoleRepository extends JpaRepository<Role, Long> {
     // Βρίσκει ρόλο αγνοώντας πεζά/κεφαλαία
     Optional<Role> findByNameIgnoreCase(String name);
+    Role findByName(String name);
+
 }

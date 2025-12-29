@@ -10,14 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class BaseController {
 
     @Autowired
-    protected Navigator navigator;
-
-    @Autowired
     protected UserSession userSession;
 
     @FXML protected Label userNameLabel;
     @FXML protected Label userRoleLabel;
-
+   //Χρησιμοποιείται μέσα στο topbar.fxml
     public void userTitle() {
         if (userNameLabel == null || userRoleLabel == null) return;
 

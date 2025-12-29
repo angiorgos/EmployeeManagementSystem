@@ -6,37 +6,39 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import org.project.employeemanagementsystem.model.User;
 import org.project.employeemanagementsystem.service.AuthService;
+import org.project.employeemanagementsystem.util.Navigator;
+import org.project.employeemanagementsystem.util.UserSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 
-@Component
-public class LoginController extends BaseController {
+@Controller
+public class LoginController {
+
+    @Autowired
+    private AuthService authService;
+
+    @Autowired
+    private Navigator navigator;
+
+    @Autowired
+    private UserSession userSession;
 
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
     @FXML private Label errorLabel;
-
-    @Autowired
-    private AuthService authService;
 
     @FXML
     public void handleLogin() {
         String username = usernameField.getText();
         String password = passwordField.getText();
 
-        if (username.isEmpty() || password.isEmpty()) {
-            errorLabel.setText("Fill all the fields");
-            return;
-        }
-
-        User user = authService.login(username, password);
+        User user = authService.authenticate(username, password);
 
         if (user != null) {
             userSession.login(user);
             navigator.goToDashboard();
-            navigator.maximize();
         } else {
-            errorLabel.setText("Wrong credentials");
+            errorLabel.setText("Wrong credentials!");
         }
     }
 }

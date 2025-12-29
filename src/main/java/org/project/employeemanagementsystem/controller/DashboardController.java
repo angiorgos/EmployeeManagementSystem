@@ -4,8 +4,9 @@ import javafx.fxml.FXML;
 import org.project.employeemanagementsystem.util.Navigator;
 import org.project.employeemanagementsystem.util.UserSession;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 
-@Component
+@Controller
 public class DashboardController extends BaseController {
 
 }
