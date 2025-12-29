@@ -101,7 +101,7 @@ public class Navigator {
         loadScene(LEAVES_VIEW, "Leave Requests");
     }
 
-    // Financials Methods
+    // Financials Methods//
     public void goToPayroll() {
         loadScene(PAYROLL_VIEW, "Payroll System");
     }
