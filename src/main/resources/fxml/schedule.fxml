@@ -57,6 +57,7 @@
                                       </rowConstraints>
                                        <styleClass>
                                           <String fx:value="day-cell" />
+                                          <String fx:value="calendar-grid" />
                                           <String fx:value="day-number" />
                                           <String fx:value="employee-chip" />
                                           <String fx:value="out-month" />
