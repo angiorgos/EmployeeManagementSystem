@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
@@ -36,7 +37,7 @@
                                     <children>
                                         <VBox prefHeight="618.0" prefWidth="828.0" VBox.vgrow="ALWAYS">
                                  <children>
-                                    <GridPane fx:id="monthView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="632.0" prefWidth="857.0" styleClass="calendar-grid" VBox.vgrow="ALWAYS">
+                                    <GridPane fx:id="monthView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="632.0" prefWidth="857.0" stylesheets="@../Schedule.css" VBox.vgrow="ALWAYS">
                                       <columnConstraints>
                                           <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
                                           <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
@@ -54,6 +55,12 @@
                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
                                       </rowConstraints>
+                                       <styleClass>
+                                          <String fx:value="day-cell" />
+                                          <String fx:value="day-number" />
+                                          <String fx:value="employee-chip" />
+                                          <String fx:value="out-month" />
+                                       </styleClass>
                                     </GridPane>
                                  </children></VBox>
                                     </children>
@@ -80,8 +87,10 @@
                                  </graphic>
                               </ToggleButton>
                               <HBox prefHeight="35.0" prefWidth="25.0" />
-                              <Button mnemonicParsing="false" onAction="#onToday" prefHeight="40.0" prefWidth="87.0" text="Today" />
-                              <HBox prefHeight="35.0" prefWidth="353.0" HBox.hgrow="ALWAYS" />
+                              <HBox prefHeight="35.0" prefWidth="353.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <ToggleButton mnemonicParsing="false" onAction="#onToday" prefHeight="35.0" prefWidth="66.0" text="Today" />
+                                 </children></HBox>
                               <Button mnemonicParsing="false" prefHeight="41.0" prefWidth="66.0" text="Day" HBox.hgrow="ALWAYS" />
                               <Button mnemonicParsing="false" prefHeight="41.0" prefWidth="66.0" text="Week" />
                               <Button mnemonicParsing="false" prefHeight="41.0" prefWidth="66.0" text="Month" />
@@ -108,7 +117,7 @@
                                     </Label>
                                  </children>
                               </HBox>
-                              <ListView fx:id="workingEmployeesList" prefHeight="200.0" prefWidth="200.0" />
+                              <ListView fx:id="workingEmployeesList" prefHeight="578.0" prefWidth="292.0" />
                            </children></VBox>
                      </right>
                         </BorderPane>
