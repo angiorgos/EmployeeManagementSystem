@@ -558,6 +558,11 @@
 
 /* ================= TAB PANE ================= */
 
+/* Αφαιρεί το focus ring από όλο το TabPane */
+.tab-pane {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
 
 .tab-pane .tab-header-area {
     -fx-padding: 5 0 0 5;
@@ -579,6 +584,8 @@
     -fx-padding: 8 16;
     -fx-cursor: hand;
     -fx-margin: 0 4 0 0;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }
 
 .tab .tab-label {
