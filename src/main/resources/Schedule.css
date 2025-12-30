@@ -1,6 +1,10 @@
 /* ============================================================
    SCHEDULE STYLING
    ============================================================ */
+.calendar-grid {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
 
 .day-cell {
     -fx-background-color: white;
@@ -10,12 +14,7 @@
 }
 
 .day-cell:hover {
-    -fx-background-color: #F3F4F6;
-}
-
-.day-cell:selected {
     -fx-background-color: #EFF6FF;
-    -fx-text-fill: #2563EB;
     -fx-border-color: #2563EB;
 }
 
@@ -34,12 +33,11 @@
 }
 
 /* Μέρες επόμενου / προηγούμενου μήνα */
-.out-month {
+.out-month:hover {
     -fx-background-color: #ededed;
     -fx-border-color: #cfcfcf;
 }
-
-.out-month .day-number {
+.out-month:hover .day-number {
     -fx-text-fill: #7a7a7a;
 }
 
