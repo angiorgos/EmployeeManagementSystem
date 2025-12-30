@@ -18,21 +18,45 @@ public class LeaveRequestService {
     @Autowired
     private HolidayRepository holidayRepository;
 
+
+    public List<LeaveRequest> getAllRequests() {
+        return leaveRequestRepository.findAll();
+    }
+
+    public List<LeaveRequest> getRequestsByEmployee(Employee employee) {
+        return leaveRequestRepository.findByEmployee(employee);
+    }
+
+    public void saveRequest(LeaveRequest request) {
+        // Έλεγχος: Η ημερομηνία λήξης να μην είναι πριν την έναρξη
+        if (request.getEndDate().isBefore(request.getStartDate())) {
+            throw new RuntimeException("End date cannot be before start date");
+        }
+        leaveRequestRepository.save(request);
+    }
+
+    public void deleteRequest(LeaveRequest request) {
+        leaveRequestRepository.delete(request);
+    }
+
+    //Υπολογισμός Υπολοίπου
+
     public int getRemainingDays(Employee employee, LeaveType leaveType) {
         int maxAllowed = leaveType.getMaxDays();
 
-        // 1. Παίρνουμε όλες τις APPROVED αιτήσεις
+        // Βρίσκουμε μόνο τις ΕΓΚΕΚΡΙΜΕΝΕΣ (APPROVED) άδειες
         List<LeaveRequest> approvedRequests = leaveRequestRepository
                 .findByEmployeeAndLeaveTypeAndStatus_Name(employee, leaveType, "APPROVED");
 
-        // 2. Παίρνουμε όλες τις αργίες από τη βάση για να τις εξαιρέσουμε
+        // Φέρνουμε τις αργίες
         List<LocalDate> holidays = holidayRepository.findAll().stream()
                 .map(Holiday::getDate)
                 .collect(Collectors.toList());
 
-        // 3. Υπολογίζουμε τις πραγματικές μέρες εργασίας που καταναλώθηκαν
+        // Υπολογίζουμε πόσες εργάσιμες "έκαψε"
         int usedDays = 0;
         for (LeaveRequest request : approvedRequests) {
+            // Μετράμε μόνο για το τρέχον έτος
             if (request.getStartDate().getYear() == LocalDate.now().getYear()) {
                 usedDays += calculateWorkDays(request.getStartDate(), request.getEndDate(), holidays);
             }
@@ -41,14 +65,13 @@ public class LeaveRequestService {
         return maxAllowed - usedDays;
     }
 
-
     private int calculateWorkDays(LocalDate start, LocalDate end, List<LocalDate> holidays) {
         int count = 0;
         LocalDate current = start;
         while (!current.isAfter(end)) {
-            // Έλεγχος αν ΔΕΝ είναι Σαββατοκύριακο (6=Σάββατο, 7=Κυριακή)
+            // Εξαιρούμε Σαββατοκύριακα (6=Sat, 7=Sun)
             boolean isWeekend = (current.getDayOfWeek().getValue() == 6 || current.getDayOfWeek().getValue() == 7);
-            // Έλεγχος αν ΔΕΝ είναι καταχωρημένη αργία
+            // Εξαιρούμε Αργίες
             boolean isHoliday = holidays.contains(current);
 
             if (!isWeekend && !isHoliday) {

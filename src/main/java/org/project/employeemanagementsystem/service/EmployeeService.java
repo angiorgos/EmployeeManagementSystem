@@ -11,42 +11,55 @@ public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
 
+    // Constructor Injection (Βέλτιστη πρακτική αντί για @Autowired στο field)
     public EmployeeService(EmployeeRepository employeeRepository) {
         this.employeeRepository = employeeRepository;
     }
 
-    //ΑΠΟΘΗΚΕΥΣΗ (Create / Update)
-    public void saveEmployee(Employee employee) {
-        if (employee.getId() == null && employeeRepository.existsByEmail(employee.getEmail())) {
-            throw new IllegalArgumentException("Email already exists");
-        }
-        employeeRepository.save(employee);
-    }
+    // --- 1. ΑΝΑΓΝΩΣΗ (READ) ---
 
-    // ΑΝΑΓΝΩΣΗ ΟΛΩΝ
+    // Επιστρέφει ΟΛΟΥΣ τους υπαλλήλους (Ενεργούς και μη) - Για τον κεντρικό πίνακα
     public List<Employee> getAllEmployees() {
         return employeeRepository.findAll();
     }
 
-    //ΑΝΑΖΗΤΗΣΗ
+    // Επιστρέφει ΜΟΝΟ τους ΕΝΕΡΓΟΥΣ (χωρίς ημερομηνία εξόδου) - Για Dropdowns/ComboBoxes
+    public List<Employee> getActiveEmployees() {
+        return employeeRepository.findByExitDateIsNull();
+    }
+
+    // Εύρεση με βάση το ID
+    public Optional<Employee> getEmployeeById(Long id) {
+        return employeeRepository.findById(id);
+    }
+
+    // Αναζήτηση με βάση το επώνυμο (αν είναι κενό, επιστρέφει όλους)
     public List<Employee> searchEmployees(String lastName) {
-        if (lastName == null || lastName.isEmpty()) {
-            return employeeRepository.findAll(); // Αν δεν έγραψε τίποτα, φέρτα όλα
+        if (lastName == null || lastName.trim().isEmpty()) {
+            return getAllEmployees();
         }
         return employeeRepository.findByLastNameContainingIgnoreCase(lastName);
     }
 
-    //ΔΙΑΓΡΑΦΗ
+    // --- 2. ΕΓΓΡΑΦΗ / ΕΝΗΜΕΡΩΣΗ (CREATE / UPDATE) ---
+
+    public void saveEmployee(Employee employee) {
+        // Έλεγχος: Αν είναι νέος υπάλληλος (id == null) και το email υπάρχει ήδη
+        if (employee.getId() == null && employeeRepository.existsByEmail(employee.getEmail())) {
+            throw new IllegalArgumentException("Email already in use!");
+        }
+
+        // Αν ορίζουμε Exit Date, θεωρείται ότι αποχωρεί (μπορείς να βάλεις extra logic εδώ αν θες)
+        employeeRepository.save(employee);
+    }
+
+    // --- 3. ΔΙΑΓΡΑΦΗ (DELETE) ---
+
     public void deleteEmployee(Long id) {
         if (employeeRepository.existsById(id)) {
             employeeRepository.deleteById(id);
         } else {
-            throw new IllegalArgumentException("Ο υπάλληλος δεν βρέθηκε!");
+            throw new IllegalArgumentException("Employee with id " + id + " not found!");
         }
-    }
-
-    //ΕΥΡΕΣΗ ΕΝΟΣ
-    public Optional<Employee> getEmployeeById(Long id) {
-        return employeeRepository.findById(id);
     }
 }

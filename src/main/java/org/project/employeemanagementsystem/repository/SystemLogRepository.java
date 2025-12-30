@@ -7,6 +7,8 @@ import java.util.List;
 
 @Repository
 public interface SystemLogRepository extends JpaRepository<SystemLog, Long> {
-    // Βρίσκει τι ενέργειες έκανε ένας συγκεκριμένος χρήστης
-    List<SystemLog> findByUserId(Long userId);
+
+    // Επιστρέφει τα logs ταξινομημένα από το πιο πρόσφατο στο παλαιότερο
+    // Υποθέτουμε ότι το πεδίο στην κλάση SystemLog λέγεται 'timestamp'
+    List<SystemLog> findAllByOrderByTimestampDesc();
 }

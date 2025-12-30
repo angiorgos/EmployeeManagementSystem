@@ -350,7 +350,7 @@
 }
 
 /* ============================================================
-   DATE PICKER STYLING (Fixed Background)
+   DATE PICKER STYLING
    ============================================================ */
 
 .date-picker {
@@ -405,7 +405,102 @@
     -fx-background-color: #EFF6FF;
     -fx-text-fill: #2563EB;
 }
+/* ============================================================
+   DATE PICKER POPUP (MODERN + BIG FONTS)
+   ============================================================ */
 
+/* 1. Το κεντρικό κουτί του Popup */
+.date-picker-popup {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: #E5E7EB;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 10, 0, 0, 4);
+    -fx-padding: 8; /* Αυξήσαμε το κενό γύρω γύρω */
+}
+
+/* 2. Η επικεφαλίδα (Μήνας - Έτος) */
+.date-picker-popup > .month-year-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 5 0 5 0;
+}
+
+/* Το κείμενο του Μήνα/Έτους -> ΜΕΓΑΛΩΣΕ */
+.date-picker-popup > .month-year-pane > .spinner > .label {
+    -fx-text-fill: #111827;
+    -fx-font-size: 15px; /* Από 13px -> 15px */
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER;
+}
+
+/* Τα βελάκια δεξιά-αριστερά */
+.date-picker-popup > .month-year-pane > .spinner > .button {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+}
+
+.date-picker-popup > .month-year-pane > .spinner > .button .left-arrow,
+.date-picker-popup > .month-year-pane > .spinner > .button .right-arrow {
+    -fx-background-color: #6B7280;
+    -fx-padding: 4px; /* Από 3px -> 4px για να είναι πιο ευδιάκριτα */
+}
+
+.date-picker-popup > .month-year-pane > .spinner > .button:hover .left-arrow,
+.date-picker-popup > .month-year-pane > .spinner > .button:hover .right-arrow {
+    -fx-background-color: #3B82F6;
+}
+
+/* 3. Το πλέγμα με τις ημέρες */
+.date-picker-popup > .calendar-grid {
+    -fx-background-color: transparent;
+    -fx-padding: 5;
+}
+
+/* Οι επικεφαλίδες των ημερών (Δευ, Τρι...) -> ΜΕΓΑΛΩΣΑΝ */
+.date-picker-popup > .calendar-grid > .day-name-cell {
+    -fx-font-size: 12px; /* Από 10px -> 12px */
+    -fx-text-fill: #9CA3AF;
+    -fx-font-weight: bold;
+    -fx-padding: 5;
+}
+
+/* 4. Τα κελιά των ημερών (Οι αριθμοί) -> ΜΕΓΑΛΩΣΑΝ */
+.date-picker-popup > .calendar-grid > .day-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #374151;
+    -fx-font-size: 14px; /* Από 12px -> 14px */
+    -fx-background-radius: 6;
+    -fx-border-color: transparent;
+    -fx-padding: 8 10; /* Αυξήσαμε το "αέρα" (padding) για να μην είναι στριμωγμένα */
+}
+
+/* Hover σε ημέρα */
+.date-picker-popup > .calendar-grid > .day-cell:hover {
+    -fx-background-color: #F3F4F6;
+    -fx-text-fill: #111827;
+    -fx-cursor: hand;
+}
+
+/* Η ΕΠΙΛΕΓΜΕΝΗ ημέρα (Διατηρεί το Μοντέρνο Μπλε) */
+.date-picker-popup > .calendar-grid > .selected {
+    -fx-background-color: #3B82F6;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-weight: bold;
+}
+
+/* Η "Σημερινή" ημέρα */
+.date-picker-popup > .calendar-grid > .today {
+    -fx-background-color: #EFF6FF;
+    -fx-text-fill: #3B82F6;
+    -fx-border-color: #3B82F6;
+    -fx-border-radius: 6;
+}
+
+/* Αχνά γράμματα επόμενου μήνα */
+.date-picker-popup > .calendar-grid > .secondary-day-cell {
+    -fx-text-fill: #D1D5DB;
+}
 /* ============================================================
    GLOBAL MODERN SCROLLBARS (Applied to everything)
    ============================================================ */
