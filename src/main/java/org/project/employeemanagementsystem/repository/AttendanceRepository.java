@@ -5,13 +5,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
-    // Βρίσκει όλες τις παρουσίες ενός υπαλλήλου
+
+    // Βρες παρουσίες συγκεκριμένου υπαλλήλου
     List<Attendance> findByEmployeeId(Long employeeId);
 
-    // Βρίσκει αν ο υπάλληλος έχει χτυπήσει κάρτα μια συγκεκριμένη μέρα (για να μην χτυπήσει 2 φορές)
-    Optional<Attendance> findByEmployeeIdAndDate(Long employeeId, LocalDate date);
+    // Βρες παρουσίες συγκεκριμένης ημερομηνίας (π.χ. ποιοι ήρθαν σήμερα)
+    List<Attendance> findByDate(LocalDate date);
 }
