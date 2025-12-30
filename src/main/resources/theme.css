@@ -623,3 +623,10 @@
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 5, 0, 0, 1);
 }
 
+/* ================= LOADING SPINNER ================= */
+.loading-spinner .progress {
+    -fx-background-color: #3B82F6; /* Το μπλε του θέματός μας */
+}
+.loading-spinner .percentage {
+    -fx-fill: transparent; /* Κρύβουμε το ποσοστό % αν φαίνεται */
+}

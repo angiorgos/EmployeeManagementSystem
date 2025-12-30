@@ -5,6 +5,7 @@ import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import org.project.employeemanagementsystem.model.Attendance;
@@ -16,10 +17,8 @@ import org.project.employeemanagementsystem.service.EmployeeService;
 import org.project.employeemanagementsystem.service.LeaveRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.Month;
@@ -27,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import javafx.animation.FadeTransition;
+import javafx.scene.layout.StackPane;
+import javafx.scene.control.ProgressIndicator;
 
 @Controller
 public class DashboardController extends BaseController implements Initializable {
@@ -35,6 +37,9 @@ public class DashboardController extends BaseController implements Initializable
     @Autowired private EmployeeService employeeService;
     @Autowired private LeaveRequestService leaveRequestService;
     @Autowired private AttendanceService attendanceService;
+
+
+    @FXML private VBox loadingOverlay;
 
     @FXML private Label totalEmployeesLabel;
     @FXML private Label workingTodayLabel;
@@ -126,6 +131,19 @@ public class DashboardController extends BaseController implements Initializable
                         Collectors.counting()
                 ));
         initChart(attendanceWebView, "chart_attendance.html", mapToLabels(attendanceLastDays), mapToData(attendanceLastDays));
+
+        PauseTransition delay = new PauseTransition(Duration.seconds(1.2));
+        delay.setOnFinished(event -> {
+            // Fade Out Animation
+            FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), loadingOverlay);
+            fadeOut.setFromValue(1.0); // Από πλήρως ορατό
+            fadeOut.setToValue(0.0);   // Σε αόρατο
+            fadeOut.setOnFinished(e -> {
+                loadingOverlay.setVisible(false); // Το απενεργοποιούμε τελείως για να μην εμποδίζει τα κλικ
+            });
+            fadeOut.play();
+        });
+        delay.play();
     }
 
     // Βοηθητική μέθοδος για να φτιάχνουμε το string δεδομένων [0, 2, 5...] για τους 12 μήνες
@@ -142,25 +160,31 @@ public class DashboardController extends BaseController implements Initializable
 
     private void initChart(WebView webView, String htmlFile, String labels, String data) {
         WebEngine engine = webView.getEngine();
+
         try {
-            // Φόρτωση του περιεχομένου HTML ως String (η λύση που δώσαμε πριν για να μην σκάει)
-            InputStream is = getClass().getResourceAsStream("/charts/" + htmlFile);
-            if (is == null) {
-                System.err.println("Could not find chart file: " + htmlFile);
-                return;
-            }
-            String htmlContent = new BufferedReader(new InputStreamReader(is))
-                    .lines().collect(Collectors.joining("\n"));
+            // 1. Φόρτωση του HTML
+            String url = getClass().getResource("/charts/" + htmlFile).toExternalForm();
+            engine.load(url);
 
-            engine.loadContent(htmlContent);
-
-            engine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
+            // 2. Listener για το πότε τελείωσε η φόρτωση
+            engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
                 if (newState == Worker.State.SUCCEEDED) {
-                    // Inject data
-                    String script = "if (typeof updateChart === 'function') { updateChart(" + labels + ", " + data + "); }";
-                    engine.executeScript(script);
+
+                    // 3. ✨ ΤΟ ΚΟΛΠΟ: Καθυστέρηση 1 δευτερολέπτου ✨
+                    // Δίνουμε χρόνο στο JavaFX να υπολογίσει το πλάτος του WebView πριν ζωγραφίσει το Chart
+                    PauseTransition delay = new PauseTransition(Duration.seconds(1));
+                    delay.setOnFinished(event -> {
+                        try {
+                            // Τώρα τρέχουμε το script με ασφάλεια
+                            engine.executeScript("if (window.updateChart) { window.updateChart(" + labels + ", " + data + "); }");
+                        } catch (Exception e) {
+                            System.err.println("Error executing script for " + htmlFile + ": " + e.getMessage());
+                        }
+                    });
+                    delay.play();
                 }
             });
+
         } catch (Exception e) {
             e.printStackTrace();
         }
