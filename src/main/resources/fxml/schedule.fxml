@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
@@ -34,6 +36,7 @@
                             <center>
                                 <VBox prefHeight="618.0" prefWidth="833.0" BorderPane.alignment="CENTER">
                                     <children>
+                              <HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="10.0" prefWidth="791.0" />
                                         <VBox prefHeight="618.0" prefWidth="828.0" VBox.vgrow="ALWAYS">
                                  <children>
                                     <GridPane fx:id="monthView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="632.0" prefWidth="857.0" styleClass="calendar-grid" VBox.vgrow="ALWAYS">
@@ -62,31 +65,42 @@
                             <top>
                                 <HBox prefHeight="35.0" prefWidth="1077.0" BorderPane.alignment="CENTER">
                                     <children>
-                                        <HBox prefHeight="35.0" prefWidth="25.0" />
-                                        <Label fx:id="monthLabel" prefHeight="35.0" prefWidth="208.0" text="January 2026" HBox.hgrow="ALWAYS">
+                                        <Label fx:id="monthLabel" contentDisplay="CENTER" prefHeight="35.0" prefWidth="182.0" text="September 2026" textFill="#9a9a9a" HBox.hgrow="ALWAYS">
                                             <font>
                                                 <Font size="24.0" />
                                             </font>
                                         </Label>
-                              <ToggleButton mnemonicParsing="false" onAction="#onPrevMonth" prefHeight="34.0" prefWidth="35.0">
+                              <ToggleButton mnemonicParsing="false" onAction="#onPrevMonth" prefHeight="44.0" prefWidth="49.0">
                                  <graphic>
-                                    <FontIcon iconLiteral="mdi2c-chevron-left" iconSize="25" wrappingWidth="25.0" />
+                                    <FontIcon iconLiteral="mdi2c-chevron-left" iconSize="25" text="󰅁" wrappingWidth="25.0" />
                                  </graphic>
+                                 <styleClass>
+                                    <String fx:value="cal-btn" />
+                                    <String fx:value="cal-icon-btn" />
+                                 </styleClass>
                               </ToggleButton>
                               <HBox prefHeight="35.0" prefWidth="25.0" />
-                              <ToggleButton mnemonicParsing="false" onAction="#onNextMonth" prefHeight="35.0" prefWidth="22.0">
+                              <ToggleButton mnemonicParsing="false" onAction="#onNextMonth" prefHeight="48.0" prefWidth="48.0">
                                  <graphic>
                                     <FontIcon iconLiteral="mdi2c-chevron-right" iconSize="25" wrappingWidth="25.0" />
                                  </graphic>
+                                 <styleClass>
+                                    <String fx:value="cal-btn" />
+                                    <String fx:value="cal-icon-btn" />
+                                 </styleClass>
                               </ToggleButton>
                               <HBox prefHeight="35.0" prefWidth="25.0" />
-                              <HBox prefHeight="35.0" prefWidth="353.0" HBox.hgrow="ALWAYS">
+                              <HBox prefHeight="60.0" prefWidth="466.0" HBox.hgrow="ALWAYS">
                                  <children>
-                                    <ToggleButton mnemonicParsing="false" onAction="#onToday" prefHeight="35.0" prefWidth="66.0" text="Today" />
+                                    <ToggleButton mnemonicParsing="false" onAction="#onToday" prefHeight="44.0" prefWidth="70.0" styleClass="view-btn" text="Today" />
                                  </children></HBox>
-                              <Button mnemonicParsing="false" prefHeight="41.0" prefWidth="66.0" text="Day" HBox.hgrow="ALWAYS" />
-                              <Button mnemonicParsing="false" prefHeight="41.0" prefWidth="66.0" text="Week" />
-                              <Button mnemonicParsing="false" prefHeight="41.0" prefWidth="66.0" text="Month" />
+                              <ToggleButton mnemonicParsing="false" onAction="#onToday" prefHeight="46.0" prefWidth="76.0" styleClass="view-btn" text="Day">
+                                 <toggleGroup>
+                                    <ToggleGroup fx:id="viewGroup" />
+                                 </toggleGroup>
+                              </ToggleButton>
+                              <ToggleButton mnemonicParsing="false" onAction="#onToday" prefHeight="44.0" prefWidth="76.0" styleClass="view-btn" text="Week" toggleGroup="$viewGroup" />
+                              <ToggleButton mnemonicParsing="false" onAction="#onToday" prefHeight="44.0" prefWidth="76.0" styleClass="view-btn" text="Month" toggleGroup="$viewGroup" />
                               <HBox prefHeight="35.0" prefWidth="94.0" />
                                         
                                     </children>
@@ -97,21 +111,24 @@
                            <children>
                               <HBox prefHeight="42.0" prefWidth="293.0">
                                  <children>
-                                    <Label prefHeight="44.0" prefWidth="133.0" text=" Working Employees">
+                                    <Label prefHeight="20.0" prefWidth="138.0" text=" Working Employees">
                                        <font>
                                           <Font size="14.0" />
                                        </font>
                                     </Label>
                                     <HBox prefHeight="35.0" prefWidth="32.0" />
-                                    <Label fx:id="selectedDayLabel" prefHeight="42.0" prefWidth="127.0" text="             1/Jan/2026">
+                                    <Label fx:id="selectedDayLabel" prefHeight="20.0" prefWidth="85.0" text="1/Jan/2026">
                                        <font>
                                           <Font size="14.0" />
                                        </font>
                                     </Label>
                                  </children>
                               </HBox>
-                              <ListView fx:id="workingEmployeesList" prefHeight="578.0" prefWidth="292.0" />
-                           </children></VBox>
+                              <ListView fx:id="workingEmployeesList" prefHeight="578.0" prefWidth="292.0" styleClass="schedule-list" />
+                           </children>
+                           <BorderPane.margin>
+                              <Insets left="10.0" top="10.0" />
+                           </BorderPane.margin></VBox>
                      </right>
                         </BorderPane>
                     </content>

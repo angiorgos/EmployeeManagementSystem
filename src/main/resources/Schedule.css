@@ -68,5 +68,102 @@
 .out-month:hover .day-number {
     -fx-text-fill: #7a7a7a;
 }
+
+/* ===== Right ListView as Card ===== */
+.schedule-list {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: #E5E7EB;
+    -fx-border-width: 1;
+    -fx-padding: 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 2);
+}
+
+/* Το viewport του ListView να μην έχει άλλο χρώμα */
+.schedule-list .viewport {
+    -fx-background-color: transparent;
+}
+
+/* Cells */
+.schedule-list .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 10 12;
+    -fx-border-color: transparent transparent #F3F4F6 transparent;
+    -fx-text-fill: #374151;
+}
+
+/* Hover */
+.schedule-list .list-cell:filled:hover {
+    -fx-background-color: #F9FAFB;
+}
+
+/* Selected */
+.schedule-list .list-cell:filled:selected {
+    -fx-background-color: #EFF6FF;
+    -fx-text-fill: #2563EB;
+}
+
+/* ===== Calendar buttons ===== */
+.cal-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #6B7280;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER;
+    -fx-cursor: hand;
+
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 8 14;
+
+    -fx-border-color: #E5E7EB;
+    -fx-border-width: 1;
+}
+
+
+/* hover */
+.cal-btn:hover {
+    -fx-background-color: #F3F4F6;
+    -fx-text-fill: #111827;
+}
+
+/* Icon color (ikonli) */
+.cal-btn .ikonli-font-icon {
+    -fx-icon-color: #9CA3AF;
+}
+
+/* Icon hover */
+.cal-btn:hover .ikonli-font-icon {
+    -fx-icon-color: #4B5563;
+}
+
+
+/* View mode buttons (Day/Week/Month) – σαν segmented */
+.view-btn {
+    -fx-background-color: #F3F4F6;
+    -fx-text-fill: #374151;
+    -fx-border-color: #E5E7EB;
+    -fx-border-width: 1;
+    -fx-padding: 6 14;
+    -fx-cursor: hand;
+}
+
+.view-btn:hover { -fx-background-color: #E5E7EB; }
+
+.view-btn:selected {
+    -fx-background-color: #EFF6FF;
+    -fx-text-fill: #2563EB;
+    -fx-border-color: #2563EB;
+}
+
+.right-panel {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E5E7EB;
+    -fx-border-width: 1;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-padding: 10;
+}
 /* ============================================================
    ============================================================ */
