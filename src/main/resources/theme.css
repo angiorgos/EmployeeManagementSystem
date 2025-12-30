@@ -12,7 +12,6 @@
    LAYOUT & CARDS (DASHBOARD CLEAN LOOK)
    ============================================================ */
 
-/* Το φόντο του Dashboard */
 .scroll-pane > .viewport {
     -fx-background-color: #F3F4F6;
 }
