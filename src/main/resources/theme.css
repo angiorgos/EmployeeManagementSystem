@@ -9,6 +9,86 @@
 }
 
 /* ============================================================
+   LAYOUT & CARDS (DASHBOARD CLEAN LOOK)
+   ============================================================ */
+
+.scroll-pane > .viewport {
+    -fx-background-color: #F3F4F6;
+}
+
+.sidebar {
+    -fx-background-color: #FFFFFF;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 2, 0);
+}
+
+.top-bar {
+    -fx-background-color: #FFFFFF;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);
+    -fx-border-color: #F3F4F6;
+    -fx-border-width: 0 0 1 0;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 8, 0, 0, 4);
+    -fx-padding: 20;
+}
+
+.card-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #111827;
+    -fx-padding: 0 0 5 5;
+}
+
+.kpi-card {
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 10, 0, 0, 4);
+    -fx-padding: 15 25;
+    -fx-alignment: CENTER_LEFT;
+}
+
+
+.card-blue {
+    -fx-background-color: linear-gradient(to bottom right, #3B82F6, #2563EB);
+}
+
+.card-green {
+    -fx-background-color: linear-gradient(to bottom right, #10B981, #059669);
+}
+
+.card-orange {
+    -fx-background-color: linear-gradient(to bottom right, #F59E0B, #D97706);
+}
+
+.card-red {
+    -fx-background-color: linear-gradient(to bottom right, #EF4444, #DC2626);
+}
+
+
+.kpi-title {
+    -fx-text-fill: #E5E7EB; /* Αχνό λευκό/γκρι για τον τίτλο */
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.kpi-value {
+    -fx-text-fill: #FFFFFF; /* Καθαρό λευκό για το νούμερο */
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+}
+
+/* Chart Cards (Containers για τα WebViews) */
+.chart-card {
+    -fx-background-color: white;
+    -fx-background-radius: 6;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 5, 0, 0, 1);
+    -fx-padding: 10;
+}
+
+/* ============================================================
    TABLE VIEW (Employee Lists, Logs, Departments)
    ============================================================ */
 
@@ -67,19 +147,6 @@
     -fx-text-fill: #2563EB;
 }
 
-/* Scrollbars */
-.table-view .scroll-bar:vertical,
-.table-view .scroll-bar:horizontal {
-    -fx-background-color: transparent;
-}
-.table-view .scroll-bar .thumb {
-    -fx-background-color: #D1D5DB;
-    -fx-background-radius: 20;
-}
-.table-view .scroll-bar .thumb:hover {
-    -fx-background-color: #9CA3AF;
-}
-
 /* ============================================================
    STATUS BADGES
    ============================================================ */
@@ -105,56 +172,6 @@
 .status-danger, .status-terminated, .status-rejected {
     -fx-background-color: #FEF2F2; /* Light Red */
     -fx-text-fill: #B91C1C;        /* Dark Red Text */
-}
-
-/* ============================================================
-   LAYOUT & CARDS
-   ============================================================ */
-
-.sidebar {
-    -fx-background-color: #FFFFFF;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 2, 0);
-}
-
-.top-bar {
-    -fx-background-color: #FFFFFF;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);
-    -fx-border-color: #F3F4F6;
-    -fx-border-width: 0 0 1 0;
-    -fx-alignment: CENTER_LEFT;
-}
-
-.card {
-    -fx-background-color: #FFFFFF;
-    -fx-background-radius: 12;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 8, 0, 0, 4);
-    -fx-padding: 20;
-}
-
-.card-title {
-    -fx-font-size: 16px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #111827; /* Darker Title */
-}
-
-/* KPI Cards */
-.kpi-card {
-    -fx-pref-width: 250;
-    -fx-pref-height: 120;
-    -fx-background-radius: 15;
-    -fx-padding: 20;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 5);
-    -fx-alignment: CENTER_LEFT;
-}
-.kpi-title {
-    -fx-text-fill: rgba(255, 255, 255, 0.9);
-    -fx-font-size: 14px;
-    -fx-font-weight: bold;
-}
-.kpi-value {
-    -fx-text-fill: white;
-    -fx-font-size: 32px;
-    -fx-font-weight: bold;
 }
 
 /* ============================================================
@@ -189,7 +206,7 @@
 .btn-success:hover { -fx-background-color: #059669; }
 
 /* Text Fields */
-.text-field, .password-field, .text-area {
+.text-field, .password-field {
     -fx-background-color: #F9FAFB;
     -fx-border-color: #E5E7EB;
     -fx-border-radius: 8;
@@ -197,36 +214,34 @@
     -fx-text-fill: #374151;
     -fx-padding: 8 12;
 }
-.text-field:focused, .password-field:focused, .text-area:focused {
+.text-field:focused, .password-field:focused {
     -fx-border-color: #3B82F6;
     -fx-background-color: #FFFFFF;
 }
+
 /* Text Area */
-/* Διόρθωση για το TextArea */
 .text-area {
-    -fx-background-color: #F9FAFB; /* Το χρώμα που θέλεις εξωτερικά */
+    -fx-background-color: #F9FAFB;
     -fx-border-color: #E5E7EB;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
-    -fx-padding: 1; /* Πολύ μικρό padding για να μην "χτυπάει" το εσωτερικό στο border */
+    -fx-padding: 1;
 }
 
-/* Εξαφάνιση του εσωτερικού κουτιού */
 .text-area .content {
-    -fx-background-color: transparent; /* Κάνει το εσωτερικό διάφανο */
+    -fx-background-color: transparent;
     -fx-background-radius: 8;
-    -fx-padding: 8; /* Εδώ ορίζεις το κενό του κειμένου από τις άκρες */
+    -fx-padding: 8;
 }
 
-/* Styling όταν το TextArea είναι focused */
 .text-area:focused {
     -fx-border-color: #3B82F6;
     -fx-background-color: #FFFFFF;
 }
-
 .text-area:focused .content {
     -fx-background-color: transparent;
 }
+
 /* ============================================================
    SIDEBAR NAVIGATION
    ============================================================ */
@@ -245,9 +260,9 @@
     -fx-alignment: CENTER_LEFT;
     -fx-graphic-text-gap: 15px;
     -fx-cursor: hand;
-    -fx-background-radius: 0 25 25 0; /* Στρογγύλεμα μόνο δεξιά */
+    -fx-background-radius: 0 25 25 0;
     -fx-padding: 10 0 10 20;
-    -fx-margin: 2 10 2 0; /* Λίγο κενό δεξιά */
+    -fx-margin: 2 10 2 0;
 }
 
 .sidebar .toggle-button .ikonli-font-icon {
@@ -266,10 +281,10 @@
 
 /* Selected State */
 .sidebar .toggle-button:selected {
-    -fx-background-color: #EFF6FF; /* Light Blue bg */
-    -fx-text-fill: #2563EB;         /* Blue Text */
+    -fx-background-color: #EFF6FF;
+    -fx-text-fill: #2563EB;
     -fx-border-color: #2563EB;
-    -fx-border-width: 0 0 0 3;      /* Μπλε γραμμή αριστερά */
+    -fx-border-width: 0 0 0 3;
 }
 .sidebar .toggle-button:selected .ikonli-font-icon {
     -fx-icon-color: #2563EB;
@@ -302,10 +317,9 @@
 }
 
 /* ============================================================
-   ADDITIONAL COMPONENTS (ComboBox, DatePicker)
+   COMBOBOX & LISTS
    ============================================================ */
 
-/* ComboBox Styling */
 .combo-box {
     -fx-background-color: #F9FAFB;
     -fx-border-color: #E5E7EB;
@@ -331,7 +345,6 @@
     -fx-background-color: #6B7280;
 }
 
-/* ComboBox Popup List */
 .combo-box-popup .list-view {
     -fx-background-color: #FFFFFF;
     -fx-background-radius: 8;
@@ -349,12 +362,28 @@
     -fx-text-fill: white;
 }
 
+.list-view {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 8;
+    -fx-border-color: #E5E7EB;
+}
+
+.list-cell {
+    -fx-padding: 8 10;
+    -fx-text-fill: #374151;
+}
+
+.list-cell:filled:selected, .list-cell:filled:hover {
+    -fx-background-color: #EFF6FF;
+    -fx-text-fill: #2563EB;
+}
+
 /* ============================================================
-   DATE PICKER STYLING
+   DATE PICKER (BASE & POPUP)
    ============================================================ */
 
 .date-picker {
-    -fx-background-color: transparent; /* Το εξωτερικό container μένει διάφανο */
+    -fx-background-color: transparent;
     -fx-border-color: #E5E7EB;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
@@ -368,7 +397,6 @@
     -fx-text-fill: #374151;
     -fx-padding: 8 12;
 }
-
 
 .date-picker .arrow-button {
     -fx-background-color: #F9FAFB;
@@ -389,27 +417,8 @@
     -fx-border-color: #3B82F6;
 }
 
-/* Generic List View */
-.list-view {
-    -fx-background-color: #FFFFFF;
-    -fx-background-radius: 8;
-    -fx-border-color: #E5E7EB;
-}
+/* --- POPUP (BIGGER FONTS + MODERN) --- */
 
-.list-cell {
-    -fx-padding: 8 10;
-    -fx-text-fill: #374151;
-}
-
-.list-cell:filled:selected, .list-cell:filled:hover {
-    -fx-background-color: #EFF6FF;
-    -fx-text-fill: #2563EB;
-}
-/* ============================================================
-   DATE PICKER POPUP (MODERN + BIG FONTS)
-   ============================================================ */
-
-/* 1. Το κεντρικό κουτί του Popup */
 .date-picker-popup {
     -fx-background-color: #FFFFFF;
     -fx-background-radius: 8;
@@ -417,24 +426,21 @@
     -fx-border-color: #E5E7EB;
     -fx-border-width: 1;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 10, 0, 0, 4);
-    -fx-padding: 8; /* Αυξήσαμε το κενό γύρω γύρω */
+    -fx-padding: 8;
 }
 
-/* 2. Η επικεφαλίδα (Μήνας - Έτος) */
 .date-picker-popup > .month-year-pane {
     -fx-background-color: transparent;
     -fx-padding: 5 0 5 0;
 }
 
-/* Το κείμενο του Μήνα/Έτους -> ΜΕΓΑΛΩΣΕ */
 .date-picker-popup > .month-year-pane > .spinner > .label {
     -fx-text-fill: #111827;
-    -fx-font-size: 15px; /* Από 13px -> 15px */
+    -fx-font-size: 15px;
     -fx-font-weight: bold;
     -fx-alignment: CENTER;
 }
 
-/* Τα βελάκια δεξιά-αριστερά */
 .date-picker-popup > .month-year-pane > .spinner > .button {
     -fx-background-color: transparent;
     -fx-cursor: hand;
@@ -443,7 +449,7 @@
 .date-picker-popup > .month-year-pane > .spinner > .button .left-arrow,
 .date-picker-popup > .month-year-pane > .spinner > .button .right-arrow {
     -fx-background-color: #6B7280;
-    -fx-padding: 4px; /* Από 3px -> 4px για να είναι πιο ευδιάκριτα */
+    -fx-padding: 4px;
 }
 
 .date-picker-popup > .month-year-pane > .spinner > .button:hover .left-arrow,
@@ -451,45 +457,39 @@
     -fx-background-color: #3B82F6;
 }
 
-/* 3. Το πλέγμα με τις ημέρες */
 .date-picker-popup > .calendar-grid {
     -fx-background-color: transparent;
     -fx-padding: 5;
 }
 
-/* Οι επικεφαλίδες των ημερών (Δευ, Τρι...) -> ΜΕΓΑΛΩΣΑΝ */
 .date-picker-popup > .calendar-grid > .day-name-cell {
-    -fx-font-size: 12px; /* Από 10px -> 12px */
+    -fx-font-size: 12px;
     -fx-text-fill: #9CA3AF;
     -fx-font-weight: bold;
     -fx-padding: 5;
 }
 
-/* 4. Τα κελιά των ημερών (Οι αριθμοί) -> ΜΕΓΑΛΩΣΑΝ */
 .date-picker-popup > .calendar-grid > .day-cell {
     -fx-background-color: transparent;
     -fx-text-fill: #374151;
-    -fx-font-size: 14px; /* Από 12px -> 14px */
+    -fx-font-size: 14px;
     -fx-background-radius: 6;
     -fx-border-color: transparent;
-    -fx-padding: 8 10; /* Αυξήσαμε το "αέρα" (padding) για να μην είναι στριμωγμένα */
+    -fx-padding: 8 10;
 }
 
-/* Hover σε ημέρα */
 .date-picker-popup > .calendar-grid > .day-cell:hover {
     -fx-background-color: #F3F4F6;
     -fx-text-fill: #111827;
     -fx-cursor: hand;
 }
 
-/* Η ΕΠΙΛΕΓΜΕΝΗ ημέρα (Διατηρεί το Μοντέρνο Μπλε) */
 .date-picker-popup > .calendar-grid > .selected {
     -fx-background-color: #3B82F6;
     -fx-text-fill: #FFFFFF;
     -fx-font-weight: bold;
 }
 
-/* Η "Σημερινή" ημέρα */
 .date-picker-popup > .calendar-grid > .today {
     -fx-background-color: #EFF6FF;
     -fx-text-fill: #3B82F6;
@@ -497,12 +497,12 @@
     -fx-border-radius: 6;
 }
 
-/* Αχνά γράμματα επόμενου μήνα */
 .date-picker-popup > .calendar-grid > .secondary-day-cell {
     -fx-text-fill: #D1D5DB;
 }
+
 /* ============================================================
-   GLOBAL MODERN SCROLLBARS (Applied to everything)
+   GLOBAL MODERN SCROLLBARS
    ============================================================ */
 
 .viewport {
@@ -525,7 +525,6 @@
     -fx-background-insets: 2;
 }
 
-
 .scroll-bar .thumb:hover {
     -fx-background-color: #6B7280;
 }
@@ -534,12 +533,10 @@
     -fx-background-color: #4B5563;
 }
 
-
 .scroll-bar .track {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
 }
-
 
 .scroll-bar .increment-button,
 .scroll-bar .decrement-button {
@@ -552,4 +549,58 @@
 
 .scroll-pane .corner {
     -fx-background-color: transparent;
+}
+
+/* ============================================================
+   SCHEDULE STYLING
+   ============================================================ */
+
+.day-cell {
+    -fx-background-color: white;
+    -fx-border-color: #bdbdbd;
+    -fx-border-width: 1;
+    -fx-padding: 8;
+}
+
+.day-cell:hover {
+    -fx-background-color: #F3F4F6;
+}
+
+.day-cell:selected {
+    -fx-background-color: #EFF6FF;
+    -fx-text-fill: #2563EB;
+    -fx-border-color: #2563EB;
+}
+
+.day-number {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2b2b2b;
+}
+
+.employee-chip {
+    -fx-background-color: #e9eef5;
+    -fx-background-radius: 6;
+    -fx-padding: 2 6 2 6;
+    -fx-font-size: 11px;
+    -fx-text-fill: #1f2d3d;
+}
+
+/* Μέρες επόμενου / προηγούμενου μήνα */
+.out-month {
+    -fx-background-color: #ededed;
+    -fx-border-color: #cfcfcf;
+}
+
+.out-month .day-number {
+    -fx-text-fill: #7a7a7a;
+}
+
+.out-month .employee-chip {
+    -fx-background-color: #dcdcdc;
+    -fx-text-fill: #555;
+}
+
+.out-month:hover {
+    -fx-background-color: #ededed;
 }

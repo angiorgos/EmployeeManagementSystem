@@ -24,8 +24,7 @@ public class LeaveRequest {
     @JoinColumn(name = "leave_type_id", nullable = false)
     private LeaveType leaveType;
 
-    @ManyToOne
-    @JoinColumn(name = "status_id", nullable = false)
+    @Enumerated(EnumType.STRING) // Αποθηκεύει "APPROVED", "PENDING" κτλ στη βάση
     private LeaveStatus status;
 
     @ManyToOne
