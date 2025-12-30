@@ -23,21 +23,23 @@
    <center>
       <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0" BorderPane.alignment="CENTER">
          <children>
-            <VBox prefHeight="687.0" prefWidth="329.0" spacing="10.0" styleClass="card">
+            <!-- Holiday Table VBox - resizable -->
+            <VBox prefHeight="687.0" prefWidth="329.0" spacing="10.0" styleClass="card" HBox.hgrow="ALWAYS">
                <children>
                   <Label styleClass="card-title" text="Holiday Table" />
-                  <TableView prefHeight="650.0" prefWidth="289.0">
-                    <columns>
-                      <TableColumn prefWidth="75.0" text="ID" />
-                      <TableColumn prefWidth="75.0" text="Name" />
+                  <TableView prefHeight="650.0" prefWidth="289.0" VBox.vgrow="ALWAYS">
+                     <columns>
+                        <TableColumn prefWidth="75.0" text="ID" />
+                        <TableColumn prefWidth="75.0" text="Name" />
                         <TableColumn prefWidth="75.0" text="Date" />
-                    </columns>
+                     </columns>
                   </TableView>
                </children>
             </VBox>
+
+            <!-- Holiday Scheduling VBox - fixed -->
             <VBox prefHeight="687.0" prefWidth="279.0">
                <children>
-                  <HBox prefHeight="169.0" prefWidth="110.0" />
                   <VBox prefHeight="206.0" prefWidth="279.0" spacing="15.0" styleClass="card">
                      <children>
                         <Label styleClass="card-title" text="Holiday Scheduling" />
@@ -77,4 +79,5 @@
          </BorderPane.margin>
       </HBox>
    </center>
+
 </BorderPane>

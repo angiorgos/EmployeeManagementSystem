@@ -22,21 +22,23 @@
     <center>
         <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0" BorderPane.alignment="CENTER">
             <children>
-                <VBox prefHeight="627.0" prefWidth="398.0" spacing="10.0" styleClass="card">
+                <!-- Table VBox - resizable -->
+                <VBox prefHeight="627.0" prefWidth="740.0" spacing="10.0" styleClass="card" HBox.hgrow="ALWAYS">
                     <children>
                         <Label styleClass="card-title" text="Leave Types" />
-                        <TableView fx:id="leaveTypesTable" prefHeight="558.0" prefWidth="273.0">
+                        <TableView fx:id="leaveTypesTable" prefHeight="558.0" prefWidth="663.0" VBox.vgrow="ALWAYS">
                             <columns>
                                 <TableColumn fx:id="leaveIDColumn" prefWidth="75.0" text="ID" />
-                                <TableColumn fx:id="leaveNameColumn" prefWidth="154.0" text="Leave Name" />
-                                <TableColumn fx:id="leaveMaxDaysColumn" prefWidth="77.0" text="Max Days" />
+                                <TableColumn fx:id="leaveNameColumn" prefWidth="251.0" text="Leave Name" />
+                                <TableColumn fx:id="leaveMaxDaysColumn" minWidth="7.0" prefWidth="109.0" text="Max Days" />
                             </columns>
                         </TableView>
                     </children>
                 </VBox>
+
+                <!-- Leaves Editor VBox - fixed size -->
                 <VBox prefHeight="687.0" prefWidth="279.0">
                     <children>
-                        <HBox prefHeight="169.0" prefWidth="110.0" />
                         <VBox prefHeight="206.0" prefWidth="279.0" spacing="15.0" styleClass="card">
                             <children>
                                 <Label styleClass="card-title" text="Leaves Editor" />
@@ -59,11 +61,11 @@
                                         </VBox>
                                     </children>
                                 </HBox>
-                        <TextField fx:id="leaveMaxDaysField" promptText="Enter Max Days Owed..." />
+                                <TextField fx:id="leaveMaxDaysField" promptText="Enter Max Days Owed..." />
                                 <HBox alignment="CENTER_RIGHT" spacing="10.0">
                                     <children>
-                                        <Button fx:id="leaveRemoveBtn" styleClass="btn-danger" text="Remove" />
-                                        <Button fx:id="leaveSaveBtn" styleClass="btn-primary" text="Save Changes" />
+                                        <Button fx:id="leaveTypeRemoveBtn" styleClass="btn-danger" text="Remove">
+                                        <Button fx:id="leaveTypeSaveBtn" styleClass="btn-primary" text="Save Changes" />
                                     </children>
                                 </HBox>
                             </children>
@@ -76,4 +78,5 @@
             </BorderPane.margin>
         </HBox>
     </center>
+
 </BorderPane>

@@ -30,10 +30,10 @@ public class LeaveTypesController implements Initializable {
     private TextField leaveMaxDaysField;
 
     @FXML
-    private Button leaveRemoveBtn;
+    private Button leaveTypeRemoveBtn;
 
     @FXML
-    private Button leaveSaveBtn;
+    private Button leaveTypeSaveBtn;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
