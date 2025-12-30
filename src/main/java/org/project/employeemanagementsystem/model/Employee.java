@@ -25,6 +25,9 @@ public class Employee {
     @Column(unique = true, nullable = false)
     private String email;
 
+    @Column(name = "address")
+    private String address;
+
     @Column(unique = true, nullable = false)
     private String phone;
 

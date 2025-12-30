@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.image.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
+<?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="768.0" prefWidth="1366.0" stylesheets="@../theme.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.project.employeemanagementsystem.controller.DashboardController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="768.0" prefWidth="1366.0" stylesheets="@../theme.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.project.employeemanagementsystem.controller.DashboardController">
 
     <top>
         <fx:include source="topbar.fxml" />
@@ -12,11 +15,54 @@
     <left>
         <fx:include source="sidebar.fxml" />
     </left>
-   <center>
-      <ImageView fitHeight="200.0" fitWidth="158.0" BorderPane.alignment="CENTER">
-         <image>
-            <Image url="@../a.png" />
-         </image>
-      </ImageView>
-   </center>
+
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+            <VBox spacing="20.0" style="-fx-padding: 20; -fx-background-color: #F3F4F6;">
+
+                <Label text="Dashboard Overview" textFill="#111827">
+                    <font><Font name="System Bold" size="24.0" /></font>
+                </Label>
+
+                <HBox spacing="20.0" alignment="CENTER">
+                    <VBox styleClass="kpi-card" style="-fx-background-color: #3B82F6;" HBox.hgrow="ALWAYS">
+                        <Label styleClass="kpi-title" text="Total Employees" textFill="WHITE"/>
+                        <Label fx:id="totalEmployeesLabel" styleClass="kpi-value" text="0" textFill="WHITE"/>
+                    </VBox>
+                    <VBox styleClass="kpi-card" style="-fx-background-color: #10B981;" HBox.hgrow="ALWAYS">
+                        <Label styleClass="kpi-title" text="Working Today" textFill="WHITE"/>
+                        <Label fx:id="workingTodayLabel" styleClass="kpi-value" text="0" textFill="WHITE"/>
+                    </VBox>
+                    <VBox styleClass="kpi-card" style="-fx-background-color: #F59E0B;" HBox.hgrow="ALWAYS">
+                        <Label styleClass="kpi-title" text="On Leave Today" textFill="WHITE"/>
+                        <Label fx:id="onLeaveLabel" styleClass="kpi-value" text="0" textFill="WHITE"/>
+                    </VBox>
+                </HBox>
+
+                <FlowPane hgap="20.0" vgap="20.0" alignment="TOP_CENTER">
+
+                    <VBox prefHeight="350.0" prefWidth="550.0" styleClass="card">
+                        <Label styleClass="card-title" text="Hires Overview (Monthly)" />
+                        <WebView fx:id="hiresWebView" VBox.vgrow="ALWAYS" />
+                    </VBox>
+
+                    <VBox prefHeight="350.0" prefWidth="550.0" styleClass="card">
+                        <Label styleClass="card-title" text="Employees per Department" />
+                        <WebView fx:id="deptWebView" VBox.vgrow="ALWAYS" />
+                    </VBox>
+
+                    <VBox prefHeight="350.0" prefWidth="550.0" styleClass="card">
+                        <Label styleClass="card-title" text="Attendance (Hours/Week)" />
+                        <WebView fx:id="attendanceWebView" VBox.vgrow="ALWAYS" />
+                    </VBox>
+
+                    <VBox prefHeight="350.0" prefWidth="550.0" styleClass="card">
+                        <Label styleClass="card-title" text="Leave Statistics" />
+                        <WebView fx:id="leavesWebView" VBox.vgrow="ALWAYS" />
+                    </VBox>
+
+                </FlowPane>
+            </VBox>
+        </ScrollPane>
+    </center>
 </BorderPane>
