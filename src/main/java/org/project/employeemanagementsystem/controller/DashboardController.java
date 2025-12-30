@@ -1,6 +1,7 @@
 package org.project.employeemanagementsystem.controller;
 
 import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -29,7 +30,9 @@ import java.util.stream.Collectors;
 import javafx.animation.FadeTransition;
 import javafx.scene.layout.StackPane;
 import javafx.scene.control.ProgressIndicator;
-
+import javafx.animation.ScaleTransition;
+import javafx.animation.Animation;
+import org.kordamp.ikonli.javafx.FontIcon;
 @Controller
 public class DashboardController extends BaseController implements Initializable {
 
@@ -39,7 +42,8 @@ public class DashboardController extends BaseController implements Initializable
     @Autowired private AttendanceService attendanceService;
 
 
-    @FXML private VBox loadingOverlay;
+    @FXML private FontIcon loadingIcon;
+    private ScaleTransition pulseAnimation;
 
     @FXML private Label totalEmployeesLabel;
     @FXML private Label workingTodayLabel;
@@ -50,103 +54,96 @@ public class DashboardController extends BaseController implements Initializable
     @FXML private WebView deptWebView;
     @FXML private WebView attendanceWebView;
     @FXML private WebView leavesWebView;
-
+    @FXML private VBox loadingOverlay;
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         Platform.runLater(this::loadDashboardData);
     }
 
     private void loadDashboardData() {
-        // 1. Φέρνουμε δεδομένα
-        List<Employee> allEmployees = employeeService.getAllEmployees();
-        List<LeaveRequest> allLeaves = leaveRequestService.getAllRequests();
-        List<Attendance> allAttendance = attendanceService.getAllAttendanceRecords();
+        Task<DashboardData> task = new Task<>() {
+            @Override
+            protected DashboardData call() throws Exception {
+                // ΕΔΩ ΤΡΕΧΟΥΝ ΤΑ ΒΑΡΙΑ SQL Queries (Δεν παγώνει το UI)
+                List<Employee> employees = employeeService.getAllEmployees();
+                List<LeaveRequest> leaves = leaveRequestService.getAllRequests();
+                List<Attendance> attendance = attendanceService.getAllAttendanceRecords();
 
-        // --- KPI CARDS ---
-        totalEmployeesLabel.setText(String.valueOf(allEmployees.size()));
+                return new DashboardData(employees, leaves, attendance);
+            }
+        };
 
-        long workingToday = allAttendance.stream()
-                .filter(a -> a.getDate().equals(LocalDate.now()))
-                .count();
-        workingTodayLabel.setText(String.valueOf(workingToday));
+        task.setOnSucceeded(event -> {
+            DashboardData data = task.getValue();
 
-        LocalDate today = LocalDate.now();
-        long onLeave = allLeaves.stream()
-                .filter(l -> l.getStatus() == LeaveStatus.APPROVED) // Enum check
-                .filter(l -> !today.isBefore(l.getStartDate()) && !today.isAfter(l.getEndDate()))
-                .count();
-        onLeaveLabel.setText(String.valueOf(onLeave));
+            // --- ΕΝΗΜΕΡΩΣΗ KPI LABELS ---
+            totalEmployeesLabel.setText(String.valueOf(data.employees.size()));
 
-        long pending = allLeaves.stream()
-                .filter(l -> l.getStatus() == LeaveStatus.PENDING)
-                .count();
-        pendingRequestsLabel.setText(String.valueOf(pending));
+            long workingToday = data.attendance.stream()
+                    .filter(a -> a.getDate().equals(LocalDate.now()))
+                    .count();
+            workingTodayLabel.setText(String.valueOf(workingToday));
 
+            LocalDate today = LocalDate.now();
+            long onLeave = data.leaves.stream()
+                    .filter(l -> l.getStatus() == LeaveStatus.APPROVED)
+                    .filter(l -> !today.isBefore(l.getStartDate()) && !today.isAfter(l.getEndDate()))
+                    .count();
+            onLeaveLabel.setText(String.valueOf(onLeave));
 
-        // --- CHARTS ---
+            long pending = data.leaves.stream()
+                    .filter(l -> l.getStatus() == LeaveStatus.PENDING)
+                    .count();
+            pendingRequestsLabel.setText(String.valueOf(pending));
 
-        // 1. Departments (Pie)
-        Map<String, Long> deptCounts = allEmployees.stream()
-                .collect(Collectors.groupingBy(
-                        e -> (e.getDepartment() != null) ? e.getDepartment().getName() : "Unknown",
-                        Collectors.counting()
-                ));
-        initChart(deptWebView, "chart_departments.html", mapToLabels(deptCounts), mapToData(deptCounts));
+            //Departments
+            Map<String, Long> deptCounts = data.employees.stream()
+                    .collect(Collectors.groupingBy(
+                            e -> (e.getDepartment() != null) ? e.getDepartment().getName() : "Unknown",
+                            Collectors.counting()
+                    ));
+            initChart(deptWebView, "chart_departments.html", mapToLabels(deptCounts), mapToData(deptCounts));
 
+            //Hires
+            Map<Month, Long> hiresPerMonth = data.employees.stream()
+                    .filter(e -> e.getHireDate() != null && e.getHireDate().getYear() == LocalDate.now().getYear())
+                    .collect(Collectors.groupingBy(e -> e.getHireDate().getMonth(), Collectors.counting()));
 
-        // 2. Hires (Line Chart - Monthly)
-        Map<Month, Long> hiresPerMonth = allEmployees.stream()
-                .filter(e -> e.getHireDate() != null && e.getHireDate().getYear() == LocalDate.now().getYear())
-                .collect(Collectors.groupingBy(
-                        e -> e.getHireDate().getMonth(),
-                        Collectors.counting()
-                ));
+            String monthsLabels = "['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']";
+            initChart(hiresWebView, "chart_hires.html", monthsLabels, getMonthlyDataString(hiresPerMonth));
 
-        // Helper για σωστή σειρά μηνών
-        String monthsLabels = "['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']";
-        String hiresData = getMonthlyDataString(hiresPerMonth);
+            //Leaves
+            Map<Month, Long> leavesPerMonth = data.leaves.stream()
+                    .filter(l -> l.getStartDate().getYear() == LocalDate.now().getYear())
+                    .collect(Collectors.groupingBy(l -> l.getStartDate().getMonth(), Collectors.counting()));
+            initChart(leavesWebView, "chart_leaves.html", monthsLabels, getMonthlyDataString(leavesPerMonth));
 
-        initChart(hiresWebView, "chart_hires.html", monthsLabels, hiresData);
+            //Attendance
+            Map<String, Long> attendanceLastDays = data.attendance.stream()
+                    .filter(a -> a.getDate().isAfter(LocalDate.now().minusDays(6)))
+                    .collect(Collectors.groupingBy(a -> a.getDate().toString(), Collectors.counting()));
+            initChart(attendanceWebView, "chart_attendance.html", mapToLabels(attendanceLastDays), mapToData(attendanceLastDays));
 
-
-        // 3. Leaves (Line Chart - Monthly) -> ΔΙΟΡΘΩΣΗ ΕΔΩ!
-        // Υπολογίζουμε άδειες ανά μήνα έναρξης για να έχει νόημα η γραμμή
-        Map<Month, Long> leavesPerMonth = allLeaves.stream()
-                .filter(l -> l.getStartDate().getYear() == LocalDate.now().getYear())
-                .collect(Collectors.groupingBy(
-                        l -> l.getStartDate().getMonth(),
-                        Collectors.counting()
-                ));
-
-        String leavesData = getMonthlyDataString(leavesPerMonth);
-        // Χρησιμοποιούμε τα ίδια labels (μήνες)
-        initChart(leavesWebView, "chart_leaves.html", monthsLabels, leavesData);
-
-
-        // 4. Attendance (Bar Chart - Last 5 Days)
-        Map<String, Long> attendanceLastDays = allAttendance.stream()
-                .filter(a -> a.getDate().isAfter(LocalDate.now().minusDays(6)))
-                .collect(Collectors.groupingBy(
-                        a -> a.getDate().toString(),
-                        Collectors.counting()
-                ));
-        initChart(attendanceWebView, "chart_attendance.html", mapToLabels(attendanceLastDays), mapToData(attendanceLastDays));
-
-        PauseTransition delay = new PauseTransition(Duration.seconds(1.2));
-        delay.setOnFinished(event -> {
-            // Fade Out Animation
-            FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), loadingOverlay);
-            fadeOut.setFromValue(1.0); // Από πλήρως ορατό
-            fadeOut.setToValue(0.0);   // Σε αόρατο
-            fadeOut.setOnFinished(e -> {
-                loadingOverlay.setVisible(false); // Το απενεργοποιούμε τελείως για να μην εμποδίζει τα κλικ
+            //ΑΦΑΙΡΕΣΗ LOADING SCREEN
+            PauseTransition delay = new PauseTransition(Duration.seconds(0.5));
+            delay.setOnFinished(e -> {
+                FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), loadingOverlay);
+                fadeOut.setFromValue(1.0);
+                fadeOut.setToValue(0.0);
+                fadeOut.setOnFinished(evt -> loadingOverlay.setVisible(false));
+                fadeOut.play();
             });
-            fadeOut.play();
+            delay.play();
         });
-        delay.play();
+
+        task.setOnFailed(event -> {
+            task.getException().printStackTrace();
+            loadingOverlay.setVisible(false);
+        });
+
+        new Thread(task).start();
     }
 
-    // Βοηθητική μέθοδος για να φτιάχνουμε το string δεδομένων [0, 2, 5...] για τους 12 μήνες
     private String getMonthlyDataString(Map<Month, Long> dataMap) {
         StringBuilder sb = new StringBuilder("[");
         for (Month m : Month.values()) {
@@ -201,4 +198,17 @@ public class DashboardController extends BaseController implements Initializable
                 .map(String::valueOf)
                 .collect(Collectors.joining(",", "[", "]"));
     }
+
+    private static class DashboardData {
+        List<Employee> employees;
+        List<LeaveRequest> leaves;
+        List<Attendance> attendance;
+
+        public DashboardData(List<Employee> employees, List<LeaveRequest> leaves, List<Attendance> attendance) {
+            this.employees = employees;
+            this.leaves = leaves;
+            this.attendance = attendance;
+        }
+    }
 }
+

@@ -624,9 +624,13 @@
 }
 
 /* ================= LOADING SPINNER ================= */
-.loading-spinner .progress {
-    -fx-background-color: #3B82F6; /* Το μπλε του θέματός μας */
+.loading-spinner {
+    -fx-accent: #3B82F6; /* Αυτό αλλάζει το χρώμα του κύκλου σε Μπλε */
+    -fx-progress-color: #3B82F6;
 }
+
+/* Αν θέλεις να κρύψεις τυχόν ποσοστό που εμφανίζεται */
 .loading-spinner .percentage {
-    -fx-fill: transparent; /* Κρύβουμε το ποσοστό % αν φαίνεται */
+    -fx-font-size: 0;
+    -fx-text-fill: transparent;
 }
