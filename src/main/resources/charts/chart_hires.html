@@ -2,24 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Hires Chart</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js" onload="window.chartLibReady=true"></script>
-  <style>
-    body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: white; }
-    #container { width: 98%; height: 98%; margin: auto; position: relative; }
-  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+  <style> body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: white; } #container { width: 99%; height: 99%; margin: auto; position: relative; } </style>
 </head>
 <body>
 <div id="container"><canvas id="chart"></canvas></div>
 <script>
   let chartInstance = null;
   window.updateChart = function(labels, data) {
-    // ΕΛΕΓΧΟΣ: Αν δεν κατέβηκε ακόμα το Chart.js, περίμενε 100ms και ξαναπροσπάθησε
-    if (!window.chartLibReady || typeof Chart === 'undefined') {
-      setTimeout(function() { window.updateChart(labels, data); }, 100);
-      return;
-    }
-
     const ctx = document.getElementById('chart').getContext('2d');
     if (chartInstance) chartInstance.destroy();
 
@@ -28,17 +18,25 @@
       data: {
         labels: labels,
         datasets: [{
-          label: 'New Hires',
+          label: 'Count',
           data: data,
+          // Minimal Blue
           borderColor: '#3B82F6',
-          backgroundColor: 'rgba(59, 130, 246, 0.1)',
-          borderWidth: 3, tension: 0.4, fill: true
+          backgroundColor: 'rgba(59, 130, 246, 0.05)', // Πολύ αχνό γέμισμα
+          borderWidth: 2,
+          pointRadius: 3,
+          pointBackgroundColor: '#3B82F6',
+          pointBorderColor: '#fff',
+          fill: true
         }]
       },
       options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        responsive: true, maintainAspectRatio: false, legend: { display: false },
+        scales: {
+          yAxes: [{ ticks: { beginAtZero: true, precision: 0 }, gridLines: { color: '#F3F4F6' } }],
+          xAxes: [{ gridLines: { display: false } }]
+        },
+        elements: { line: { tension: 0.3 } } // Smooth curves
       }
     });
   };
