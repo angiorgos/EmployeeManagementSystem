@@ -50,6 +50,7 @@ public class SidebarController implements Initializable { // Πρόσεξε το
             case Navigator.ATTENDANCE_VIEW:  attendanceBtn.setSelected(true); break;
             case Navigator.LEAVES_VIEW:      leavesBtn.setSelected(true); break;
             case Navigator.HOLIDAYS_VIEW:    holidaysBtn.setSelected(true); break;
+            case Navigator.LEAVESTYPES_VIEW:  leavesBtn.setSelected(true); break;
 
             case Navigator.PAYROLL_VIEW:     payrollBtn.setSelected(true); break;
 

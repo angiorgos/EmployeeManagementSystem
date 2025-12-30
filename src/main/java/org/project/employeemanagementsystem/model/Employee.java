@@ -31,6 +31,9 @@ public class Employee {
     @Column(unique = true, nullable = false)
     private String phone;
 
+    @Column(unique = true)
+    private String ssn;
+
     @Column
     private Double salary;
 

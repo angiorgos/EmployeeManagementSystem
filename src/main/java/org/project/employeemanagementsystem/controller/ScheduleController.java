@@ -1,14 +1,12 @@
 package org.project.employeemanagementsystem.controller;
 
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import org.project.employeemanagementsystem.model.Employee;
-import org.project.employeemanagementsystem.model.Schedule;
+
 import org.project.employeemanagementsystem.service.EmployeeService;
 import org.project.employeemanagementsystem.service.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,43 +35,11 @@ public class ScheduleController implements Initializable {
     private YearMonth currentMonth = YearMonth.now();
     private LocalDate selectedDate = LocalDate.now();
 
-    // ====== New Schedule Tab ======
-    @FXML private TableView<Schedule> scheduleTable;
-    @FXML private ComboBox<Employee> employeeComboBox;
+    @FXML private ToggleButton todayBtn;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-
-        // 1) Calendar init (αν υπάρχουν τα fx:id στο FXML)
-        if (monthView != null && monthLabel != null) {
-            renderMonth(currentMonth);
-            updateRightPanel(selectedDate);
-        }
-
-        // 2) New Schedule tab init (αν υπάρχουν τα fx:id στο FXML)
-        if (scheduleTable != null) {
-            scheduleTable.setItems(FXCollections.observableArrayList(scheduleService.getAllSchedules()));
-        }
-
-        if (employeeComboBox != null) {
-            employeeComboBox.getItems().setAll(employeeService.getActiveEmployees());
-
-            // πολύ χρήσιμο: πώς θα εμφανίζεται ο Employee στο dropdown
-            employeeComboBox.setCellFactory(lv -> new ListCell<>() {
-                @Override
-                protected void updateItem(Employee item, boolean empty) {
-                    super.updateItem(item, empty);
-                    setText(empty || item == null ? "" : item.getFirstName() + " " + item.getLastName());
-                }
-            });
-            employeeComboBox.setButtonCell(new ListCell<>() {
-                @Override
-                protected void updateItem(Employee item, boolean empty) {
-                    super.updateItem(item, empty);
-                    setText(empty || item == null ? "" : item.getFirstName() + " " + item.getLastName());
-                }
-            });
-        }
+    private void syncTodayToggle() {
+        if (todayBtn == null) return;
+        todayBtn.setSelected(selectedDate.equals(LocalDate.now()));
     }
 
     // ===== Buttons =====
@@ -95,6 +61,7 @@ public class ScheduleController implements Initializable {
         selectedDate = LocalDate.now();
         renderMonth(currentMonth);
         updateRightPanel(selectedDate);
+        syncTodayToggle();
     }
 
     // ===== Calendar render (Monday-first) =====
@@ -160,6 +127,7 @@ public class ScheduleController implements Initializable {
             selectedDate = date;
             updateRightPanel(date);
             renderMonth(currentMonth);
+            syncTodayToggle();
         });
 
         return root;
@@ -190,5 +158,17 @@ public class ScheduleController implements Initializable {
     private String capitalize(String s) {
         s = s.toLowerCase();
         return Character.toUpperCase(s.charAt(0)) + s.substring(1);
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+
+        // Calendar init (αν υπάρχουν τα fx:id στο FXML)
+        if (monthView != null && monthLabel != null) {
+            renderMonth(currentMonth);
+            updateRightPanel(selectedDate);
+            syncTodayToggle();
+        }
+
     }
 }
