@@ -2,28 +2,29 @@ package org.project.employeemanagementsystem.service;
 
 import org.project.employeemanagementsystem.model.User;
 import org.project.employeemanagementsystem.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired; // Χρησιμοποίησε Autowired για συνέπεια
 import org.springframework.stereotype.Service;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class UserService {
 
-    private final UserRepository userRepository;
-
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    @Autowired
+    private UserRepository userRepository;
 
     public User saveUser(User user) {
-        if(Objects.equals(user.getUsername(), user.getUsername())) {
+        if (user.getId() == null && userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new IllegalArgumentException("Username already exists!");
         }
         return userRepository.save(user);
     }
 
-
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 }
