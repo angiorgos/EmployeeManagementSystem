@@ -27,49 +27,68 @@ public class PaymentService {
     public void calculateAndSavePayroll(Employee emp, double hoursWorked, double otHours, double sundayHours,
                                         double otRate, double sundayRate, double insuranceRate) {
 
-        // 1. Βασικοί Υπολογισμοί
-        double standardHours = 176.0; // Τυπικές ώρες μήνα
-        double hourlyPay = emp.getSalary() / standardHours; // Ωρομίσθιο
+        double standardHours = 176.0;
+        double hourlyPay = emp.getSalary() / standardHours;
+        double otPay = hourlyPay * otRate * otHours;
+        double sunPay = hourlyPay * sundayRate * sundayHours;
+        double penalty = (hoursWorked < standardHours) ? (standardHours - hoursWorked) * hourlyPay : 0;
 
-        // 2. Υπολογισμός Προσαυξήσεων
-        double otPay = hourlyPay * otRate * otHours;           // Πληρωμή υπερωριών
-        double sunPay = hourlyPay * sundayRate * sundayHours;  // Πληρωμή Κυριακών
+        double bonus = 0.0;
 
-        // 3. Πέναλτι (αν δούλεψε λιγότερο από το κανονικό)
-        double penalty = 0.0;
-        if (hoursWorked < standardHours) {
-            penalty = (standardHours - hoursWorked) * hourlyPay;
-        }
+        // Υπολογισμός Μικτών
+        double gross = emp.getSalary() - penalty + otPay + sunPay + bonus;
 
-        // 4. Μικτά (Gross)
-        double gross = emp.getSalary() - penalty + otPay + sunPay;
-
-        // 5. Κρατήσεις (Insurance)
-        // Υποθέτουμε ότι το insuranceRate (π.χ. 0.30) είναι το συνολικό κόστος
-        // και ο εργαζόμενος πληρώνει το μισό (ή όσο ορίσεις εσύ).
-        double employeeShare = 0.5;
-        double deductions = gross * insuranceRate * employeeShare;
-
-        // 6. Καθαρά (Net Pay)
+        // Υπολογισμός Κρατήσεων & Καθαρών
+        double deductions = gross * insuranceRate * 0.5;
         double netAmount = gross - deductions;
 
-        // --- ΔΗΜΙΟΥΡΓΙΑ ΚΑΙ ΑΠΟΘΗΚΕΥΣΗ TOY ENTITY ---
+        // ΔΗΜΙΟΥΡΓΙΑ ANTIKEIMENOY
         Payment payment = new Payment();
 
+
         payment.setEmployee(emp);
+
         payment.setPaymentDate(LocalDate.now());
         payment.setMonthYear(LocalDate.now().format(DateTimeFormatter.ofPattern("MM/yyyy")));
 
-        // Αποθήκευση Αναλυτικών Στοιχείων (New Fields)
         payment.setBaseSalary(emp.getSalary());
         payment.setHoursWorked(hoursWorked);
         payment.setOvertimeHours(otHours);
         payment.setSundayHours(sundayHours);
+
+        payment.setBonus(bonus);
         payment.setGrossPay(round(gross));
         payment.setDeductions(round(deductions));
-        payment.setAmount(round(netAmount)); // Το τελικό ποσό
+        payment.setAmount(round(netAmount));
 
         payment.setStatus("PENDING");
+
+        paymentRepository.save(payment);
+    }
+
+    @Transactional
+    public void updateBonus(Payment payment, double newBonus, double insuranceRate) {
+        // Κρατάμε τα παλιά στοιχεία που δεν αλλάζουν (μισθός, ώρες)
+        // και ξανακάνουμε τα μαθηματικά ΜΟΝΟ για τα λεφτά.
+
+        // Ανάκτηση των ήδη υπολογισμένων ποσών από υπερωρίες (για να μην τα ξαναψάχνουμε)
+        // Προσοχή: Εδώ κάνουμε reverse engineering ή τα ξαναυπολογίζουμε.
+        // Για απλότητα: Gross = Net + Deductions.
+        // Αλλά το σωστό είναι: Gross = Base + OT + Bonus.
+
+        // Αφαιρούμε το παλιό bonus από τα μικτά και προσθέτουμε το καινούργιο
+        double oldBonus = (payment.getBonus() != null) ? payment.getBonus() : 0.0;
+        double currentGrossNoBonus = payment.getGrossPay() - oldBonus;
+
+        double newGross = currentGrossNoBonus + newBonus;
+        double newDeductions = newGross * insuranceRate * 0.5; // Ξαναβγάζουμε κρατήσεις
+        double newNet = newGross - newDeductions;
+
+        // Ενημέρωση Entity
+        payment.setBonus(newBonus);
+        payment.setGrossPay(round(newGross));
+        payment.setDeductions(round(newDeductions));
+        payment.setAmount(round(newNet));
 
         paymentRepository.save(payment);
     }
