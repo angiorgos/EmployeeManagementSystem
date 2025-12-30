@@ -38,7 +38,8 @@ public class Payment {
     private Double grossPay;       // Μικτά (Πριν τις κρατήσεις)
     private Double deductions;     // Κρατήσεις (Ασφάλεια/Φόροι)
 
-    private Double amount;         // Το ΤΕΛΙΚΟ ΠΟΣΟ (Καθαρά - Net Pay)
+    private Double amount;// Το ΤΕΛΙΚΟ ΠΟΣΟ (Καθαρά - Net Pay)
+    private Double bonus; // Έκτακτο ποσό για αυτόν τον μήνα
 
     // Κατάσταση
     private String status;         // "PENDING", "PAID", "CANCELLED"
