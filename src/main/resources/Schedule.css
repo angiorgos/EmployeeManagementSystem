@@ -1,6 +1,11 @@
 /* ============================================================
    SCHEDULE STYLING
    ============================================================ */
+.button, .toggle-button {
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}
+
 .calendar-grid {
     -fx-background-color: transparent;
     -fx-padding: 0;
@@ -20,6 +25,12 @@
     -fx-border-color: #2563EB;
 }
 
+.day-number {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2b2b2b;
+}
+
 .selected-day {
     -fx-background-color: #EFF6FF;
     -fx-border-color: #2563EB;
@@ -28,12 +39,6 @@
 
 .selected-day .day-number {
     -fx-text-fill: #2563EB;
-}
-
-.day-number {
-    -fx-font-size: 12px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #2b2b2b;
 }
 
 .employee-chip {
@@ -63,10 +68,6 @@
 .out-month:hover {
     -fx-background-color: #ededed;
     -fx-border-color: #cfcfcf;
-}
-
-.out-month:hover .day-number {
-    -fx-text-fill: #7a7a7a;
 }
 
 /* ===== Right ListView as Card ===== */
@@ -105,27 +106,25 @@
 }
 
 /* ===== Calendar buttons ===== */
-.cal-btn {
-    -fx-background-color: transparent;
-    -fx-text-fill: #6B7280;
-    -fx-font-size: 13px;
-    -fx-font-weight: bold;
-    -fx-alignment: CENTER;
-    -fx-cursor: hand;
-
-    -fx-background-radius: 8;
-    -fx-border-radius: 8;
-    -fx-padding: 8 14;
-
-    -fx-border-color: #E5E7EB;
-    -fx-border-width: 1;
+.cal-today:selected {
+    -fx-background-color: #EFF6FF;
+    -fx-text-fill: #2563EB;
+    -fx-border-color: #2563EB;
 }
 
+.cal-btn {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 6;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-cursor: hand;
+}
 
-/* hover */
-.cal-btn:hover {
-    -fx-background-color: #F3F4F6;
-    -fx-text-fill: #111827;
+.cal-btn:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }
 
 /* Icon color (ikonli) */
@@ -138,6 +137,11 @@
     -fx-icon-color: #4B5563;
 }
 
+/* pressed */
+.cal-btn:pressed .ikonli-font-icon {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
 
 /* View mode buttons (Day/Week/Month) – σαν segmented */
 .view-btn {
