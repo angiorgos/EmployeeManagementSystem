@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="768.0" prefWidth="1366.0" stylesheets="@../theme.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.project.employeemanagementsystem.controller.ScheduleController">
+
+    <top>
+        <fx:include source="topbar.fxml" />
+    </top>
+
+    <left>
+        <fx:include source="sidebar.fxml" />
+    </left>
+    <center>
+        <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+            <tabs>
+                <Tab text="Overview">
+                    <content>
+                        <BorderPane prefHeight="200.0" prefWidth="200.0">
+                            <center>
+                                <VBox prefHeight="618.0" prefWidth="833.0" BorderPane.alignment="CENTER">
+                                    <children>
+                                        <VBox prefHeight="618.0" prefWidth="828.0" VBox.vgrow="ALWAYS">
+                                 <children>
+                                    <GridPane fx:id="monthView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="632.0" prefWidth="857.0" VBox.vgrow="ALWAYS">
+                                      <columnConstraints>
+                                          <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
+                                          <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
+                                          <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
+                                          <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
+                                          <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
+                                        <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
+                                        <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
+                                      </columnConstraints>
+                                      <rowConstraints>
+                                        <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="TOP" vgrow="ALWAYS" />
+                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                                      </rowConstraints>
+                                       <styleClass>
+                                          <String fx:value="out-month" />
+                                          <String fx:value="calendar-grid" />
+                                          <String fx:value="day-cell" />
+                                          <String fx:value="day-cell" />
+                                          <String fx:value="day-number" />
+                                          <String fx:value="employee-chip" />
+                                       </styleClass>
+                                    </GridPane>
+                                 </children></VBox>
+                                    </children>
+                                </VBox>
+                            </center>
+                            <top>
+                                <HBox prefHeight="35.0" prefWidth="1077.0" BorderPane.alignment="CENTER">
+                                    <children>
+                                        <HBox prefHeight="35.0" prefWidth="25.0" />
+                                        <Label fx:id="monthLabel" prefHeight="35.0" prefWidth="208.0" text="January 2026" HBox.hgrow="ALWAYS">
+                                            <font>
+                                                <Font size="24.0" />
+                                            </font>
+                                        </Label>
+                              <ToggleButton mnemonicParsing="false" onAction="#onPrevMonth" prefHeight="34.0" prefWidth="35.0">
+                                 <graphic>
+                                    <FontIcon iconLiteral="mdi2c-chevron-left" iconSize="25" wrappingWidth="25.0" />
+                                 </graphic>
+                              </ToggleButton>
+                              <HBox prefHeight="35.0" prefWidth="25.0" />
+                              <ToggleButton mnemonicParsing="false" onAction="#onNextMonth" prefHeight="35.0" prefWidth="22.0">
+                                 <graphic>
+                                    <FontIcon iconLiteral="mdi2c-chevron-right" iconSize="25" wrappingWidth="25.0" />
+                                 </graphic>
+                              </ToggleButton>
+                              <HBox prefHeight="35.0" prefWidth="25.0" />
+                              <Button mnemonicParsing="false" onAction="#onToday" prefHeight="40.0" prefWidth="87.0" text="Today" />
+                              <HBox prefHeight="35.0" prefWidth="353.0" HBox.hgrow="ALWAYS" />
+                              <Button mnemonicParsing="false" prefHeight="41.0" prefWidth="66.0" text="Day" HBox.hgrow="ALWAYS" />
+                              <Button mnemonicParsing="false" prefHeight="41.0" prefWidth="66.0" text="Week" />
+                              <Button mnemonicParsing="false" prefHeight="41.0" prefWidth="66.0" text="Month" />
+                              <HBox prefHeight="35.0" prefWidth="94.0" />
+                                        
+                                    </children>
+                                </HBox>
+                            </top>
+                     <right>
+                        <VBox maxWidth="-Infinity" prefHeight="618.0" prefWidth="293.0" styleClass="out-month" BorderPane.alignment="CENTER">
+                           <children>
+                              <HBox prefHeight="42.0" prefWidth="293.0">
+                                 <children>
+                                    <Label prefHeight="44.0" prefWidth="133.0" text=" Working Employees">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <HBox prefHeight="35.0" prefWidth="32.0" />
+                                    <Label fx:id="selectedDayLabel" prefHeight="42.0" prefWidth="127.0" text="             1/Jan/2026">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                              </HBox>
+                              <ListView fx:id="workingEmployeesList" prefHeight="200.0" prefWidth="200.0" />
+                           </children></VBox>
+                     </right>
+                        </BorderPane>
+                    </content>
+                </Tab>
+                <Tab text="New Schedule">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </center>
+</BorderPane>

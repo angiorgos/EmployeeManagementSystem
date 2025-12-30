@@ -37,11 +37,9 @@ public class Employee {
     @Column
     private LocalDate exitDate;
 
-
     @ManyToOne
     @JoinColumn(name = "department_id", nullable = false)
     private Department department;
-
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
