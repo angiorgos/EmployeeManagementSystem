@@ -555,6 +555,67 @@
     -fx-background-color: transparent;
 }
 
+
+/* ================= TAB PANE ================= */
+
+
+.tab-pane .tab-header-area {
+    -fx-padding: 5 0 0 5;
+}
+
+
+.tab-pane .tab-header-background {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #E5E7EB transparent;
+    -fx-border-width: 1;
+}
+
+.tab {
+    -fx-background-color: #F3F4F6;
+    -fx-background-radius: 6 6 0 0;
+    -fx-background-insets: 0;
+    -fx-border-color: #E5E7EB;
+    -fx-border-width: 1 1 0 1;
+    -fx-padding: 8 16;
+    -fx-cursor: hand;
+    -fx-margin: 0 4 0 0;
+}
+
+.tab .tab-label {
+    -fx-text-fill: #6B7280;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+
+.tab:hover {
+    -fx-background-color: #E5E7EB;
+}
+
+
+.tab:selected {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 6 6 0 0;
+    -fx-border-color: #3B82F6 #E5E7EB transparent #E5E7EB;
+    -fx-border-width: 2 1 0 1;
+    -fx-margin: -1 4 -1 0;
+}
+
+/* Κείμενο Ενεργού Tab */
+.tab:selected .tab-label {
+    -fx-text-fill: #3B82F6;
+}
+
+
+.tab-content-area {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E5E7EB;
+    -fx-border-width: 1;
+    -fx-background-radius: 0 6 6 6;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 5, 0, 0, 1);
+}
+
 /* ============================================================
    SCHEDULE STYLING
    ============================================================ */
