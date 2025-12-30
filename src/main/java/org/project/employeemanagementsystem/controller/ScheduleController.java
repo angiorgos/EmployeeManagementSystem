@@ -169,6 +169,5 @@ public class ScheduleController implements Initializable {
             updateRightPanel(selectedDate);
             syncTodayToggle();
         }
-
     }
 }
