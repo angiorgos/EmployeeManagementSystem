@@ -10,6 +10,7 @@ import javafx.scene.web.WebView;
 import org.project.employeemanagementsystem.model.Attendance;
 import org.project.employeemanagementsystem.model.Employee;
 import org.project.employeemanagementsystem.model.LeaveRequest;
+import org.project.employeemanagementsystem.model.LeaveStatus;
 import org.project.employeemanagementsystem.service.AttendanceService;
 import org.project.employeemanagementsystem.service.EmployeeService;
 import org.project.employeemanagementsystem.service.LeaveRequestService;
@@ -38,6 +39,7 @@ public class DashboardController extends BaseController implements Initializable
     @FXML private Label totalEmployeesLabel;
     @FXML private Label workingTodayLabel;
     @FXML private Label onLeaveLabel;
+    @FXML private Label pendingRequestsLabel;
 
     @FXML private WebView hiresWebView;
     @FXML private WebView deptWebView;
@@ -70,6 +72,10 @@ public class DashboardController extends BaseController implements Initializable
                 .count();
         onLeaveLabel.setText(String.valueOf(onLeave));
 
+        long pending = allLeaves.stream()
+                .filter(l -> l.getStatus() == LeaveStatus.PENDING)
+                .count();
+        pendingRequestsLabel.setText(String.valueOf(pending));
 
 
         Map<String, Long> deptCounts = allEmployees.stream()

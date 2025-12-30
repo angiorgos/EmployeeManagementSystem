@@ -17,51 +17,68 @@
     </left>
 
     <center>
-        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
-            <VBox spacing="20.0" style="-fx-padding: 20; -fx-background-color: #F3F4F6;">
+        <ScrollPane fitToWidth="true" style="-fx-background-color: #F3F4F6;">
+            <VBox spacing="15.0" style="-fx-padding: 15; -fx-background-color: #F3F4F6;">
 
                 <Label text="Dashboard Overview" textFill="#111827">
-                    <font><Font name="System Bold" size="24.0" /></font>
+                    <font><Font name="System Bold" size="20.0" /></font>
                 </Label>
 
                 <HBox spacing="20.0" alignment="CENTER">
-                    <VBox styleClass="kpi-card" style="-fx-background-color: #3B82F6;" HBox.hgrow="ALWAYS">
-                        <Label styleClass="kpi-title" text="Total Employees" textFill="WHITE"/>
-                        <Label fx:id="totalEmployeesLabel" styleClass="kpi-value" text="0" textFill="WHITE"/>
+
+                    <VBox styleClass="kpi-card, card-blue" HBox.hgrow="ALWAYS">
+                        <Label styleClass="kpi-title" text="Total Employees"/>
+                        <Label fx:id="totalEmployeesLabel" styleClass="kpi-value" text="0"/>
                     </VBox>
-                    <VBox styleClass="kpi-card" style="-fx-background-color: #10B981;" HBox.hgrow="ALWAYS">
-                        <Label styleClass="kpi-title" text="Working Today" textFill="WHITE"/>
-                        <Label fx:id="workingTodayLabel" styleClass="kpi-value" text="0" textFill="WHITE"/>
+
+                    <VBox styleClass="kpi-card, card-green" HBox.hgrow="ALWAYS">
+                        <Label styleClass="kpi-title" text="Working Today"/>
+                        <Label fx:id="workingTodayLabel" styleClass="kpi-value" text="0"/>
                     </VBox>
-                    <VBox styleClass="kpi-card" style="-fx-background-color: #F59E0B;" HBox.hgrow="ALWAYS">
-                        <Label styleClass="kpi-title" text="On Leave Today" textFill="WHITE"/>
-                        <Label fx:id="onLeaveLabel" styleClass="kpi-value" text="0" textFill="WHITE"/>
+
+                    <VBox styleClass="kpi-card, card-orange" HBox.hgrow="ALWAYS">
+                        <Label styleClass="kpi-title" text="On Leave Today"/>
+                        <Label fx:id="onLeaveLabel" styleClass="kpi-value" text="0"/>
                     </VBox>
+
+                    <VBox styleClass="kpi-card, card-red" HBox.hgrow="ALWAYS">
+                        <Label styleClass="kpi-title" text="Pending Requests"/>
+                        <Label fx:id="pendingRequestsLabel" styleClass="kpi-value" text="0"/>
+                    </VBox>
+
                 </HBox>
+                <GridPane hgap="15.0" vgap="15.0">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="280.0" prefHeight="280.0" vgrow="NEVER" /> <RowConstraints minHeight="280.0" prefHeight="280.0" vgrow="NEVER" />
+                    </rowConstraints>
 
-                <FlowPane hgap="20.0" vgap="20.0" alignment="TOP_CENTER">
+                    <children>
+                        <VBox styleClass="chart-card" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                            <Label styleClass="card-title" text="Hires Overview (Monthly)" />
+                            <WebView fx:id="hiresWebView" VBox.vgrow="ALWAYS" />
+                        </VBox>
 
-                    <VBox prefHeight="350.0" prefWidth="550.0" styleClass="card">
-                        <Label styleClass="card-title" text="Hires Overview (Monthly)" />
-                        <WebView fx:id="hiresWebView" VBox.vgrow="ALWAYS" />
-                    </VBox>
+                        <VBox styleClass="chart-card" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                            <Label styleClass="card-title" text="Employees per Department" />
+                            <WebView fx:id="deptWebView" VBox.vgrow="ALWAYS" />
+                        </VBox>
 
-                    <VBox prefHeight="350.0" prefWidth="550.0" styleClass="card">
-                        <Label styleClass="card-title" text="Employees per Department" />
-                        <WebView fx:id="deptWebView" VBox.vgrow="ALWAYS" />
-                    </VBox>
+                        <VBox styleClass="chart-card" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                            <Label styleClass="card-title" text="Attendance (Hours/Week)" />
+                            <WebView fx:id="attendanceWebView" VBox.vgrow="ALWAYS" />
+                        </VBox>
 
-                    <VBox prefHeight="350.0" prefWidth="550.0" styleClass="card">
-                        <Label styleClass="card-title" text="Attendance (Hours/Week)" />
-                        <WebView fx:id="attendanceWebView" VBox.vgrow="ALWAYS" />
-                    </VBox>
+                        <VBox styleClass="chart-card" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                            <Label styleClass="card-title" text="Leave Statistics" />
+                            <WebView fx:id="leavesWebView" VBox.vgrow="ALWAYS" />
+                        </VBox>
+                    </children>
+                </GridPane>
 
-                    <VBox prefHeight="350.0" prefWidth="550.0" styleClass="card">
-                        <Label styleClass="card-title" text="Leave Statistics" />
-                        <WebView fx:id="leavesWebView" VBox.vgrow="ALWAYS" />
-                    </VBox>
-
-                </FlowPane>
             </VBox>
         </ScrollPane>
     </center>
