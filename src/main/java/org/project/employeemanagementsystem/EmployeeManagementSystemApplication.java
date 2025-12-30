@@ -12,4 +12,6 @@ public class EmployeeManagementSystemApplication {
         // και του δίνουμε την κλάση που διαχειρίζεται τα γραφικά (JavaFxApplication)
         Application.launch(JavaFxApplication.class, args);
     }
+
+
 }

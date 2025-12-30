@@ -30,11 +30,10 @@
                         <Label styleClass="card-title" text="Departments List" />
                         <VBox prefHeight="472.0" prefWidth="457.0">
                            <children>
-                              <TableView fx:id="DepartmentTable" prefHeight="486.0" prefWidth="457.0">
+                              <TableView fx:id="departmentTable" prefHeight="486.0" prefWidth="457.0">
                                  <columns>
                                     <TableColumn fx:id="idCol" prefWidth="75.0" text="ID" />
                                     <TableColumn fx:id="nameCol" prefWidth="100.0" text="Name" />
-                                    <TableColumn fx:id="numberCol" prefWidth="85.0" text="Employees" />
                                  </columns>
                               </TableView>
                            </children>
