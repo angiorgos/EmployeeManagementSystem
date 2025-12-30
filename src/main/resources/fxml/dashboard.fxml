@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.image.*?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
+<?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="768.0" prefWidth="1366.0" stylesheets="@../theme.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.project.employeemanagementsystem.controller.DashboardController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="768.0" prefWidth="1366.0" stylesheets="@../theme.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.project.employeemanagementsystem.controller.DashboardController">
 
     <top>
         <fx:include source="topbar.fxml" />
@@ -12,11 +14,74 @@
     <left>
         <fx:include source="sidebar.fxml" />
     </left>
-   <center>
-      <ImageView fitHeight="200.0" fitWidth="158.0" BorderPane.alignment="CENTER">
-         <image>
-            <Image url="@../a.png" />
-         </image>
-      </ImageView>
-   </center>
+
+    <center>
+        <StackPane>
+            <ScrollPane fitToWidth="true" style="-fx-background-color: #F3F4F6;">
+                <VBox spacing="20.0" style="-fx-padding: 20; -fx-background-color: #F3F4F6;">
+
+                    <Label text="Dashboard Overview" textFill="#111827">
+                        <font><Font name="System Bold" size="24.0" /></font>
+                    </Label>
+
+                    <HBox spacing="20.0" alignment="CENTER">
+
+                        <VBox styleClass="kpi-card, card-blue" HBox.hgrow="ALWAYS">
+                            <Label styleClass="kpi-title" text="Total Employees"/>
+                            <Label fx:id="totalEmployeesLabel" styleClass="kpi-value" text="0"/>
+                        </VBox>
+
+                        <VBox styleClass="kpi-card, card-green" HBox.hgrow="ALWAYS">
+                            <Label styleClass="kpi-title" text="Working Today"/>
+                            <Label fx:id="workingTodayLabel" styleClass="kpi-value" text="0"/>
+                        </VBox>
+
+                        <VBox styleClass="kpi-card, card-orange" HBox.hgrow="ALWAYS">
+                            <Label styleClass="kpi-title" text="On Leave Today"/>
+                            <Label fx:id="onLeaveLabel" styleClass="kpi-value" text="0"/>
+                        </VBox>
+
+                        <VBox styleClass="kpi-card, card-red" HBox.hgrow="ALWAYS">
+                            <Label styleClass="kpi-title" text="Pending Requests"/>
+                            <Label fx:id="pendingRequestsLabel" styleClass="kpi-value" text="0"/>
+                        </VBox>
+
+                    </HBox>
+
+                    <FlowPane hgap="20.0" vgap="20.0" alignment="TOP_CENTER">
+
+                        <VBox prefHeight="350.0" prefWidth="550.0" styleClass="chart-card">
+                            <Label styleClass="card-title" text="Hires Overview (Monthly)" />
+                            <WebView fx:id="hiresWebView" VBox.vgrow="ALWAYS" />
+                        </VBox>
+
+                        <VBox prefHeight="350.0" prefWidth="550.0" styleClass="chart-card">
+                            <Label styleClass="card-title" text="Employees per Department" />
+                            <WebView fx:id="deptWebView" VBox.vgrow="ALWAYS" />
+                        </VBox>
+
+                        <VBox prefHeight="350.0" prefWidth="550.0" styleClass="chart-card">
+                            <Label styleClass="card-title" text="Leave Statistics (Trend)" />
+                            <WebView fx:id="leavesWebView" VBox.vgrow="ALWAYS" />
+                        </VBox>
+
+                        <VBox prefHeight="350.0" prefWidth="550.0" styleClass="chart-card">
+                            <Label styleClass="card-title" text="Attendance (Last 7 Days)" />
+                            <WebView fx:id="attendanceWebView" VBox.vgrow="ALWAYS" />
+                        </VBox>
+
+                    </FlowPane>
+
+                </VBox>
+            </ScrollPane>
+
+            <VBox fx:id="loadingOverlay" alignment="CENTER" spacing="15.0" style="-fx-background-color: #F3F4F6;">
+                <ProgressIndicator styleClass="loading-spinner" prefWidth="50.0" prefHeight="50.0"/>
+                <Label text="Loading Dashboard data..." textFill="#6B7280">
+                    <font><Font size="16.0"/></font>
+                </Label>
+            </VBox>
+
+        </StackPane>
+    </center>
 </BorderPane>

@@ -11,29 +11,7 @@ import java.util.ResourceBundle;
 @Controller
 public class LeaveTypesController implements Initializable {
 
-    @FXML
-    private TableView<?> leaveTypesTable;
 
-    @FXML
-    private TableColumn<?, ?> leaveIDColumn;
-
-    @FXML
-    private TableColumn<?, ?> leaveNameColumn;
-
-    @FXML
-    private TableColumn<?, ?> leaveMaxDaysColumn;
-
-    @FXML
-    private TextField leaveNameField;
-
-    @FXML
-    private TextField leaveMaxDaysField;
-
-    @FXML
-    private Button leaveRemoveBtn;
-
-    @FXML
-    private Button leaveSaveBtn;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
