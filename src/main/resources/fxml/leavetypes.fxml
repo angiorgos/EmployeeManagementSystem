@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="768.0" prefWidth="1366.0" stylesheets="@../theme.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.project.employeemanagementsystem.controller.LeaveTypesController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="768.0" prefWidth="1366.0" stylesheets="@../theme.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.project.employeemanagementsystem.controller.HolidaysController">
 
     <top>
         <fx:include source="topbar.fxml" />
@@ -22,32 +22,32 @@
     <center>
         <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0" BorderPane.alignment="CENTER">
             <children>
-                <!-- Table VBox - resizable -->
-                <VBox prefHeight="627.0" prefWidth="740.0" spacing="10.0" styleClass="card" HBox.hgrow="ALWAYS">
+                <!-- Holiday Table VBox - resizable -->
+                <VBox prefHeight="687.0" prefWidth="329.0" spacing="10.0" styleClass="card" HBox.hgrow="ALWAYS">
                     <children>
                         <Label styleClass="card-title" text="Leave Types" />
-                        <TableView fx:id="leaveTypesTable" prefHeight="558.0" prefWidth="663.0" VBox.vgrow="ALWAYS">
+                        <TableView fx:id="leaveTypesTable" prefHeight="650.0" prefWidth="289.0" VBox.vgrow="ALWAYS">
                             <columns>
-                                <TableColumn fx:id="leaveIDColumn" prefWidth="75.0" text="ID" />
-                                <TableColumn fx:id="leaveNameColumn" prefWidth="251.0" text="Leave Name" />
-                                <TableColumn fx:id="leaveMaxDaysColumn" minWidth="7.0" prefWidth="109.0" text="Max Days" />
+                                <TableColumn fx:id="leaveTypesID" prefWidth="75.0" text="ID" />
+                                <TableColumn fx:id="leaveTypesName" prefWidth="228.0" text="Name" />
+                                <TableColumn fx:id="leaveTypesMaxDays" minWidth="0.0" prefWidth="186.0" text="Max Days" />
                             </columns>
                         </TableView>
                     </children>
                 </VBox>
 
-                <!-- Leaves Editor VBox - fixed size -->
+                <!-- Holiday Scheduling VBox - fixed -->
                 <VBox prefHeight="687.0" prefWidth="279.0">
                     <children>
                         <VBox prefHeight="206.0" prefWidth="279.0" spacing="15.0" styleClass="card">
                             <children>
-                                <Label styleClass="card-title" text="Leaves Editor" />
+                                <Label styleClass="card-title" text="Leave Kinds Control" />
                                 <HBox spacing="15.0">
                                     <children>
                                         <VBox spacing="5.0" HBox.hgrow="ALWAYS">
                                             <children>
                                                 <Label text="Leave Name" />
-                                                <TextField fx:id="leaveNameField" promptText="Enter Leave Name..." />
+                                                <TextField fx:id="leaveTypesNameField" promptText="Enter Holiday Name..." />
                                             </children>
                                         </VBox>
                                     </children>
@@ -56,16 +56,16 @@
                                     <children>
                                         <VBox spacing="5.0" HBox.hgrow="ALWAYS">
                                             <children>
-                                                <Label text="Max Days" />
+                                                <Label text="Leave Max Days Owed" />
+                                    <TextField fx:id="leaveTypesMaxDaysField" promptText="Enter Max Leave Days..." />
                                             </children>
                                         </VBox>
                                     </children>
                                 </HBox>
-                                <TextField fx:id="leaveMaxDaysField" promptText="Enter Max Days Owed..." />
                                 <HBox alignment="CENTER_RIGHT" spacing="10.0">
                                     <children>
-                                        <Button fx:id="leaveTypeRemoveBtn" styleClass="btn-danger" text="Remove">
-                                        <Button fx:id="leaveTypeSaveBtn" styleClass="btn-primary" text="Save Changes" />
+                                        <Button styleClass="btn-danger" text="Remove" />
+                                        <Button styleClass="btn-primary" text="Add" />
                                     </children>
                                 </HBox>
                             </children>
