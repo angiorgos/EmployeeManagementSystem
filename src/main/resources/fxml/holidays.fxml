@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="768.0" prefWidth="1366.0" stylesheets="@../theme.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.project.employeemanagementsystem.controller.DashboardController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="768.0" prefWidth="1366.0" stylesheets="@../theme.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.project.employeemanagementsystem.controller.HolidaysController">
 
     <top>
         <fx:include source="topbar.fxml" />
@@ -27,11 +27,11 @@
             <VBox prefHeight="687.0" prefWidth="329.0" spacing="10.0" styleClass="card" HBox.hgrow="ALWAYS">
                <children>
                   <Label styleClass="card-title" text="Holiday Table" />
-                  <TableView prefHeight="650.0" prefWidth="289.0" VBox.vgrow="ALWAYS">
+                  <TableView fx:id="holidaysTable" prefHeight="650.0" prefWidth="289.0" VBox.vgrow="ALWAYS">
                      <columns>
-                        <TableColumn prefWidth="75.0" text="ID" />
-                        <TableColumn prefWidth="228.0" text="Name" />
-                        <TableColumn minWidth="0.0" prefWidth="186.0" text="Date" />
+                        <TableColumn fx:id="holidaysID" prefWidth="75.0" text="ID" />
+                        <TableColumn fx:id="holidaysName" prefWidth="228.0" text="Name" />
+                        <TableColumn fx:id="holidaysDate" minWidth="0.0" prefWidth="186.0" text="Date" />
                      </columns>
                   </TableView>
                </children>
@@ -48,7 +48,7 @@
                               <VBox spacing="5.0" HBox.hgrow="ALWAYS">
                                  <children>
                                     <Label text="Holiday Name" />
-                                    <TextField promptText="Enter Holiday Name..." />
+                                    <TextField fx:id="holidaysNameField" promptText="Enter Holiday Name..." />
                                  </children>
                               </VBox>
                            </children>
@@ -58,15 +58,15 @@
                               <VBox spacing="5.0" HBox.hgrow="ALWAYS">
                                  <children>
                                     <Label text="Holiday Date" />
-                                    <DatePicker maxWidth="Infinity" promptText="Select Date" />
+                                    <DatePicker fx:id="holidaysDatePicker" maxWidth="Infinity" promptText="Select Date" />
                                  </children>
                               </VBox>
                            </children>
                         </HBox>
                         <HBox alignment="CENTER_RIGHT" spacing="10.0">
                            <children>
-                              <Button styleClass="btn-danger" text="Remove" />
-                              <Button styleClass="btn-primary" text="Save Changes" />
+                              <Button fx:id="holidaysRemoveBtn" onAction="#handleRemoveHoliday" styleClass="btn-danger" text="Remove" />
+                              <Button fx:id="holidaysAddBtn" onAction="#handleAddOrUpdateHoliday" styleClass="btn-primary" text="Add" />
                            </children>
                         </HBox>
                      </children>
