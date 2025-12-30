@@ -4,6 +4,8 @@
 .calendar-grid {
     -fx-background-color: transparent;
     -fx-padding: 0;
+    -fx-hgap: 0;
+    -fx-vgap: 0;
 }
 
 .day-cell {
@@ -16,6 +18,16 @@
 .day-cell:hover {
     -fx-background-color: #EFF6FF;
     -fx-border-color: #2563EB;
+}
+
+.selected-day {
+    -fx-background-color: #EFF6FF;
+    -fx-border-color: #2563EB;
+    -fx-border-width: 2;
+}
+
+.selected-day .day-number {
+    -fx-text-fill: #2563EB;
 }
 
 .day-number {
@@ -33,11 +45,12 @@
 }
 
 /* Μέρες επόμενου / προηγούμενου μήνα */
-.out-month:hover {
+.out-month {
     -fx-background-color: #ededed;
     -fx-border-color: #cfcfcf;
 }
-.out-month:hover .day-number {
+
+.out-month .day-number {
     -fx-text-fill: #7a7a7a;
 }
 
@@ -46,9 +59,14 @@
     -fx-text-fill: #555;
 }
 
+/* hover να μην γίνεται μπλε σε out-month */
 .out-month:hover {
     -fx-background-color: #ededed;
+    -fx-border-color: #cfcfcf;
 }
 
+.out-month:hover .day-number {
+    -fx-text-fill: #7a7a7a;
+}
 /* ============================================================
    ============================================================ */
