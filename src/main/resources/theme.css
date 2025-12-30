@@ -610,3 +610,9 @@
 .out-month:hover {
     -fx-background-color: #ededed;  /* ίδιο γκρι → καμία αλλαγή */
 }
+
+.right-panel {
+    -fx-background-color: #f7f7f7;
+    -fx-border-color: #d1d5db;
+    -fx-border-width: 0 0 0 1;
+}

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.String?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
@@ -37,7 +36,7 @@
                                     <children>
                                         <VBox prefHeight="618.0" prefWidth="828.0" VBox.vgrow="ALWAYS">
                                  <children>
-                                    <GridPane fx:id="monthView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="632.0" prefWidth="857.0" VBox.vgrow="ALWAYS">
+                                    <GridPane fx:id="monthView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="632.0" prefWidth="857.0" styleClass="calendar-grid" VBox.vgrow="ALWAYS">
                                       <columnConstraints>
                                           <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
                                           <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
@@ -55,14 +54,6 @@
                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
                                       </rowConstraints>
-                                       <styleClass>
-                                          <String fx:value="out-month" />
-                                          <String fx:value="calendar-grid" />
-                                          <String fx:value="day-cell" />
-                                          <String fx:value="day-cell" />
-                                          <String fx:value="day-number" />
-                                          <String fx:value="employee-chip" />
-                                       </styleClass>
                                     </GridPane>
                                  </children></VBox>
                                     </children>
@@ -100,7 +91,7 @@
                                 </HBox>
                             </top>
                      <right>
-                        <VBox maxWidth="-Infinity" prefHeight="618.0" prefWidth="293.0" styleClass="out-month" BorderPane.alignment="CENTER">
+                        <VBox maxWidth="-Infinity" prefHeight="618.0" prefWidth="293.0" styleClass="right-panel" BorderPane.alignment="CENTER">
                            <children>
                               <HBox prefHeight="42.0" prefWidth="293.0">
                                  <children>
