@@ -20,6 +20,12 @@
     -fx-border-color: #2563EB;
 }
 
+.day-number {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2b2b2b;
+}
+
 .selected-day {
     -fx-background-color: #EFF6FF;
     -fx-border-color: #2563EB;
@@ -28,12 +34,6 @@
 
 .selected-day .day-number {
     -fx-text-fill: #2563EB;
-}
-
-.day-number {
-    -fx-font-size: 12px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #2b2b2b;
 }
 
 .employee-chip {
@@ -63,10 +63,6 @@
 .out-month:hover {
     -fx-background-color: #ededed;
     -fx-border-color: #cfcfcf;
-}
-
-.out-month:hover .day-number {
-    -fx-text-fill: #7a7a7a;
 }
 
 /* ===== Right ListView as Card ===== */
@@ -121,7 +117,6 @@
     -fx-border-width: 1;
 }
 
-
 /* hover */
 .cal-btn:hover {
     -fx-background-color: #F3F4F6;
@@ -137,7 +132,6 @@
 .cal-btn:hover .ikonli-font-icon {
     -fx-icon-color: #4B5563;
 }
-
 
 /* View mode buttons (Day/Week/Month) – σαν segmented */
 .view-btn {
