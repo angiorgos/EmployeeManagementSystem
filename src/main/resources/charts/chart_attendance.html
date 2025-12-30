@@ -2,21 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Attendance Chart</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js" onload="window.chartLibReady=true"></script>
-  <style>body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: white; } #container { width: 98%; height: 98%; margin: auto; position: relative; }</style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+  <style> body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: white; } #container { width: 99%; height: 99%; margin: auto; position: relative; } </style>
 </head>
 <body>
 <div id="container"><canvas id="chart"></canvas></div>
 <script>
   let chartInstance = null;
   window.updateChart = function(labels, data) {
-    // RETRY LOGIC
-    if (!window.chartLibReady || typeof Chart === 'undefined') {
-      setTimeout(function() { window.updateChart(labels, data); }, 100);
-      return;
-    }
-
     const ctx = document.getElementById('chart').getContext('2d');
     if (chartInstance) chartInstance.destroy();
 
@@ -25,16 +18,18 @@
       data: {
         labels: labels,
         datasets: [{
-          label: 'Hours',
+          label: 'Employees',
           data: data,
-          backgroundColor: '#10B981',
-          borderRadius: 4
+          backgroundColor: '#6366F1', // Indigo/Slate Blue
+          borderRadius: 3
         }]
       },
       options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true } }
+        responsive: true, maintainAspectRatio: false, legend: { display: false },
+        scales: {
+          yAxes: [{ ticks: { beginAtZero: true, precision: 0 }, gridLines: { color: '#F3F4F6' } }],
+          xAxes: [{ gridLines: { display: false } }]
+        }
       }
     });
   };

@@ -52,13 +52,13 @@ public class DashboardController extends BaseController implements Initializable
     }
 
     private void loadDashboardData() {
+        // 1. Φέρνουμε δεδομένα
         List<Employee> allEmployees = employeeService.getAllEmployees();
         List<LeaveRequest> allLeaves = leaveRequestService.getAllRequests();
         List<Attendance> allAttendance = attendanceService.getAllAttendanceRecords();
 
-
-        int totalEmployees = allEmployees.size();
-        totalEmployeesLabel.setText(String.valueOf(totalEmployees));
+        // --- KPI CARDS ---
+        totalEmployeesLabel.setText(String.valueOf(allEmployees.size()));
 
         long workingToday = allAttendance.stream()
                 .filter(a -> a.getDate().equals(LocalDate.now()))
@@ -67,7 +67,7 @@ public class DashboardController extends BaseController implements Initializable
 
         LocalDate today = LocalDate.now();
         long onLeave = allLeaves.stream()
-                .filter(l -> l.getStatus().toString().equalsIgnoreCase("APPROVED"))
+                .filter(l -> l.getStatus() == LeaveStatus.APPROVED) // Enum check
                 .filter(l -> !today.isBefore(l.getStartDate()) && !today.isAfter(l.getEndDate()))
                 .count();
         onLeaveLabel.setText(String.valueOf(onLeave));
@@ -78,6 +78,9 @@ public class DashboardController extends BaseController implements Initializable
         pendingRequestsLabel.setText(String.valueOf(pending));
 
 
+        // --- CHARTS ---
+
+        // 1. Departments (Pie)
         Map<String, Long> deptCounts = allEmployees.stream()
                 .collect(Collectors.groupingBy(
                         e -> (e.getDepartment() != null) ? e.getDepartment().getName() : "Unknown",
@@ -86,7 +89,7 @@ public class DashboardController extends BaseController implements Initializable
         initChart(deptWebView, "chart_departments.html", mapToLabels(deptCounts), mapToData(deptCounts));
 
 
-
+        // 2. Hires (Line Chart - Monthly)
         Map<Month, Long> hiresPerMonth = allEmployees.stream()
                 .filter(e -> e.getHireDate() != null && e.getHireDate().getYear() == LocalDate.now().getYear())
                 .collect(Collectors.groupingBy(
@@ -94,40 +97,46 @@ public class DashboardController extends BaseController implements Initializable
                         Collectors.counting()
                 ));
 
-        String hiresLabels = "['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']";
-        String hiresData = "[" +
-                hiresPerMonth.getOrDefault(Month.JANUARY, 0L) + "," +
-                hiresPerMonth.getOrDefault(Month.FEBRUARY, 0L) + "," +
-                hiresPerMonth.getOrDefault(Month.MARCH, 0L) + "," +
-                hiresPerMonth.getOrDefault(Month.APRIL, 0L) + "," +
-                hiresPerMonth.getOrDefault(Month.MAY, 0L) + "," +
-                hiresPerMonth.getOrDefault(Month.JUNE, 0L) + "," +
-                hiresPerMonth.getOrDefault(Month.JULY, 0L) + "," +
-                hiresPerMonth.getOrDefault(Month.AUGUST, 0L) + "," +
-                hiresPerMonth.getOrDefault(Month.SEPTEMBER, 0L) + "," +
-                hiresPerMonth.getOrDefault(Month.OCTOBER, 0L) + "," +
-                hiresPerMonth.getOrDefault(Month.NOVEMBER, 0L) + "," +
-                hiresPerMonth.getOrDefault(Month.DECEMBER, 0L) + "]";
-        initChart(hiresWebView, "chart_hires.html", hiresLabels, hiresData);
+        // Helper για σωστή σειρά μηνών
+        String monthsLabels = "['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']";
+        String hiresData = getMonthlyDataString(hiresPerMonth);
+
+        initChart(hiresWebView, "chart_hires.html", monthsLabels, hiresData);
 
 
-
-        Map<String, Long> leavesByType = allLeaves.stream()
+        // 3. Leaves (Line Chart - Monthly) -> ΔΙΟΡΘΩΣΗ ΕΔΩ!
+        // Υπολογίζουμε άδειες ανά μήνα έναρξης για να έχει νόημα η γραμμή
+        Map<Month, Long> leavesPerMonth = allLeaves.stream()
+                .filter(l -> l.getStartDate().getYear() == LocalDate.now().getYear())
                 .collect(Collectors.groupingBy(
-                        l -> (l.getLeaveType() != null) ? l.getLeaveType().getName() : "Other",
+                        l -> l.getStartDate().getMonth(),
                         Collectors.counting()
                 ));
-        initChart(leavesWebView, "chart_leaves.html", mapToLabels(leavesByType), mapToData(leavesByType));
+
+        String leavesData = getMonthlyDataString(leavesPerMonth);
+        // Χρησιμοποιούμε τα ίδια labels (μήνες)
+        initChart(leavesWebView, "chart_leaves.html", monthsLabels, leavesData);
 
 
-
+        // 4. Attendance (Bar Chart - Last 5 Days)
         Map<String, Long> attendanceLastDays = allAttendance.stream()
-                .filter(a -> a.getDate().isAfter(LocalDate.now().minusDays(6))) // Τελευταίες 5-6 μέρες
+                .filter(a -> a.getDate().isAfter(LocalDate.now().minusDays(6)))
                 .collect(Collectors.groupingBy(
                         a -> a.getDate().toString(),
                         Collectors.counting()
                 ));
         initChart(attendanceWebView, "chart_attendance.html", mapToLabels(attendanceLastDays), mapToData(attendanceLastDays));
+    }
+
+    // Βοηθητική μέθοδος για να φτιάχνουμε το string δεδομένων [0, 2, 5...] για τους 12 μήνες
+    private String getMonthlyDataString(Map<Month, Long> dataMap) {
+        StringBuilder sb = new StringBuilder("[");
+        for (Month m : Month.values()) {
+            sb.append(dataMap.getOrDefault(m, 0L)).append(",");
+        }
+        if (sb.length() > 1) sb.setLength(sb.length() - 1); // remove last comma
+        sb.append("]");
+        return sb.toString();
     }
 
 

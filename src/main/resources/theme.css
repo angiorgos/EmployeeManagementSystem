@@ -42,50 +42,54 @@
     -fx-text-fill: #111827;
     -fx-padding: 0 0 5 5;
 }
+/* ================= KPI CARDS (CLEAN / MINIMAL STYLE) ================= */
 
 .kpi-card {
-    -fx-background-radius: 12;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 10, 0, 0, 4);
+    -fx-background-color: #FFFFFF;       /* Λευκό φόντο */
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 8, 0, 0, 2); /* Πολύ απαλή σκιά */
     -fx-padding: 15 25;
     -fx-alignment: CENTER_LEFT;
+
+    /* Ρύθμιση για τη γραμμή αριστερά */
+    -fx-border-style: solid;
+    -fx-border-width: 0 0 0 5;           /* 5 pixels γραμμή μόνο αριστερά */
 }
 
+/* Χρώματα για τη γραμμή αριστερά (Top Right Bottom Left) */
+.card-blue   { -fx-border-color: transparent transparent transparent #3B82F6; }
+.card-green  { -fx-border-color: transparent transparent transparent #10B981; }
+.card-orange { -fx-border-color: transparent transparent transparent #F59E0B; }
+.card-red    { -fx-border-color: transparent transparent transparent #EF4444; }
 
-.card-blue {
-    -fx-background-color: linear-gradient(to bottom right, #3B82F6, #2563EB);
-}
-
-.card-green {
-    -fx-background-color: linear-gradient(to bottom right, #10B981, #059669);
-}
-
-.card-orange {
-    -fx-background-color: linear-gradient(to bottom right, #F59E0B, #D97706);
-}
-
-.card-red {
-    -fx-background-color: linear-gradient(to bottom right, #EF4444, #DC2626);
-}
-
-
+/* Κείμενα (Σκούρα γιατί το φόντο είναι πλέον λευκό) */
 .kpi-title {
-    -fx-text-fill: #E5E7EB; /* Αχνό λευκό/γκρι για τον τίτλο */
-    -fx-font-size: 14px;
+    -fx-text-fill: #6B7280;              /* Μεσαίο Γκρι */
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
+    -fx-padding: 0 0 5 0;
 }
 
 .kpi-value {
-    -fx-text-fill: #FFFFFF; /* Καθαρό λευκό για το νούμερο */
+    -fx-text-fill: #111827;              /* Σχεδόν Μαύρο */
     -fx-font-size: 32px;
     -fx-font-weight: bold;
 }
 
-/* Chart Cards (Containers για τα WebViews) */
+/* ================= CHART CONTAINERS ================= */
+/* Ανανέωση και για τα κουτιά των γραφημάτων για να ταιριάζουν */
 .chart-card {
-    -fx-background-color: white;
-    -fx-background-radius: 6;
+    -fx-background-color: #FFFFFF;       /* Λευκό φόντο */
+    -fx-background-radius: 8;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 5, 0, 0, 1);
-    -fx-padding: 10;
+    -fx-padding: 15;
+}
+
+.card-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #374151;              /* Σκούρο γκρι */
+    -fx-padding: 0 0 10 5;
 }
 
 /* ============================================================
