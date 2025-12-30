@@ -37,43 +37,14 @@ public class ScheduleController implements Initializable {
     private YearMonth currentMonth = YearMonth.now();
     private LocalDate selectedDate = LocalDate.now();
 
+    @FXML private ToggleButton todayBtn;
     // ====== New Schedule Tab ======
     @FXML private TableView<Schedule> scheduleTable;
     @FXML private ComboBox<Employee> employeeComboBox;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-
-        // 1) Calendar init (αν υπάρχουν τα fx:id στο FXML)
-        if (monthView != null && monthLabel != null) {
-            renderMonth(currentMonth);
-            updateRightPanel(selectedDate);
-        }
-
-        // 2) New Schedule tab init (αν υπάρχουν τα fx:id στο FXML)
-        if (scheduleTable != null) {
-            scheduleTable.setItems(FXCollections.observableArrayList(scheduleService.getAllSchedules()));
-        }
-
-        if (employeeComboBox != null) {
-            employeeComboBox.getItems().setAll(employeeService.getActiveEmployees());
-
-            // πολύ χρήσιμο: πώς θα εμφανίζεται ο Employee στο dropdown
-            employeeComboBox.setCellFactory(lv -> new ListCell<>() {
-                @Override
-                protected void updateItem(Employee item, boolean empty) {
-                    super.updateItem(item, empty);
-                    setText(empty || item == null ? "" : item.getFirstName() + " " + item.getLastName());
-                }
-            });
-            employeeComboBox.setButtonCell(new ListCell<>() {
-                @Override
-                protected void updateItem(Employee item, boolean empty) {
-                    super.updateItem(item, empty);
-                    setText(empty || item == null ? "" : item.getFirstName() + " " + item.getLastName());
-                }
-            });
-        }
+    private void syncTodayToggle() {
+        if (todayBtn == null) return;
+        todayBtn.setSelected(selectedDate.equals(LocalDate.now()));
     }
 
     // ===== Buttons =====
@@ -95,6 +66,7 @@ public class ScheduleController implements Initializable {
         selectedDate = LocalDate.now();
         renderMonth(currentMonth);
         updateRightPanel(selectedDate);
+        syncTodayToggle();
     }
 
     // ===== Calendar render (Monday-first) =====
@@ -160,6 +132,7 @@ public class ScheduleController implements Initializable {
             selectedDate = date;
             updateRightPanel(date);
             renderMonth(currentMonth);
+            syncTodayToggle();
         });
 
         return root;
@@ -190,5 +163,41 @@ public class ScheduleController implements Initializable {
     private String capitalize(String s) {
         s = s.toLowerCase();
         return Character.toUpperCase(s.charAt(0)) + s.substring(1);
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+
+        // 1) Calendar init (αν υπάρχουν τα fx:id στο FXML)
+        if (monthView != null && monthLabel != null) {
+            renderMonth(currentMonth);
+            updateRightPanel(selectedDate);
+            syncTodayToggle();
+        }
+
+        // 2) New Schedule tab init (αν υπάρχουν τα fx:id στο FXML)
+        if (scheduleTable != null) {
+            scheduleTable.setItems(FXCollections.observableArrayList(scheduleService.getAllSchedules()));
+        }
+
+        if (employeeComboBox != null) {
+            employeeComboBox.getItems().setAll(employeeService.getActiveEmployees());
+
+            // πολύ χρήσιμο: πώς θα εμφανίζεται ο Employee στο dropdown
+            employeeComboBox.setCellFactory(lv -> new ListCell<>() {
+                @Override
+                protected void updateItem(Employee item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty || item == null ? "" : item.getFirstName() + " " + item.getLastName());
+                }
+            });
+            employeeComboBox.setButtonCell(new ListCell<>() {
+                @Override
+                protected void updateItem(Employee item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty || item == null ? "" : item.getFirstName() + " " + item.getLastName());
+                }
+            });
+        }
     }
 }

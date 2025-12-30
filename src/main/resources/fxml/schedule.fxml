@@ -34,7 +34,7 @@
                     <content>
                         <BorderPane prefHeight="200.0" prefWidth="200.0">
                             <center>
-                                <VBox prefHeight="618.0" prefWidth="833.0" BorderPane.alignment="CENTER">
+                                <VBox prefHeight="573.0" prefWidth="791.0" BorderPane.alignment="CENTER">
                                     <children>
                               <HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="10.0" prefWidth="791.0" />
                                         <VBox prefHeight="618.0" prefWidth="828.0" VBox.vgrow="ALWAYS">
@@ -65,7 +65,7 @@
                             <top>
                                 <HBox prefHeight="35.0" prefWidth="1077.0" BorderPane.alignment="CENTER">
                                     <children>
-                                        <Label fx:id="monthLabel" contentDisplay="CENTER" prefHeight="35.0" prefWidth="182.0" text="September 2026" textFill="#9a9a9a" HBox.hgrow="ALWAYS">
+                                        <Label fx:id="monthLabel" contentDisplay="CENTER" prefHeight="35.0" prefWidth="182.0" text="September 2026" textFill="#7c7c7c" HBox.hgrow="ALWAYS">
                                             <font>
                                                 <Font size="24.0" />
                                             </font>
@@ -92,7 +92,7 @@
                               <HBox prefHeight="35.0" prefWidth="25.0" />
                               <HBox prefHeight="60.0" prefWidth="466.0" HBox.hgrow="ALWAYS">
                                  <children>
-                                    <ToggleButton mnemonicParsing="false" onAction="#onToday" prefHeight="44.0" prefWidth="70.0" styleClass="view-btn" text="Today" />
+                                    <ToggleButton fx:id="todayBtn" mnemonicParsing="false" onAction="#onToday" prefHeight="44.0" prefWidth="70.0" styleClass="view-btn" text="Today" />
                                  </children></HBox>
                               <ToggleButton mnemonicParsing="false" onAction="#onToday" prefHeight="46.0" prefWidth="76.0" styleClass="view-btn" text="Day">
                                  <toggleGroup>
