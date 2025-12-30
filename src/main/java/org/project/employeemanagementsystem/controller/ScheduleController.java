@@ -1,14 +1,12 @@
 package org.project.employeemanagementsystem.controller;
 
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import org.project.employeemanagementsystem.model.Employee;
-import org.project.employeemanagementsystem.model.Schedule;
+
 import org.project.employeemanagementsystem.service.EmployeeService;
 import org.project.employeemanagementsystem.service.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,9 +36,6 @@ public class ScheduleController implements Initializable {
     private LocalDate selectedDate = LocalDate.now();
 
     @FXML private ToggleButton todayBtn;
-    // ====== New Schedule Tab ======
-    @FXML private TableView<Schedule> scheduleTable;
-    @FXML private ComboBox<Employee> employeeComboBox;
 
     private void syncTodayToggle() {
         if (todayBtn == null) return;
@@ -168,36 +163,12 @@ public class ScheduleController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
-        // 1) Calendar init (αν υπάρχουν τα fx:id στο FXML)
+        // Calendar init (αν υπάρχουν τα fx:id στο FXML)
         if (monthView != null && monthLabel != null) {
             renderMonth(currentMonth);
             updateRightPanel(selectedDate);
             syncTodayToggle();
         }
 
-        // 2) New Schedule tab init (αν υπάρχουν τα fx:id στο FXML)
-        if (scheduleTable != null) {
-            scheduleTable.setItems(FXCollections.observableArrayList(scheduleService.getAllSchedules()));
-        }
-
-        if (employeeComboBox != null) {
-            employeeComboBox.getItems().setAll(employeeService.getActiveEmployees());
-
-            // πολύ χρήσιμο: πώς θα εμφανίζεται ο Employee στο dropdown
-            employeeComboBox.setCellFactory(lv -> new ListCell<>() {
-                @Override
-                protected void updateItem(Employee item, boolean empty) {
-                    super.updateItem(item, empty);
-                    setText(empty || item == null ? "" : item.getFirstName() + " " + item.getLastName());
-                }
-            });
-            employeeComboBox.setButtonCell(new ListCell<>() {
-                @Override
-                protected void updateItem(Employee item, boolean empty) {
-                    super.updateItem(item, empty);
-                    setText(empty || item == null ? "" : item.getFirstName() + " " + item.getLastName());
-                }
-            });
-        }
     }
 }
