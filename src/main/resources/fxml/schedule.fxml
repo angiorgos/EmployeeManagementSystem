@@ -2,8 +2,6 @@
 
 <?import java.lang.String?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Tab?>
@@ -136,7 +134,7 @@
                 </Tab>
                 <Tab text="New Schedule">
                     <content>
-                        <fx:include source="schedule2.fxml"/>
+                        <fx:include source="schedule2.fxml" />
                     </content>
                 </Tab>
             </tabs>

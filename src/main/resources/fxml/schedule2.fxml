@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="619.0" prefWidth="1107.0"
-            xmlns="http://javafx.com/javafx/25"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.project.employeemanagementsystem.controller.ScheduleController2">
+<BorderPane fx:id="root" prefHeight="619.0" prefWidth="1107.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.project.employeemanagementsystem.controller.ScheduleController2">
 
         <center>
             <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="603.0" prefWidth="829.0" BorderPane.alignment="TOP_LEFT">
@@ -42,15 +45,15 @@
                                             <Label text="10 am" GridPane.rowIndex="1" />
                                             <Label text="11 am" GridPane.rowIndex="2" />
                                             <Label text="12 am" GridPane.rowIndex="3" />
-                                            <Label text="13 pm" GridPane.rowIndex="4" />
-                                            <Label text="14 pm" GridPane.rowIndex="5" />
-                                            <Label text="15 pm" GridPane.rowIndex="6" />
-                                            <Label text="17 pm" GridPane.rowIndex="8" />
-                                            <Label text="16 pm" GridPane.rowIndex="7" />
-                                            <Label text="18 pm" GridPane.rowIndex="9" />
-                                            <Label text="19 pm" GridPane.rowIndex="10" />
-                                            <Label text="21 pm" GridPane.rowIndex="12" />
-                                            <Label text="20 pm" GridPane.rowIndex="11" />
+                                            <Label text="1 pm" GridPane.rowIndex="4" />
+                                            <Label text="2 pm" GridPane.rowIndex="5" />
+                                            <Label text="3 pm" GridPane.rowIndex="6" />
+                                            <Label text="5 pm" GridPane.rowIndex="8" />
+                                            <Label text="4 pm" GridPane.rowIndex="7" />
+                                            <Label text="6 pm" GridPane.rowIndex="9" />
+                                            <Label text="7 pm" GridPane.rowIndex="10" />
+                                            <Label text="9 pm" GridPane.rowIndex="12" />
+                                            <Label text="8 pm" GridPane.rowIndex="11" />
                                         </children>
                                     </GridPane>
                                 </children>
@@ -164,7 +167,7 @@
                     <VBox prefHeight="35.0" prefWidth="255.0" />
                     <VBox prefHeight="419.0" prefWidth="255.0">
                         <children>
-                            <GridPane prefHeight="420.0" prefWidth="255.0">
+                            <GridPane fx:id="timePickerGrid" prefHeight="420.0" prefWidth="255.0">
                                 <columnConstraints>
                                     <ColumnConstraints hgrow="SOMETIMES" maxWidth="80.0" minWidth="10.0" prefWidth="37.0" />
                                     <ColumnConstraints hgrow="SOMETIMES" maxWidth="134.0" minWidth="10.0" prefWidth="91.0" />
@@ -188,7 +191,7 @@
                                     <Label text="Fri" GridPane.rowIndex="4" />
                                     <Label text="Sat" GridPane.rowIndex="5" />
                                     <Label text="Sun" GridPane.rowIndex="6" />
-                                    <ComboBox prefHeight="26.0" prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" />
+                                    <ComboBox id="employeeComboBox" fx:id="monStart" prefHeight="26.0" prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" />
                                     <Label text="-" textAlignment="CENTER" textFill="#7c7c7c" GridPane.columnIndex="2">
                                         <font>
                                             <Font name="System Bold" size="40.0" />
@@ -224,26 +227,26 @@
                                             <Font name="System Bold" size="40.0" />
                                         </font>
                                     </Label>
-                                    <ComboBox prefHeight="30.0" prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" />
-                                    <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                    <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-                                    <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                                    <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" GridPane.rowIndex="2" />
-                                    <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                                    <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" GridPane.rowIndex="3" />
-                                    <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                                    <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" GridPane.rowIndex="4" />
-                                    <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                                    <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" GridPane.rowIndex="5" />
-                                    <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-                                    <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" GridPane.rowIndex="6" />
+                                    <ComboBox id="employeeComboBox" fx:id="monEnd" prefHeight="30.0" prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" />
+                                    <ComboBox id="employeeComboBox" fx:id="tueStart" prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                    <ComboBox id="employeeComboBox" fx:id="tueEnd" prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                                    <ComboBox id="employeeComboBox" fx:id="wedStart" prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    <ComboBox id="employeeComboBox" fx:id="wedEnd" prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+                                    <ComboBox id="employeeComboBox" fx:id="thuStart" prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                    <ComboBox id="employeeComboBox" fx:id="thuEnd" prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+                                    <ComboBox id="employeeComboBox" fx:id="friStart" prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                    <ComboBox id="employeeComboBox" fx:id="friEnd" prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" GridPane.rowIndex="4" />
+                                    <ComboBox id="employeeComboBox" prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                    <ComboBox id="employeeComboBox" prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" GridPane.rowIndex="5" />
+                                    <ComboBox id="employeeComboBox" prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                                    <ComboBox id="employeeComboBox" prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" GridPane.rowIndex="6" />
                                 </children>
                             </GridPane>
                         </children>
                     </VBox>
                     <HBox alignment="CENTER_RIGHT" prefHeight="42.0" prefWidth="255.0">
                         <children>
-                            <Button mnemonicParsing="false" prefHeight="33.0" prefWidth="79.0" styleClass="view-btn" text="Sumbit" />
+                            <Button fx:id="submitBtn" mnemonicParsing="false" onAction="#onSubmit" prefHeight="33.0" prefWidth="79.0" styleClass="view-btn" text="Sumbit" />
                             <VBox prefHeight="42.0" prefWidth="20.0" />
                         </children>
                     </HBox>

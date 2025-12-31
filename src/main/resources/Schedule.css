@@ -176,14 +176,16 @@
     -fx-background-color: #E5E7EB;       /* σαν το παράδειγμα */
     -fx-background-radius: 6;
     -fx-border-color: transparent;
-    -fx-padding: 6 10;
+    -fx-padding: 2 6 2 6;
 }
 
 /* ορατό κείμενο */
 .time-picker .list-cell {
+    -fx-padding: 2 4 2 4;
     -fx-background-color: transparent;
     -fx-text-fill: #111827;
     -fx-font-weight: 500;
+    -fx-font-size: 12px;
 }
 
 /* κρύβει το arrow button */

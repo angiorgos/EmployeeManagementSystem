@@ -2,29 +2,152 @@ package org.project.employeemanagementsystem.controller;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-
-import org.project.employeemanagementsystem.service.EmployeeService;
-import org.project.employeemanagementsystem.service.ScheduleService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-
 import java.net.URL;
 import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.YearMonth;
+import java.time.LocalTime;
+import java.util.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
-import java.util.ResourceBundle;
 
 @Controller
-public class ScheduleController2 implements Initializable  {
+public class ScheduleController2 implements Initializable {
 
+    // ====== FXML ======
+    @FXML private GridPane weekGrid;
+    @FXML private ComboBox<String> employeeComboBox; // προσωρινά String (UI-only)
+    // @FXML private Button submitBtn; // προαιρετικό, δεν χρειάζεται να το κρατάς σαν field
+    @FXML private GridPane timePickerGrid;
+
+    // ====== Week config ======
+    private static final DayOfWeek[] DAYS = {
+            DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
+            DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY
+    };
+
+    // 06:00 -> 21:00 (16 ώρες αν το κάνεις ανά 1 ώρα)
+    private final int startHour = 6;
+    private final int endHour   = 21;
+
+    // Κρατάμε τα cells για εύκολο update
+    private final Map<String, VBox> cellMap = new HashMap<>();
+
+    // Επιλεγμένο κελί
+    private VBox selectedCell;
+    private DayOfWeek selectedDay;
+    private int selectedHour;
+
+
+    private void renderWeekGrid() {
+        weekGrid.getChildren().clear();
+        cellMap.clear();
+
+        int rows = (endHour - startHour) + 1; // πχ 6..21 => 16 rows
+
+        for (int r = 0; r < rows; r++) {
+            int hour = startHour + r;
+
+            for (int c = 0; c < 7; c++) {
+                DayOfWeek day = DAYS[c];
+
+                VBox cell = createWeekCell(day, hour);
+                weekGrid.add(cell, c, r);
+
+                GridPane.setHgrow(cell, Priority.ALWAYS);
+                GridPane.setVgrow(cell, Priority.ALWAYS);
+
+                cellMap.put(key(day, hour), cell);
+            }
+        }
+    }
+
+    private VBox createWeekCell(DayOfWeek day, int hour) {
+        VBox cell = new VBox(4);
+        cell.getStyleClass().add("day-cell");
+        cell.setMinSize(0, 0);
+        cell.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
+        // (Προαιρετικό) μικρό label ώρας μέσα στο κελί για debug
+        // Label debug = new Label(day.name().substring(0,3) + " " + String.format("%02d:00", hour));
+        // debug.setStyle("-fx-font-size: 10px; -fx-text-fill: #9CA3AF;");
+        // cell.getChildren().add(debug);
+
+        cell.setOnMouseClicked(e -> selectCell(cell, day, hour));
+        return cell;
+    }
+
+    private void selectCell(VBox cell, DayOfWeek day, int hour) {
+        // remove old selection
+        if (selectedCell != null) {
+            selectedCell.getStyleClass().remove("selected-day");
+        }
+
+        selectedCell = cell;
+        selectedDay = day;
+        selectedHour = hour;
+
+        selectedCell.getStyleClass().add("selected-day");
+    }
+
+    private static final DateTimeFormatter TIME_12H = DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH);
+    @FXML private ComboBox<String> monStart, monEnd, tueStart, tueEnd, wedStart, wedEnd,thuStart, thuEnd, friStart, friEnd;
+
+
+    private ObservableList<String> buildTimes() {
+        ObservableList<String> items = FXCollections.observableArrayList();
+        for (LocalTime t = LocalTime.of(9, 0); !t.isAfter(LocalTime.of(21, 0)); t = t.plusMinutes(30)) {
+            items.add(t.format(TIME_12H)); // 09:00, 09:30, ...
+        }
+        return items;
+    }
+
+    @FXML
+    private void onSubmit() {
+        if (selectedCell == null) return;
+        if (employeeComboBox == null) return;
+
+        String employee = employeeComboBox.getValue();
+        if (employee == null || employee.isBlank()) return;
+
+        // Προσθέτουμε "chip" σαν label μέσα στο κελί
+        Label chip = new Label(employee);
+        chip.getStyleClass().add("employee-chip");
+        chip.setMaxWidth(Double.MAX_VALUE);
+
+        selectedCell.getChildren().add(chip);
+
+        // εδώ αργότερα θα κάνουμε persist στη βάση με selectedDay/selectedHour
+        // (πχ “employee works Mon 10:00”)
+    }
+
+    private String key(DayOfWeek day, int hour) {
+        return day + "_" + hour;
+    }
 
     @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
+    public void initialize(URL location, ResourceBundle resources) {
+        if (weekGrid == null) return;
 
+        // Mock employees για UI
+        if (employeeComboBox != null) {
+            employeeComboBox.getItems().setAll("Maria Pap.", "Giorgos Kon.", "Dimitris Ar.");
+        }
+
+        renderWeekGrid();
+
+        //Γεμισμα ComboBox
+        ObservableList<String> times = buildTimes();
+
+        for (ComboBox<String> cb : new ComboBox[]{ monStart, monEnd, tueStart, tueEnd, wedStart, wedEnd, thuStart, thuEnd, friStart, friEnd }) {
+            if (cb == null) continue;
+            cb.setItems(times);
+        }
     }
 }
