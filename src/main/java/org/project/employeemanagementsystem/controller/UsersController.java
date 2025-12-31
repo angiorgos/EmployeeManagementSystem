@@ -12,6 +12,7 @@ import org.project.employeemanagementsystem.model.Role;
 import org.project.employeemanagementsystem.model.User;
 import org.project.employeemanagementsystem.service.RoleService;
 import org.project.employeemanagementsystem.service.UserService;
+import org.project.employeemanagementsystem.util.UserSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import java.net.URL;
@@ -22,6 +23,7 @@ public class UsersController implements Initializable {
 
     @Autowired private UserService userService; // Σύνδεση για Χρήστες
     @Autowired private RoleService roleService; // Σύνδεση για Ρόλους (στο dropdown)
+    @Autowired private UserSession userSession; // connection to user session
 
    // @FXML private TableView<User> usersTable;
     @FXML private ComboBox<Role> roleComboBox; // Για επιλογή ρόλου (ADMIN, EMPLOYEE, HR, ACCOUNTANT)
@@ -33,11 +35,9 @@ public class UsersController implements Initializable {
 
     @FXML private TextField usernameTextField;
 
-    @FXML
-    private Button createUserButton;
-
-    @FXML
-    private Button deleteUserButton;
+    @FXML private Button createUserButton;
+    @FXML private Button deleteUserButton;
+    @FXML Button editUserButton;
 
 
 
@@ -93,6 +93,16 @@ public class UsersController implements Initializable {
         usersTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             deleteUserButton.setDisable(newSelection == null);
         });
+
+
+        editUserButton.setDisable(true);
+
+// Enable edit button only when a user is selected
+        usersTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            boolean selectedNotNull = newSelection != null;
+            editUserButton.setDisable(!selectedNotNull);
+        });
+
 
     }
 
@@ -191,29 +201,90 @@ public class UsersController implements Initializable {
 
 
 
-/*
+
     @FXML
     private void onDeleteUser() {
         User selected = usersTable.getSelectionModel().getSelectedItem();
         if (selected == null) return;
 
+        User currentUser = userSession.getCurrentUser();
+        boolean currentUserIsAdmin = currentUser != null && currentUser.getRole() != null
+                && "ADMIN".equalsIgnoreCase(currentUser.getRole().getName());
+
+        if (!currentUserIsAdmin) {
+            // Prompt for password of the user to be deleted
+            TextInputDialog passwordDialog = new TextInputDialog();
+            passwordDialog.setTitle("Password Required");
+            passwordDialog.setHeaderText("Enter password of user: " + selected.getUsername());
+            passwordDialog.setContentText("Password:");
+
+            passwordDialog.showAndWait().ifPresent(password -> {
+                if (!selected.getPassword().equals(password)) {
+                    showAlert("Error", "Incorrect password! Cannot delete user.");
+                } else {
+                    confirmAndDeleteUser(selected);
+                }
+            });
+        } else {
+            // Admin can delete without password
+            confirmAndDeleteUser(selected);
+        }
+    }
+
+    // Helper method to confirm deletion
+    private void confirmAndDeleteUser(User user) {
         Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
         confirmation.setTitle("Delete User");
         confirmation.setHeaderText("Are you sure you want to delete this user?");
-        confirmation.setContentText(selected.getUsername());
+        confirmation.setContentText(user.getUsername());
 
         confirmation.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 try {
-                    userService.deleteUser(selected.getId());
-                    userList.remove(selected);
+                    userService.deleteUser(user);
+                    userList.remove(user);
+                    usersTable.refresh();
                 } catch (RuntimeException e) {
                     showAlert("Error", e.getMessage());
                 }
             }
         });
     }
-*/
+
+
+
+    @FXML
+    private void onEditUser() {
+        User selected = usersTable.getSelectionModel().getSelectedItem();
+        if (selected == null) return;
+
+        String newUsername = usernameTextField.getText().trim();
+        Role newRole = roleComboBox.getValue();
+
+        if (newUsername.isEmpty() || newRole == null) {
+            showAlert("Error", "Username and Role cannot be empty.");
+            return;
+        }
+
+        // Check if the new username already exists (and is not the same user)
+        if (!newUsername.equals(selected.getUsername()) && userService.findByUsername(newUsername).isPresent()) {
+            showAlert("Error", "Username already exists!");
+            return;
+        }
+
+        // Update user
+        selected.setUsername(newUsername);
+        selected.setRole(newRole);
+
+        try {
+            userService.saveUser(selected); // save updates to the DB
+            usersTable.refresh();
+        } catch (RuntimeException e) {
+            showAlert("Error", e.getMessage());
+        }
+    }
+
+
 
 
     private void showAlert(String title, String message) {
