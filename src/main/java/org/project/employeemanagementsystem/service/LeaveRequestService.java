@@ -2,8 +2,8 @@ package org.project.employeemanagementsystem.service;
 
 import org.project.employeemanagementsystem.model.*;
 import org.project.employeemanagementsystem.repository.*;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.project.employeemanagementsystem.util.UserSession; // Import του δικού σου Session
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,37 +17,40 @@ public class LeaveRequestService {
 
     private final LeaveRequestRepository leaveRequestRepository;
     private final HolidayRepository holidayRepository;
-    private final UserRepository userRepository; // Το χρειαζόμαστε για το Login
-    private final LeaveTypeRepository leaveTypeRepository; // Για το ComboBox
+    private final LeaveTypeRepository leaveTypeRepository;
 
+    // Πλέον χρειαζόμαστε το δικό σου UserSession
+    private final UserSession userSession;
+
+    @Autowired
     public LeaveRequestService(LeaveRequestRepository leaveRequestRepository,
                                HolidayRepository holidayRepository,
-                               UserRepository userRepository,
-                               LeaveTypeRepository leaveTypeRepository) {
+                               LeaveTypeRepository leaveTypeRepository,
+                               UserSession userSession) { // Injection εδώ
         this.leaveRequestRepository = leaveRequestRepository;
         this.holidayRepository = holidayRepository;
-        this.userRepository = userRepository;
         this.leaveTypeRepository = leaveTypeRepository;
+        this.userSession = userSession;
     }
 
-    // --- 1. ΕΥΡΕΣΗ ΣΥΝΔΕΔΕΜΕΝΟΥ ΥΠΑΛΛΗΛΟΥ (NEW) ---
+    // --- 1. ΕΥΡΕΣΗ ΣΥΝΔΕΔΕΜΕΝΟΥ ΥΠΑΛΛΗΛΟΥ (ΜΕ UserSession) ---
     public Employee getLoggedInEmployee() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        // Παίρνουμε τον χρήστη κατευθείαν από το Session που έφτιαξες
+        User currentUser = userSession.getCurrentUser();
 
-        if (principal instanceof UserDetails) {
-            String username = ((UserDetails) principal).getUsername();
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found: " + username));
-
-            if (user.getEmployee() == null) {
-                throw new RuntimeException("Logged in user is not linked to an Employee profile!");
-            }
-            return user.getEmployee();
+        if (currentUser == null) {
+            throw new RuntimeException("No user logged in! Please login first.");
         }
-        throw new RuntimeException("No user logged in");
+
+        if (currentUser.getEmployee() == null) {
+            throw new RuntimeException("Logged in user (" + currentUser.getUsername() + ") is not linked to an Employee profile!");
+        }
+
+        return currentUser.getEmployee();
     }
 
-    // --- 2. ΒΑΣΙΚΕΣ ΜΕΘΟΔΟΙ (CRUD) ---
+    // --- 2. ΥΠΟΛΟΙΠΕΣ ΜΕΘΟΔΟΙ (ΙΔΙΕΣ ΜΕ ΠΡΙΝ) ---
+
     public List<LeaveRequest> getAllRequests() {
         return leaveRequestRepository.findAll();
     }
@@ -56,46 +59,33 @@ public class LeaveRequestService {
         return leaveTypeRepository.findAll();
     }
 
-    public List<LeaveRequest> getRequestsByEmployee(Employee employee) {
-        return leaveRequestRepository.findByEmployee(employee);
-    }
-
-    // --- 3. ΥΠΟΒΟΛΗ ΑΙΤΗΣΗΣ ΜΕ ΕΛΕΓΧΟΥΣ (UPDATED) ---
     @Transactional
     public void submitRequest(LeaveRequest request) {
-        // Έλεγχος ημερομηνιών
         if (request.getEndDate().isBefore(request.getStartDate())) {
             throw new RuntimeException("End date cannot be before start date");
         }
 
-        // Υπολογισμός ημερών που ζητάει
         int requestedDays = calculateWorkDays(request.getStartDate(), request.getEndDate());
         if (requestedDays == 0) {
             throw new RuntimeException("You selected only weekends or holidays!");
         }
 
-        // Υπολογισμός υπολοίπου
         int remaining = getRemainingDays(request.getEmployee(), request.getLeaveType());
         if (requestedDays > remaining) {
             throw new RuntimeException("Not enough leave balance! Remaining: " + remaining + ", Requested: " + requestedDays);
         }
 
-        // Ορισμός status και αποθήκευση
         request.setStatus(LeaveStatus.PENDING);
         leaveRequestRepository.save(request);
     }
 
-    // --- 4. ΥΠΟΛΟΓΙΣΜΟΣ ΥΠΟΛΟΙΠΟΥ (YOUR LOGIC REFINED) ---
     public int getRemainingDays(Employee employee, LeaveType leaveType) {
         int maxAllowed = leaveType.getMaxDays();
-
-        // Προσοχή: Χρησιμοποιούμε το Enum LeaveStatus.APPROVED
         List<LeaveRequest> approvedRequests = leaveRequestRepository
                 .findByEmployeeAndLeaveTypeAndStatus(employee, leaveType, LeaveStatus.APPROVED);
 
         int usedDays = 0;
         for (LeaveRequest req : approvedRequests) {
-            // Μετράμε μόνο για το τρέχον έτος
             if (req.getStartDate().getYear() == LocalDate.now().getYear()) {
                 usedDays += calculateWorkDays(req.getStartDate(), req.getEndDate());
             }
@@ -103,7 +93,6 @@ public class LeaveRequestService {
         return maxAllowed - usedDays;
     }
 
-    // Βοηθητική μέθοδος υπολογισμού εργάσιμων (με χρήση Holiday Repo)
     private int calculateWorkDays(LocalDate start, LocalDate end) {
         List<LocalDate> holidays = holidayRepository.findAll().stream()
                 .map(Holiday::getDate)
@@ -122,9 +111,5 @@ public class LeaveRequestService {
             current = current.plusDays(1);
         }
         return count;
-    }
-
-    public void deleteRequest(LeaveRequest request) {
-        leaveRequestRepository.delete(request);
     }
 }
