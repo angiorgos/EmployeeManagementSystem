@@ -182,45 +182,66 @@
    BUTTONS & INPUTS
    ============================================================ */
 
-.btn-primary {
-    -fx-background-color: #2563EB; /* Blue */
-    -fx-text-fill: white;
+.btn-primary, .btn-success, .btn-secondary, .btn-danger {
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
-    -fx-background-radius: 8;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
     -fx-cursor: hand;
-}
-.btn-primary:hover { -fx-background-color: #1D4ED8; }
 
-.btn-danger {
-    -fx-background-color: #FEE2E2;
-    -fx-text-fill: #EF4444;
-    -fx-font-weight: bold;
-    -fx-background-radius: 8;
-    -fx-cursor: hand;
+    -fx-min-height: 32px;
+    -fx-max-height: 32px;
+
+    -fx-padding: 0 14;
+    -fx-alignment: CENTER;
 }
-.btn-danger:hover { -fx-background-color: #FECACA; }
+
+.btn-primary {
+    -fx-background-color: #3B82F6;
+    -fx-text-fill: white;
+    -fx-border-color: transparent;
+}
+.btn-primary:hover { -fx-background-color: #2563EB; }
 
 .btn-success {
     -fx-background-color: #10B981;
     -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-background-radius: 8;
-    -fx-cursor: hand;
+    -fx-border-color: transparent;
 }
 .btn-success:hover { -fx-background-color: #059669; }
 
-/* Text Fields */
+.btn-secondary {
+    -fx-background-color: #FFFFFF;
+    -fx-text-fill: #374151;
+    -fx-border-color: #D1D5DB;
+}
+.btn-secondary:hover {
+    -fx-background-color: #F3F4F6;
+    -fx-border-color: #9CA3AF;
+}
+
+.btn-danger {
+    -fx-background-color: #FEE2E2;
+    -fx-text-fill: #EF4444;
+    -fx-border-color: transparent;
+}
+.btn-danger:hover { -fx-background-color: #FECACA; }
+
+
 .text-field, .password-field {
-    -fx-background-color: #F9FAFB;
-    -fx-border-color: #E5E7EB;
+    -fx-background-color: #F9FAFB; /* Απαλό γκρι φόντο */
+    -fx-border-color: #E5E7EB;     /* Γκρι περίγραμμα */
     -fx-border-radius: 8;
     -fx-background-radius: 8;
-    -fx-text-fill: #374151;
-    -fx-padding: 8 12;
+    -fx-text-fill: #374151;        /* Σκούρο κείμενο */
+    -fx-padding: 8 12;             /* Άνετο padding */
 }
+
 .text-field:focused, .password-field:focused {
-    -fx-border-color: #3B82F6;
-    -fx-background-color: #FFFFFF;
+    -fx-border-color: #3B82F6;     /* Μπλε περίγραμμα */
+    -fx-background-color: #FFFFFF; /* Λευκό φόντο */
+    -fx-effect: dropshadow(three-pass-box, rgba(59, 130, 246, 0.1), 5, 0, 0, 0); /* Προαιρετική μπλε λάμψη */
 }
 
 /* Text Area */
@@ -637,84 +658,48 @@
 
 
 /* ============================================================
-   DIALOGS & ALERTS (POPUP STYLING)
+   GLOBAL DIALOG BUTTON STYLING
+   Αυτό φτιάχνει αυτόματα τα κουμπιά σε όλα τα Alerts (Info, Error, Excel Export)
    ============================================================ */
 
-/* 1. Το γενικό κουτί του παραθύρου */
-.dialog-pane {
+/* 1. Βασικό στυλ για ΟΛΑ τα κουμπιά μέσα σε διαλόγους (π.χ. Cancel) */
+.dialog-pane .button {
     -fx-background-color: #FFFFFF;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 15, 0, 0, 5);
-    /* Δεν χρειάζεται radius εδώ, το κάνει το λειτουργικό σύστημα */
-}
-
-/* 2. Ο Τίτλος (Header) */
-.dialog-pane > .header-panel {
-    -fx-background-color: #FFFFFF;
-    -fx-padding: 20 20 10 20;
-    -fx-border-color: transparent transparent #F3F4F6 transparent;
-    -fx-border-width: 1px;
-}
-
-.dialog-pane > .header-panel > .label {
-    -fx-font-size: 18px;
+    -fx-text-fill: #374151;         /* Σκούρο Γκρι */
     -fx-font-weight: bold;
-    -fx-text-fill: #111827; /* Σχεδόν μαύρο */
-}
-
-/* 3. Το περιεχόμενο (Content) */
-.dialog-pane > .content {
-    -fx-padding: 20;
-    -fx-background-color: #FFFFFF;
-}
-
-.dialog-pane > .content > .label {
-    -fx-font-size: 14px;
-    -fx-text-fill: #374151; /* Σκούρο Γκρι */
-    -fx-wrap-text: true;
-}
-
-/* 4. Η μπάρα με τα κουμπιά (Button Bar) */
-.dialog-pane > .button-bar {
-    -fx-background-color: #F9FAFB; /* Πολύ απαλό γκρι κάτω */
-    -fx-padding: 15;
-    -fx-border-color: #E5E7EB transparent transparent transparent;
-    -fx-border-width: 1px;
-}
-
-/* 5. Ειδικά Κουμπιά μέσα στο Popup (Save / Cancel) */
-
-/* Το κουμπί Save (Primary) */
-.btn-primary {
-    -fx-background-color: #3B82F6;
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-background-radius: 6;
-    -fx-padding: 8 20;
-    -fx-cursor: hand;
-    -fx-effect: none; /* Αφαιρεί την default γυαλάδα της JavaFX */
-}
-.btn-primary:hover {
-    -fx-background-color: #2563EB;
-}
-
-/* Το κουμπί Cancel / Config (Secondary) */
-.btn-secondary {
-    -fx-background-color: #FFFFFF;
-    -fx-text-fill: #374151;
-    -fx-font-weight: bold;
-    -fx-border-color: #D1D5DB;
+    -fx-border-color: #D1D5DB;      /* Απαλό περίγραμμα */
     -fx-border-radius: 6;
     -fx-background-radius: 6;
-    -fx-padding: 7 20; /* Λίγο λιγότερο padding λόγω του border */
+    -fx-padding: 6 16;
     -fx-cursor: hand;
-}
-.btn-secondary:hover {
-    -fx-background-color: #F3F4F6;
-    -fx-border-color: #9CA3AF;
-    -fx-text-fill: #111827;
+    -fx-min-width: 80px;            /* Να μην είναι πολύ μικρά */
 }
 
-/* Εικονίδια μέσα στα Dialogs (Alert Icons) */
-.dialog-pane > .header-panel > .graphic-container {
-    -fx-padding: 0 15 0 0;
+.dialog-pane .button:hover {
+    -fx-background-color: #F3F4F6;
+    -fx-border-color: #9CA3AF;
 }
+
+/* 2. Στυλ για το DEFAULT κουμπί (π.χ. OK, Save, Yes) */
+/* Η JavaFX βάζει αυτόματα την κλάση 'default' στο κύριο κουμπί */
+.dialog-pane .button:default {
+    -fx-background-color: #3B82F6;  /* Μπλε */
+    -fx-text-fill: white;
+    -fx-border-color: transparent;  /* Χωρίς περίγραμμα */
+    -fx-effect: dropshadow(three-pass-box, rgba(59, 130, 246, 0.3), 5, 0, 0, 2); /* Απαλή μπλε σκιά */
+}
+
+.dialog-pane .button:default:hover {
+    -fx-background-color: #2563EB;  /* Πιο σκούρο μπλε στο hover */
+}
+
+/* 3. Διόρθωση για το κείμενο μέσα στα Alerts */
+.dialog-pane .content {
+    -fx-font-size: 14px;
+    -fx-text-fill: #374151;
+}
+
+/* 4. Αφαίρεση του άσχημου εικονιδίου '?' ή '!' αν θες πιο καθαρό look (Προαιρετικό) */
+/* .dialog-pane > .header-panel > .graphic-container {
+    -fx-padding: 0;
+} */

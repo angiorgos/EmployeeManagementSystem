@@ -22,17 +22,14 @@
                             <Label style="-fx-text-fill: #6B7280;" text="Manage salaries, payments and settings" />
                         </VBox>
 
-                        <Region HBox.hgrow="ALWAYS" /> <HBox spacing="15.0">
-                        <VBox alignment="CENTER_LEFT" prefHeight="60" prefWidth="150" style="-fx-padding: 10; -fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #E5E7EB; -fx-border-radius: 8;" styleClass="card-flat-blue">
-                            <Label style="-fx-font-size: 11px; -fx-text-fill: #6B7280;" text="Total Cost" />
-                            <Label fx:id="lblTotalCost" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #111827;" text="€ 0.00" />
-                        </VBox>
+                        <Region HBox.hgrow="ALWAYS" />
 
-                        <VBox alignment="CENTER_LEFT" prefHeight="60" prefWidth="150" style="-fx-padding: 10; -fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #E5E7EB; -fx-border-radius: 8;" styleClass="card-flat-orange">
-                            <Label style="-fx-font-size: 11px; -fx-text-fill: #6B7280;" text="Pending Payments" />
-                            <Label fx:id="lblPendingCount" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #F59E0B;" text="0" />
-                        </VBox>
-                    </HBox>
+                        <HBox spacing="15.0">
+                            <VBox alignment="CENTER_LEFT" prefHeight="60" prefWidth="150" style="-fx-padding: 10; -fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #E5E7EB; -fx-border-radius: 8;" styleClass="card-flat-orange">
+                                <Label style="-fx-font-size: 11px; -fx-text-fill: #6B7280;" text="Pending Payments" />
+                                <Label fx:id="lblPendingCount" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #F59E0B;" text="0" />
+                            </VBox>
+                        </HBox>
                     </children>
                 </HBox>
 
@@ -45,31 +42,36 @@
 
                     <Region HBox.hgrow="ALWAYS" />
 
-                    <Button onAction="#openSettingsDialog" text="Config" styleClass="btn-secondary">
-                        <graphic> <FontIcon iconLiteral="mdi2c-cog"/> </graphic>
+                    <Button fx:id="btnFinalize" onAction="#finalizePayments" text="Confirm &amp; Pay" styleClass="btn-success">
+                        <graphic> <FontIcon iconLiteral="mdi2c-check-circle" iconColor="white"/> </graphic>
                     </Button>
 
-                    <Button fx:id="btnGenerate" onAction="#generatePayroll" text="Generate Draft" styleClass="btn-primary" style="-fx-background-color: #3B82F6; -fx-text-fill: white;">
+                    <Button text="Export Excel" onAction="#exportToExcel" styleClass="btn-success">
+                        <graphic> <FontIcon iconLiteral="mdi2f-file-excel" iconColor="white"/> </graphic>
+                    </Button>
+
+                    <Button onAction="#openSettingsDialog" text="Config" styleClass="btn-secondary">
+                        <graphic>
+                            <FontIcon iconLiteral="mdi2c-cog" iconColor="#374151"/>
+                        </graphic>
+                    </Button>
+
+                    <Button fx:id="btnGenerate" onAction="#generatePayroll" text="Generate Draft" styleClass="btn-primary">
                         <graphic> <FontIcon iconLiteral="mdi2c-calculator" iconColor="white"/> </graphic>
                     </Button>
 
-                    <Button fx:id="btnFinalize" onAction="#finalizePayments" text="Confirm &amp; Pay" style="-fx-background-color: #10B981; -fx-text-fill: white; -fx-font-weight: bold;">
-                        <graphic> <FontIcon iconLiteral="mdi2c-check-circle" iconColor="white"/> </graphic>
-                    </Button>
                 </HBox>
 
                 <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 0;" styleClass="card" VBox.vgrow="ALWAYS">
                     <TableView fx:id="payrollTable" VBox.vgrow="ALWAYS" style="-fx-background-radius: 8;">
                         <columns>
                             <TableColumn fx:id="colId" prefWidth="50.0" text="#" />
-
                             <TableColumn fx:id="colSsn" prefWidth="100.0" text="SSN" />
-
                             <TableColumn fx:id="colName" prefWidth="200.0" text="Employee" />
                             <TableColumn fx:id="colMonth" prefWidth="100.0" text="Month" />
                             <TableColumn fx:id="colGross" prefWidth="100.0" text="Gross (€)" />
                             <TableColumn fx:id="colDeductions" prefWidth="100.0" text="Deductions" />
-                            <TableColumn fx:id="colEmployerTax" prefWidth="100.0" text="Employer Tax" />
+                            <TableColumn fx:id="colEmployerTax" prefWidth="100.0" text="Employer Cost" />
                             <TableColumn fx:id="colAmount" prefWidth="120.0" text="NET PAY (€)" style="-fx-font-weight: bold;" />
                             <TableColumn fx:id="colStatus" prefWidth="120.0" text="Status" />
                             <TableColumn fx:id="colActions" prefWidth="100.0" text="Actions" />
