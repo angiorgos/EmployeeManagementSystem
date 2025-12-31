@@ -138,152 +138,156 @@
                <content>
                   <BorderPane prefHeight="619.0" prefWidth="1107.0">
                      <center>
-                        <HBox>
+                        <VBox prefHeight="603.0" prefWidth="829.0">
                            <children>
-                              <VBox prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
+                              <HBox prefHeight="596.0" prefWidth="832.0">
                                  <children>
-                                    <VBox prefHeight="53.0" prefWidth="42.0" />
-                                    <GridPane prefHeight="535.0" prefWidth="42.0" VBox.vgrow="ALWAYS">
-                                      <columnConstraints>
-                                          <ColumnConstraints halignment="RIGHT" minWidth="10.0" prefWidth="100.0" />
-                                      </columnConstraints>
-                                      <rowConstraints>
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                      </rowConstraints>
+                                    <VBox prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
                                        <children>
-                                          <Label text="9 am" />
-                                          <Label text="10 am" GridPane.rowIndex="1" />
-                                          <Label text="11 am" GridPane.rowIndex="2" />
-                                          <Label text="12 am" GridPane.rowIndex="3" />
-                                          <Label text="13 pm" GridPane.rowIndex="4" />
-                                          <Label text="14 pm" GridPane.rowIndex="5" />
-                                          <Label text="15 pm" GridPane.rowIndex="6" />
-                                          <Label text="17 pm" GridPane.rowIndex="8" />
-                                          <Label text="16 pm" GridPane.rowIndex="7" />
-                                          <Label text="18 pm" GridPane.rowIndex="9" />
-                                          <Label text="19 pm" GridPane.rowIndex="10" />
-                                          <Label text="21 pm" GridPane.rowIndex="12" />
-                                          <Label text="20 pm" GridPane.rowIndex="11" />
+                                          <VBox prefHeight="10.0" prefWidth="42.0" VBox.vgrow="ALWAYS" />
+                                          <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="535.0" prefWidth="42.0" VBox.vgrow="ALWAYS">
+                                            <columnConstraints>
+                                                <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" percentWidth="100.0" prefWidth="100.0" />
+                                            </columnConstraints>
+                                            <rowConstraints>
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                              <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                              <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                            </rowConstraints>
+                                             <children>
+                                                <Label text="9 am" />
+                                                <Label text="10 am" GridPane.rowIndex="1" />
+                                                <Label text="11 am" GridPane.rowIndex="2" />
+                                                <Label text="12 am" GridPane.rowIndex="3" />
+                                                <Label text="13 pm" GridPane.rowIndex="4" />
+                                                <Label text="14 pm" GridPane.rowIndex="5" />
+                                                <Label text="15 pm" GridPane.rowIndex="6" />
+                                                <Label text="17 pm" GridPane.rowIndex="8" />
+                                                <Label text="16 pm" GridPane.rowIndex="7" />
+                                                <Label text="18 pm" GridPane.rowIndex="9" />
+                                                <Label text="19 pm" GridPane.rowIndex="10" />
+                                                <Label text="21 pm" GridPane.rowIndex="12" />
+                                                <Label text="20 pm" GridPane.rowIndex="11" />
+                                             </children>
+                                          </GridPane>
                                        </children>
-                                    </GridPane>
-                                 </children>
-                              </VBox>
-                              <VBox prefHeight="639.0" prefWidth="845.0" HBox.hgrow="ALWAYS">
-                                 <children>
-                                    <HBox prefHeight="120.0" prefWidth="838.0" VBox.vgrow="ALWAYS">
+                                    </VBox>
+                                    <VBox prefHeight="550.0" prefWidth="845.0" HBox.hgrow="ALWAYS">
                                        <children>
-                                          <VBox alignment="CENTER" prefHeight="43.0" prefWidth="118.42">
+                                          <HBox prefHeight="50.0" prefWidth="838.0" VBox.vgrow="ALWAYS">
                                              <children>
-                                                <Label text="Mon">
-                                                   <font>
-                                                      <Font size="24.0" />
-                                                   </font>
-                                                </Label>
+                                                <VBox alignment="CENTER" prefHeight="35.0" prefWidth="120.0" HBox.hgrow="ALWAYS">
+                                                   <children>
+                                                      <Label prefHeight="14.0" prefWidth="50.0" text="Mon">
+                                                         <font>
+                                                            <Font size="24.0" />
+                                                         </font>
+                                                      </Label>
+                                                   </children>
+                                                </VBox>
+                                                <VBox alignment="CENTER" layoutX="10.0" layoutY="10.0" prefHeight="43.0" prefWidth="118.42" HBox.hgrow="ALWAYS">
+                                                   <children>
+                                                      <Label text="Tue">
+                                                         <font>
+                                                            <Font size="24.0" />
+                                                         </font>
+                                                      </Label>
+                                                   </children>
+                                                </VBox>
+                                                <VBox alignment="CENTER" layoutX="10.0" layoutY="10.0" prefHeight="43.0" prefWidth="118.42" HBox.hgrow="ALWAYS">
+                                                   <children>
+                                                      <Label text="Wed">
+                                                         <font>
+                                                            <Font size="24.0" />
+                                                         </font>
+                                                      </Label>
+                                                   </children>
+                                                </VBox>
+                                                <VBox alignment="CENTER" layoutX="110.0" layoutY="10.0" prefHeight="43.0" prefWidth="118.42" HBox.hgrow="ALWAYS">
+                                                   <children>
+                                                      <Label text="Thu">
+                                                         <font>
+                                                            <Font size="24.0" />
+                                                         </font>
+                                                      </Label>
+                                                   </children>
+                                                </VBox>
+                                                <VBox alignment="CENTER" layoutX="310.0" layoutY="10.0" prefHeight="43.0" prefWidth="118.42" HBox.hgrow="ALWAYS">
+                                                   <children>
+                                                      <Label text="Fri">
+                                                         <font>
+                                                            <Font size="24.0" />
+                                                         </font>
+                                                      </Label>
+                                                   </children>
+                                                </VBox>
+                                                <VBox alignment="CENTER" layoutX="410.0" layoutY="10.0" prefHeight="43.0" prefWidth="118.42" HBox.hgrow="ALWAYS">
+                                                   <children>
+                                                      <Label text="Sat">
+                                                         <font>
+                                                            <Font size="24.0" />
+                                                         </font>
+                                                      </Label>
+                                                   </children>
+                                                </VBox>
+                                                <VBox alignment="CENTER" layoutX="510.0" layoutY="10.0" prefHeight="43.0" prefWidth="118.42" HBox.hgrow="ALWAYS">
+                                                   <children>
+                                                      <Label text="Sun">
+                                                         <font>
+                                                            <Font size="24.0" />
+                                                         </font>
+                                                      </Label>
+                                                   </children>
+                                                </VBox>
                                              </children>
-                                          </VBox>
-                                          <VBox alignment="CENTER" layoutX="10.0" layoutY="10.0" prefHeight="43.0" prefWidth="118.42">
-                                             <children>
-                                                <Label text="Tue">
-                                                   <font>
-                                                      <Font size="24.0" />
-                                                   </font>
-                                                </Label>
-                                             </children>
-                                          </VBox>
-                                          <VBox alignment="CENTER" layoutX="10.0" layoutY="10.0" prefHeight="43.0" prefWidth="118.42">
-                                             <children>
-                                                <Label text="Wed">
-                                                   <font>
-                                                      <Font size="24.0" />
-                                                   </font>
-                                                </Label>
-                                             </children>
-                                          </VBox>
-                                          <VBox alignment="CENTER" layoutX="110.0" layoutY="10.0" prefHeight="43.0" prefWidth="118.42">
-                                             <children>
-                                                <Label text="Thu">
-                                                   <font>
-                                                      <Font size="24.0" />
-                                                   </font>
-                                                </Label>
-                                             </children>
-                                          </VBox>
-                                          <VBox alignment="CENTER" layoutX="310.0" layoutY="10.0" prefHeight="43.0" prefWidth="118.42">
-                                             <children>
-                                                <Label text="Fri">
-                                                   <font>
-                                                      <Font size="24.0" />
-                                                   </font>
-                                                </Label>
-                                             </children>
-                                          </VBox>
-                                          <VBox alignment="CENTER" layoutX="410.0" layoutY="10.0" prefHeight="43.0" prefWidth="118.42">
-                                             <children>
-                                                <Label text="Sat">
-                                                   <font>
-                                                      <Font size="24.0" />
-                                                   </font>
-                                                </Label>
-                                             </children>
-                                          </VBox>
-                                          <VBox alignment="CENTER" layoutX="510.0" layoutY="10.0" prefHeight="43.0" prefWidth="118.42">
-                                             <children>
-                                                <Label text="Sun">
-                                                   <font>
-                                                      <Font size="24.0" />
-                                                   </font>
-                                                </Label>
-                                             </children>
-                                          </VBox>
+                                          </HBox>
+                                          <GridPane alignment="CENTER" gridLinesVisible="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="612.0" prefWidth="835.0" styleClass="calendar-grid" VBox.vgrow="ALWAYS">
+                                            <columnConstraints>
+                                                <ColumnConstraints />
+                                                <ColumnConstraints />
+                                                <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
+                                              <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
+                                                <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
+                                                <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
+                                                <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
+                                                <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
+                                                <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
+                                            </columnConstraints>
+                                            <rowConstraints>
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                              <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                              <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                            </rowConstraints>
+                                          </GridPane>
                                        </children>
-                                    </HBox>
-                                    <GridPane alignment="CENTER" gridLinesVisible="true" prefHeight="612.0" prefWidth="835.0" styleClass="calendar-grid" VBox.vgrow="ALWAYS">
-                                      <columnConstraints>
-                                          <ColumnConstraints />
-                                          <ColumnConstraints />
-                                          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                      </columnConstraints>
-                                      <rowConstraints>
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                      </rowConstraints>
-                                    </GridPane>
+                                    </VBox>
                                  </children>
-                              </VBox>
+                              </HBox>
                            </children>
-                        </HBox>
+                        </VBox>
                      </center>
                      <left>
-                        <VBox prefHeight="593.0" prefWidth="255.0" BorderPane.alignment="CENTER">
+                        <VBox maxWidth="-Infinity" prefHeight="593.0" prefWidth="255.0" BorderPane.alignment="CENTER">
                            <children>
                               <ComboBox prefHeight="40.0" prefWidth="247.0" promptText="Choose Employee" />
                               <VBox prefHeight="10.0" prefWidth="255.0" />
