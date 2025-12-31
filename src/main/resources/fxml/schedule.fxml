@@ -90,8 +90,8 @@
                                     <String fx:value="cal-icon-btn" />
                                  </styleClass>
                               </ToggleButton>
-                              <HBox prefHeight="35.0" prefWidth="25.0" />
-                              <HBox prefHeight="60.0" prefWidth="466.0" HBox.hgrow="ALWAYS">
+                              <HBox prefHeight="37.0" prefWidth="11.0" />
+                              <HBox prefHeight="37.0" prefWidth="478.0" HBox.hgrow="ALWAYS">
                                  <children>
                                     <ToggleButton fx:id="todayBtn" mnemonicParsing="false" onAction="#onToday" prefHeight="44.0" prefWidth="70.0" styleClass="view-btn" text="Today" />
                                  </children></HBox>
@@ -102,7 +102,7 @@
                               </ToggleButton>
                               <ToggleButton mnemonicParsing="false" onAction="#onToday" prefHeight="44.0" prefWidth="76.0" styleClass="view-btn" text="Week" toggleGroup="$viewGroup" />
                               <ToggleButton mnemonicParsing="false" onAction="#onToday" prefHeight="44.0" prefWidth="76.0" styleClass="view-btn" text="Month" toggleGroup="$viewGroup" />
-                              <HBox prefHeight="35.0" prefWidth="94.0" />
+                              <HBox prefHeight="37.0" prefWidth="68.0" />
                                         
                                     </children>
                                 </HBox>
@@ -370,7 +370,7 @@
                               </VBox>
                               <HBox alignment="CENTER_RIGHT" prefHeight="42.0" prefWidth="255.0">
                                  <children>
-                                    <Button mnemonicParsing="false" prefHeight="33.0" prefWidth="79.0" text="Sumbit" />
+                                    <Button mnemonicParsing="false" prefHeight="33.0" prefWidth="79.0" styleClass="view-btn" text="Sumbit" />
                                     <VBox prefHeight="42.0" prefWidth="20.0" />
                                  </children>
                               </HBox>
