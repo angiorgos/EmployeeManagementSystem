@@ -42,7 +42,7 @@
                            <children>
                               <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="10.0" styleClass="card">
                                  <children>
-                                    <Button fx:id="CreateDepartmentButton" alignment="BOTTOM_LEFT" mnemonicParsing="false" styleClass="btn-primary" text="Create Department" />
+                                    <Button fx:id="CreateDepartmentButton" onAction="#onCreateDepartment" alignment="BOTTOM_LEFT" mnemonicParsing="false" styleClass="btn-primary" text="Create Department" />
                                  </children>
                               </HBox>
                            </children>
@@ -89,8 +89,8 @@
                         </VBox>
                         <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="10.0" styleClass="card">
                            <children>
-                              <Button fx:id="EditDepartmentButton" alignment="BOTTOM_LEFT" mnemonicParsing="false" styleClass="btn-primary" text="Edit Department" />
-                              <Button fx:id="DeleteDepartMentButton" alignment="BOTTOM_LEFT" mnemonicParsing="false" styleClass="btn-danger" text="Delete Department" />
+                              <Button fx:id="EditDepartmentButton"  onAction="#onEditDepartment" alignment="BOTTOM_LEFT" mnemonicParsing="false" styleClass="btn-primary" text="Edit Department" />
+                              <Button fx:id="DeleteDepartMentButton" onAction="#onDeleteDepartment" alignment="BOTTOM_LEFT" mnemonicParsing="false" styleClass="btn-danger" text="Delete Department" />
                            </children>
                         </HBox>
                      </children>
