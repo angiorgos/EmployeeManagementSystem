@@ -31,7 +31,7 @@ public class PayrollController implements Initializable {
     private final PaymentService paymentService;
     private final EmployeeService employeeService;
 
-    // --- State Variables ---
+    // --- Settings (Default Rates) ---
     private double currentOvertimeRate = 1.50;
     private double currentSundayRate = 1.75;
     private double currentInsuranceRate = 0.16;
@@ -47,10 +47,9 @@ public class PayrollController implements Initializable {
     @FXML private DatePicker monthPicker;
     @FXML private TextField searchField;
 
-    // --- ΤΑ ΚΟΥΜΠΙΑ ΠΟΥ ΕΛΕΙΠΑΝ ---
+    // Τα κουμπιά που ελέγχουν τη ροή
     @FXML private Button btnGenerate;
     @FXML private Button btnFinalize;
-    // ------------------------------
 
     @FXML private TableView<Payment> payrollTable;
     @FXML private TableColumn<Payment, Long> colId;
@@ -68,15 +67,17 @@ public class PayrollController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        monthPicker.setValue(LocalDate.now());
+        monthPicker.setValue(LocalDate.now()); // Default: Σήμερα
 
         setupTableColumns();
         loadData();
 
+        // Listeners για φιλτράρισμα
         searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
         monthPicker.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
     }
 
+    // --- 1. ΣΤΗΣΙΜΟ ΠΙΝΑΚΑ ---
     private void setupTableColumns() {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
 
@@ -96,6 +97,7 @@ public class PayrollController implements Initializable {
         colAmount.setCellValueFactory(new PropertyValueFactory<>("amount"));
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
 
+        // Χρωματισμός Status
         colStatus.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -111,6 +113,7 @@ public class PayrollController implements Initializable {
             }
         });
 
+        // ACTIONS COLUMN (Info + Bonus Buttons)
         colActions.setCellFactory(param -> new TableCell<>() {
             private final Button btnInfo = new Button("Info");
             private final Button btnBonus = new Button("Bonus");
@@ -140,17 +143,21 @@ public class PayrollController implements Initializable {
         });
     }
 
+    // --- 2. ΦΟΡΤΩΣΗ & ΦΙΛΤΡΑ ---
     private void loadData() {
         List<Payment> list = paymentService.getAllPayments();
         masterData.setAll(list);
         filteredData = new FilteredList<>(masterData);
         payrollTable.setItems(filteredData);
-        applyFilters();
+
+        applyFilters(); // Εφαρμογή φίλτρων με το που φορτώσει
     }
 
     private void applyFilters() {
         String query = searchField.getText() != null ? searchField.getText().toLowerCase().trim() : "";
         LocalDate selectedDate = monthPicker.getValue();
+
+        // Φίλτρο βάσει Μήνα/Έτους ("MM/yyyy")
         String selectedMonthStr = (selectedDate != null) ?
                 selectedDate.format(DateTimeFormatter.ofPattern("MM/yyyy")) : null;
 
@@ -160,43 +167,47 @@ public class PayrollController implements Initializable {
                 String fullName = (p.getEmployee().getLastName() + " " + p.getEmployee().getFirstName()).toLowerCase();
                 matchesName = fullName.contains(query);
             }
+
             boolean matchesDate = true;
             if (selectedMonthStr != null) {
                 matchesDate = p.getMonthYear().equals(selectedMonthStr);
             }
+
             return matchesName && matchesDate;
         });
 
+        // Ενημέρωση των καρτών και των κουμπιών βάσει των αποτελεσμάτων
         updateSummaryCards(filteredData);
     }
 
     private void updateSummaryCards(List<Payment> currentList) {
         if (currentList == null) return;
 
-        double totalCost = currentList.stream().mapToDouble(Payment::getGrossPay).sum();
+        double totalCost = currentList.stream().mapToDouble(Payment::getAmount).sum();
         long pendingCount = currentList.stream().filter(p -> "PENDING".equalsIgnoreCase(p.getStatus())).count();
-        // long paidCount = currentList.stream().filter(p -> "PAID".equalsIgnoreCase(p.getStatus())).count(); // Αν το χρειαστείς
 
         lblTotalCost.setText(String.format("€ %.2f", totalCost));
         lblPendingCount.setText(String.valueOf(pendingCount));
 
-        // --- BUTTON LOGIC ---
-        // 1. Αν η λίστα είναι άδεια -> Δείξε Generate, Κρύψε Finalize
+        // --- ΛΟΓΙΚΗ ΕΜΦΑΝΙΣΗΣ ΚΟΥΜΠΙΩΝ ---
+        // 1. Λίστα άδεια (για τον μήνα) -> Δείξε Generate
         if (currentList.isEmpty()) {
             if (btnGenerate != null) { btnGenerate.setVisible(true); btnGenerate.setManaged(true); }
             if (btnFinalize != null) { btnFinalize.setVisible(false); btnFinalize.setManaged(false); }
         }
-        // 2. Αν υπάρχουν PENDING -> Κρύψε Generate, Δείξε Finalize
+        // 2. Υπάρχουν Pending -> Κρύψε Generate, Δείξε Finalize
         else if (pendingCount > 0) {
             if (btnGenerate != null) { btnGenerate.setVisible(false); btnGenerate.setManaged(false); }
             if (btnFinalize != null) { btnFinalize.setVisible(true); btnFinalize.setManaged(true); }
         }
-        // 3. Αν όλα είναι PAID -> Κρύψε και τα δύο
+        // 3. Όλα Paid -> Κρύψε και τα δύο
         else {
             if (btnGenerate != null) { btnGenerate.setVisible(false); btnGenerate.setManaged(false); }
             if (btnFinalize != null) { btnFinalize.setVisible(false); btnFinalize.setManaged(false); }
         }
     }
+
+    // --- 3. ACTIONS ---
 
     @FXML
     public void generatePayroll() {
@@ -210,7 +221,9 @@ public class PayrollController implements Initializable {
         int count = 0;
 
         for (Employee emp : employees) {
-            if (emp.getSalary() == null) continue;
+            if (emp.getSalary() == null) continue; // Αν δεν έχει μισθό, τον προσπερνάμε
+
+            // Χρησιμοποιούμε DEFAULT τιμές (176 ώρες, 0 υπερωρίες) όπως ζήτησες
             paymentService.calculateAndSavePayroll(emp, 176.0, 0.0, 0.0,
                     currentOvertimeRate, currentSundayRate, currentInsuranceRate);
             count++;
@@ -222,6 +235,7 @@ public class PayrollController implements Initializable {
 
     @FXML
     public void finalizePayments() {
+        // Παίρνουμε τα PENDING του τρέχοντος φίλτρου
         List<Payment> pendingPayments = filteredData.stream()
                 .filter(p -> "PENDING".equalsIgnoreCase(p.getStatus()))
                 .collect(Collectors.toList());
@@ -232,13 +246,13 @@ public class PayrollController implements Initializable {
         }
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
-                "Mark " + pendingPayments.size() + " payments as PAID?\nThis action cannot be undone.");
+                "Mark " + pendingPayments.size() + " payments as PAID?\nThis cannot be undone.");
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             for (Payment p : pendingPayments) {
                 p.setStatus("PAID");
-                // Χρησιμοποιούμε την updateBonus σαν save (hack) ή φτιάξε μέθοδο save() σκέτη
+                // Κάνουμε "updateBonus" με το ίδιο bonus για να σωθεί (hack για save)
                 paymentService.updateBonus(p, (p.getBonus()!=null?p.getBonus():0), currentInsuranceRate);
             }
             payrollTable.refresh();
@@ -246,6 +260,8 @@ public class PayrollController implements Initializable {
             new Alert(Alert.AlertType.INFORMATION, "Payments Finalized!").show();
         }
     }
+
+    // --- 4. DIALOGS ---
 
     @FXML
     public void openSettingsDialog() {
@@ -290,7 +306,7 @@ public class PayrollController implements Initializable {
             try {
                 double newBonus = Double.parseDouble(amountStr);
                 paymentService.updateBonus(payment, newBonus, currentInsuranceRate);
-                loadData();
+                loadData(); // Ανανέωση πίνακα
             } catch (NumberFormatException e) {
                 new Alert(Alert.AlertType.ERROR, "Invalid amount!").show();
             }
