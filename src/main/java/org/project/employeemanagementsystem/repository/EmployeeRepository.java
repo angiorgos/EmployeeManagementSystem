@@ -11,4 +11,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> findByLastNameContainingIgnoreCase(String lastName);
     List<Employee> findByExitDateIsNull();
     boolean existsByEmail(String email);
+    //Μετράει πόσοι υπάλληλοι ανήκουν σε ένα τμήμα
+    long countByDepartmentId(Long departmentId);
 }
