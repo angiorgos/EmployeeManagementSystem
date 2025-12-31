@@ -21,7 +21,6 @@ public class Department {
 
     private String description;
 
-    // Ένα τμήμα -> Πολλοί Υπάλληλοι
     @OneToMany(mappedBy = "department")
     private List<Employee> employees;
 }

@@ -31,7 +31,7 @@ public class Payment {
     private Double grossPay;
     private Double deductions; // Employee Share (15%)
 
-    // --- NEW FIELD ---
+    private Double employerTax;
     private Double totalTax;   // Total State Tax (Employer 30% + Employee 15% = 45%)
 
     private Double amount;     // Net Pay
