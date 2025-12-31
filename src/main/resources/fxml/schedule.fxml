@@ -8,7 +8,6 @@
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
-<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
@@ -89,8 +88,8 @@
                                     <String fx:value="cal-icon-btn" />
                                  </styleClass>
                               </ToggleButton>
-                              <HBox prefHeight="35.0" prefWidth="25.0" />
-                              <HBox prefHeight="60.0" prefWidth="466.0" HBox.hgrow="ALWAYS">
+                              <HBox prefHeight="37.0" prefWidth="11.0" />
+                              <HBox prefHeight="37.0" prefWidth="478.0" HBox.hgrow="ALWAYS">
                                  <children>
                                     <ToggleButton fx:id="todayBtn" mnemonicParsing="false" onAction="#onToday" prefHeight="44.0" prefWidth="70.0" styleClass="view-btn" text="Today" />
                                  </children></HBox>
@@ -101,7 +100,7 @@
                               </ToggleButton>
                               <ToggleButton mnemonicParsing="false" onAction="#onToday" prefHeight="44.0" prefWidth="76.0" styleClass="view-btn" text="Week" toggleGroup="$viewGroup" />
                               <ToggleButton mnemonicParsing="false" onAction="#onToday" prefHeight="44.0" prefWidth="76.0" styleClass="view-btn" text="Month" toggleGroup="$viewGroup" />
-                              <HBox prefHeight="35.0" prefWidth="94.0" />
+                              <HBox prefHeight="37.0" prefWidth="68.0" />
                                         
                                     </children>
                                 </HBox>
@@ -135,7 +134,7 @@
                 </Tab>
                 <Tab text="New Schedule">
                     <content>
-                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                        <fx:include source="schedule2.fxml" />
                     </content>
                 </Tab>
             </tabs>

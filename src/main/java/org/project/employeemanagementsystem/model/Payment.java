@@ -16,31 +16,25 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Σύνδεση με Υπάλληλο
     @ManyToOne
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
 
-    // --- Ημερομηνίες ---
-    private LocalDate paymentDate; // Πότε έγινε η πληρωμή (π.χ. 2024-05-30)
-    private String monthYear;      // Για ποιον μήνα αφορά (π.χ. "05/2024")
+    private LocalDate paymentDate;
+    private String monthYear;
 
-    // --- Τα Οικονομικά Στοιχεία (ΓΙΑ ΝΑ ΕΧΟΥΜΕ ΙΣΤΟΡΙΚΟ) ---
+    private Double baseSalary;
+    private Double hoursWorked;
+    private Double overtimeHours;
+    private Double sundayHours;
 
-    private Double baseSalary;     // Ο βασικός μισθός που είχε τότε
+    private Double grossPay;
+    private Double deductions; // Employee Share (15%)
 
-    // Ώρες (Για να ξέρουμε πώς δούλεψε)
-    private Double hoursWorked;    // Κανονικές ώρες
-    private Double overtimeHours;  // Υπερωρίες
-    private Double sundayHours;    // Κυριακές/Αργίες
+    // --- NEW FIELD ---
+    private Double totalTax;   // Total State Tax (Employer 30% + Employee 15% = 45%)
 
-    // Υπολογισμοί
-    private Double grossPay;       // Μικτά (Πριν τις κρατήσεις)
-    private Double deductions;     // Κρατήσεις (Ασφάλεια/Φόροι)
-
-    private Double amount;// Το ΤΕΛΙΚΟ ΠΟΣΟ (Καθαρά - Net Pay)
-    private Double bonus; // Έκτακτο ποσό για αυτόν τον μήνα
-
-    // Κατάσταση
-    private String status;         // "PENDING", "PAID", "CANCELLED"
+    private Double amount;     // Net Pay
+    private Double bonus;
+    private String status;
 }

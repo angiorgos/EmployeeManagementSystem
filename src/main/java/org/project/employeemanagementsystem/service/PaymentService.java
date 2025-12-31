@@ -6,6 +6,8 @@ import org.project.employeemanagementsystem.repository.PaymentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -27,31 +29,40 @@ public class PaymentService {
     public void calculateAndSavePayroll(Employee emp, double hoursWorked, double otHours, double sundayHours,
                                         double otRate, double sundayRate, double insuranceRate) {
 
-        double standardHours = 176.0;
-        double hourlyPay = emp.getSalary() / standardHours;
+        // Σταθερές
+        double standardHours = 176.0; // Τυπικό 8ωρο x 22 μέρες
+
+        // Αν ο μισθός είναι null, θεωρούμε 0 για να μην σκάσει
+        double salary = (emp.getSalary() != null) ? emp.getSalary() : 0.0;
+
+        double hourlyPay = salary / standardHours;
         double otPay = hourlyPay * otRate * otHours;
         double sunPay = hourlyPay * sundayRate * sundayHours;
+
+        // Πέναλτι αν δούλεψε λιγότερο από το κανονικό (χωρίς άδεια)
         double penalty = (hoursWorked < standardHours) ? (standardHours - hoursWorked) * hourlyPay : 0;
 
-        double bonus = 0.0;
+        double bonus = 0.0; // Αρχικό bonus: 0
 
         // Υπολογισμός Μικτών
-        double gross = emp.getSalary() - penalty + otPay + sunPay + bonus;
+        double gross = salary - penalty + otPay + sunPay + bonus;
 
-        // Υπολογισμός Κρατήσεων & Καθαρών
-        double deductions = gross * insuranceRate * 0.5;
+        // Υπολογισμός Κρατήσεων (Εργαζόμενου)
+        double deductions = gross * insuranceRate * 0.5; // Π.χ. το μισό της εισφοράς
+
+        // Υπολογισμός Καθαρών
         double netAmount = gross - deductions;
 
-        // ΔΗΜΙΟΥΡΓΙΑ ANTIKEIMENOY
+        // --- ΔΗΜΙΟΥΡΓΙΑ ΕΓΓΡΑΦΗΣ ---
         Payment payment = new Payment();
 
-
+        // SOS: Αυτό έλειπε και πετούσε το DataIntegrityViolationException
         payment.setEmployee(emp);
 
         payment.setPaymentDate(LocalDate.now());
         payment.setMonthYear(LocalDate.now().format(DateTimeFormatter.ofPattern("MM/yyyy")));
 
-        payment.setBaseSalary(emp.getSalary());
+        payment.setBaseSalary(salary);
         payment.setHoursWorked(hoursWorked);
         payment.setOvertimeHours(otHours);
         payment.setSundayHours(sundayHours);
@@ -66,25 +77,21 @@ public class PaymentService {
         paymentRepository.save(payment);
     }
 
+    // Μέθοδος για προσθήκη Bonus εκ των υστέρων
     @Transactional
     public void updateBonus(Payment payment, double newBonus, double insuranceRate) {
-        // Κρατάμε τα παλιά στοιχεία που δεν αλλάζουν (μισθός, ώρες)
-        // και ξανακάνουμε τα μαθηματικά ΜΟΝΟ για τα λεφτά.
-
-        // Ανάκτηση των ήδη υπολογισμένων ποσών από υπερωρίες (για να μην τα ξαναψάχνουμε)
-        // Προσοχή: Εδώ κάνουμε reverse engineering ή τα ξαναυπολογίζουμε.
-        // Για απλότητα: Gross = Net + Deductions.
-        // Αλλά το σωστό είναι: Gross = Base + OT + Bonus.
-
-        // Αφαιρούμε το παλιό bonus από τα μικτά και προσθέτουμε το καινούργιο
         double oldBonus = (payment.getBonus() != null) ? payment.getBonus() : 0.0;
+
+        // Αφαιρούμε το παλιό bonus από τα μικτά για να βρούμε τη βάση
         double currentGrossNoBonus = payment.getGrossPay() - oldBonus;
 
+        // Προσθέτουμε το νέο bonus
         double newGross = currentGrossNoBonus + newBonus;
-        double newDeductions = newGross * insuranceRate * 0.5; // Ξαναβγάζουμε κρατήσεις
+
+        // Ξανα-υπολογίζουμε κρατήσεις και καθαρά
+        double newDeductions = newGross * insuranceRate * 0.5;
         double newNet = newGross - newDeductions;
 
-        // Ενημέρωση Entity
         payment.setBonus(newBonus);
         payment.setGrossPay(round(newGross));
         payment.setDeductions(round(newDeductions));
@@ -93,8 +100,10 @@ public class PaymentService {
         paymentRepository.save(payment);
     }
 
-    // Βοηθητική μέθοδος για στρογγυλοποίηση σε 2 δεκαδικά
-    private Double round(Double value) {
-        return Math.round(value * 100.0) / 100.0;
+    // Βοηθητική μέθοδος για στρογγυλοποίηση (2 δεκαδικά)
+    private double round(double value) {
+        BigDecimal bd = BigDecimal.valueOf(value);
+        bd = bd.setScale(2, RoundingMode.HALF_UP);
+        return bd.doubleValue();
     }
 }

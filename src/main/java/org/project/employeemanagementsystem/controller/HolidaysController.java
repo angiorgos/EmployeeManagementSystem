@@ -36,6 +36,7 @@ public class HolidaysController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        holidaysTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         holidaysID.setCellValueFactory(new PropertyValueFactory<>("id"));
         holidaysName.setCellValueFactory(new PropertyValueFactory<>("name"));
         holidaysDate.setCellValueFactory(new PropertyValueFactory<>("date"));
