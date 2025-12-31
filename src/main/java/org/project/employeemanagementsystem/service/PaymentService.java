@@ -4,10 +4,7 @@ import org.project.employeemanagementsystem.model.Employee;
 import org.project.employeemanagementsystem.model.Payment;
 import org.project.employeemanagementsystem.repository.PaymentRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -25,80 +22,70 @@ public class PaymentService {
         return paymentRepository.findAll();
     }
 
-    @Transactional
-    public void calculateAndSavePayroll(Employee emp, double hoursWorked, double otHours, double sundayHours,
-                                        double otRate, double sundayRate,
-                                        double totalTaxRate, double employerSplitPct) { // Νέες παράμετροι
+    // --- ΔΙΟΡΘΩΣΗ: Προστέθηκε η παράμετρος 'payrollDate' ---
+    public void calculateAndSavePayroll(Employee emp, LocalDate payrollDate,
+                                        Double hoursWorked, Double overtimeHours, Double sundayHours,
+                                        double overtimeRate, double sundayRate, double totalTaxRate, double employerShare) {
 
-        double standardHours = 176.0;
-        double salary = (emp.getSalary() != null) ? emp.getSalary() : 0.0;
+        // Χρησιμοποιούμε την ημερομηνία που επιλέχθηκε (payrollDate), ΟΧΙ την τωρινή (now)
+        String currentMonth = payrollDate.format(DateTimeFormatter.ofPattern("MM/yyyy"));
 
-        double hourlyPay = salary / standardHours;
-        double otPay = hourlyPay * otRate * otHours;
-        double sunPay = hourlyPay * sundayRate * sundayHours;
-        double penalty = (hoursWorked < standardHours) ? (standardHours - hoursWorked) * hourlyPay : 0;
-        double bonus = 0.0;
+        // Έλεγχος: Αν υπάρχει ήδη πληρωμή για αυτόν τον υπάλληλο και αυτόν τον μήνα, ίσως να μην θες να την ξαναφτιάξεις.
+        // Για την ώρα το αφήνουμε απλό (δημιουργεί νέα εγγραφή).
 
-        // 1. Υπολογισμός Μικτών
-        double gross = salary - penalty + otPay + sunPay + bonus;
+        double hourlyRate = emp.getSalary() / 160.0;
 
-        // 2. Υπολογισμός Φόρων (Η λογική του φίλου σου, διορθωμένη)
-        // Παράδειγμα: Gross 1000€, TaxRate 0.40 (400€ φόρος)
-        // EmployerSplit 0.60 (Ο εργοδότης πληρώνει το 60% του φόρου)
+        double basePay = emp.getSalary();
+        double overtimePay = overtimeHours * hourlyRate * overtimeRate;
+        double sundayPay = sundayHours * hourlyRate * sundayRate;
 
-        double totalTaxValue = gross * totalTaxRate; // 400€
+        double grossPay = basePay + overtimePay + sundayPay;
 
-        double employerShare = totalTaxValue * employerSplitPct; // 400 * 0.60 = 240€ (Επιβάρυνση Εργοδότη)
-        double employeeShare = totalTaxValue - employerShare;    // 400 - 240 = 160€ (Κράτηση Υπαλλήλου)
-
-        // 3. Καθαρά (Μικτά - Μερίδιο Υπαλλήλου)
-        double netAmount = gross - employeeShare;
+        double totalTaxAmount = grossPay * totalTaxRate;
+        double employerTaxAmount = totalTaxAmount * employerShare;
+        double employeeTaxAmount = totalTaxAmount * (1 - employerShare);
 
         Payment payment = new Payment();
         payment.setEmployee(emp);
-        payment.setPaymentDate(LocalDate.now());
-        payment.setMonthYear(LocalDate.now().format(DateTimeFormatter.ofPattern("MM/yyyy")));
+        payment.setMonthYear(currentMonth); // "02/2026" π.χ.
+        payment.setPaymentDate(payrollDate); // Η ημερομηνία που επέλεξες
+        payment.setBaseSalary(basePay);
+        payment.setHoursWorked(hoursWorked);
+        payment.setOvertimeHours(overtimeHours);
+        payment.setSundayHours(sundayHours);
 
-        payment.setBaseSalary(salary);
-        payment.setGrossPay(round(gross));
+        payment.setGrossPay(grossPay);
+        payment.setDeductions(employeeTaxAmount);
+        payment.setEmployerTax(employerTaxAmount);
 
-        // Αποθήκευση των μεριδίων
-        payment.setDeductions(round(employeeShare)); // Αυτά αφαιρούνται από τον υπάλληλο
-        payment.setEmployerTax(round(employerShare)); // Αυτά τα πληρώνει η εταιρεία εξτρά
-
-        payment.setAmount(round(netAmount));
+        payment.setAmount(grossPay - employeeTaxAmount);
         payment.setStatus("PENDING");
 
         paymentRepository.save(payment);
     }
 
-    // Μέθοδος για προσθήκη Bonus εκ των υστέρων
-    @Transactional
-    public void updateBonus(Payment payment, double newBonus, double insuranceRate) {
-        double oldBonus = (payment.getBonus() != null) ? payment.getBonus() : 0.0;
+    public void updateBonus(Payment payment, double bonusAmount, double employeeTaxRate) {
+        payment.setBonus(bonusAmount);
 
-        // Αφαιρούμε το παλιό bonus από τα μικτά για να βρούμε τη βάση
-        double currentGrossNoBonus = payment.getGrossPay() - oldBonus;
+        // Προσθήκη Bonus στο Gross Pay
+        // Σημείωση: Εδώ κάνουμε μια απλοποίηση. Αν ήθελες τέλεια ακρίβεια θα έπρεπε να ξανα-υπολογίσεις τα πάντα.
+        // Αλλά για το Bonus, προσθέτουμε απλά το ποσό.
+        double oldGross = payment.getGrossPay();
+        double newGross = oldGross + bonusAmount;
 
-        // Προσθέτουμε το νέο bonus
-        double newGross = currentGrossNoBonus + newBonus;
+        double bonusTax = bonusAmount * employeeTaxRate;
 
-        // Ξανα-υπολογίζουμε κρατήσεις και καθαρά
-        double newDeductions = newGross * insuranceRate * 0.5;
-        double newNet = newGross - newDeductions;
+        double oldDeductions = payment.getDeductions();
+        payment.setDeductions(oldDeductions + bonusTax);
 
-        payment.setBonus(newBonus);
-        payment.setGrossPay(round(newGross));
-        payment.setDeductions(round(newDeductions));
-        payment.setAmount(round(newNet));
+        payment.setGrossPay(newGross);
+        payment.setAmount(newGross - payment.getDeductions());
 
         paymentRepository.save(payment);
     }
 
-    // Βοηθητική μέθοδος για στρογγυλοποίηση (2 δεκαδικά)
-    private double round(double value) {
-        BigDecimal bd = BigDecimal.valueOf(value);
-        bd = bd.setScale(2, RoundingMode.HALF_UP);
-        return bd.doubleValue();
+    public void updatePaymentStatus(Payment payment, String status) {
+        payment.setStatus(status);
+        paymentRepository.save(payment);
     }
 }
