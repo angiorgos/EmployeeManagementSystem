@@ -19,7 +19,6 @@ public class LeaveRequestService {
     private final HolidayRepository holidayRepository;
     private final LeaveTypeRepository leaveTypeRepository;
 
-    // Πλέον χρειαζόμαστε το δικό σου UserSession
     private final UserSession userSession;
 
     @Autowired

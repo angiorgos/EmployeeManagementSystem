@@ -19,12 +19,11 @@ import java.util.ResourceBundle;
 @Controller
 public class LeavesController implements Initializable {
 
-    // Σύνδεση με το Service
+    // 1. ΣΥΝΔΕΣΗ ΜΕ ΤΟ SERVICE
     @Autowired
     private LeaveRequestService leaveRequestService;
 
-    // --- FXML UI Components ---
-    // Βεβαιώσου ότι τα fx:id στο SceneBuilder είναι ακριβώς τα ίδια!
+    // FXML Στοιχεία (Πρέπει να έχουν τα ίδια fx:id στο SceneBuilder)
     @FXML private TextField firstNameField;
     @FXML private TextField lastNameField;
     @FXML private TextField emailField;
@@ -33,120 +32,87 @@ public class LeavesController implements Initializable {
     @FXML private DatePicker startDatePicker;
     @FXML private DatePicker endDatePicker;
     @FXML private TextArea reasonArea;
-    @FXML private Label remainingDaysLabel;
+    @FXML private Label remainingDaysLabel; // Το Label που δείχνει το υπόλοιπο
 
     private Employee currentEmployee;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         try {
-            // 1. Αυτόματη εύρεση του συνδεδεμένου υπαλλήλου (Admin "a")
+            // 2. ΦΟΡΤΩΣΗ ΔΕΔΟΜΕΝΩΝ ΚΑΤΑ ΤΗΝ ΕΚΚΙΝΗΣΗ
+
+            // Βρίσκουμε ποιος είναι συνδεδεμένος (μέσω του UserSession που έχει το Service)
             currentEmployee = leaveRequestService.getLoggedInEmployee();
 
-            // 2. Συμπλήρωση των Read-Only πεδίων
-            populateEmployeeInfo();
+            // Γεμίζουμε τα πεδία που δεν αλλάζουν (Read-Only)
+            firstNameField.setText(currentEmployee.getFirstName());
+            lastNameField.setText(currentEmployee.getLastName());
+            emailField.setText(currentEmployee.getEmail());
 
-            // 3. Γέμισμα του ComboBox με τους τύπους άδειας
+            // Κλειδώνουμε τα πεδία για να μην τα πειράξει ο χρήστης
+            firstNameField.setEditable(false);
+            lastNameField.setEditable(false);
+            emailField.setEditable(false);
+
+            // Γεμίζουμε το ComboBox με τους τύπους άδειας
             typeCombo.setItems(FXCollections.observableArrayList(leaveRequestService.getAllLeaveTypes()));
 
-            // Ρύθμιση ώστε να φαίνεται το "Όνομα" του τύπου και όχι το αντικείμενο στη λίστα
-            setupComboBoxRendering();
+            // Ρύθμιση για να φαίνονται τα ονόματα σωστά στο ComboBox
+            setupComboBoxRenderer();
 
-            // 4. Listener: Όταν αλλάζει ο τύπος άδειας, υπολόγισε το υπόλοιπο
+            // 3. LISTENER: ΥΠΟΛΟΓΙΣΜΟΣ ΥΠΟΛΟΙΠΟΥ ΣΕ ΠΡΑΓΜΑΤΙΚΟ ΧΡΟΝΟ
+            // Μόλις ο χρήστης διαλέξει τύπο άδειας, τρέχει αυτός ο κώδικας
             typeCombo.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
                 if (newVal != null) {
-                    updateRemainingDays(newVal);
+                    int remaining = leaveRequestService.getRemainingDays(currentEmployee, newVal);
+
+                    remainingDaysLabel.setText("Remaining Days: " + remaining);
+
+                    // Αλλαγή χρώματος: Κόκκινο αν δεν έχει μέρες, Πράσινο αν έχει
+                    if (remaining <= 0) {
+                        remainingDaysLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+                    } else {
+                        remainingDaysLabel.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
+                    }
                 }
             });
 
         } catch (Exception e) {
-            showAlert("Initialization Error", "Could not load user profile: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private void populateEmployeeInfo() {
-        if (firstNameField != null) {
-            firstNameField.setText(currentEmployee.getFirstName());
-            firstNameField.setEditable(false); // Ο χρήστης δεν πρέπει να το αλλάζει
-        }
-        if (lastNameField != null) {
-            lastNameField.setText(currentEmployee.getLastName());
-            lastNameField.setEditable(false);
-        }
-        if (emailField != null) {
-            emailField.setText(currentEmployee.getEmail());
-            emailField.setEditable(false);
-        }
-    }
-
-    private void setupComboBoxRendering() {
-        // Τρόπος εμφάνισης στη λίστα
-        Callback<ListView<LeaveType>, ListCell<LeaveType>> cellFactory = lv -> new ListCell<>() {
-            @Override
-            protected void updateItem(LeaveType item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(empty || item == null ? "" : item.getName());
-            }
-        };
-
-        typeCombo.setCellFactory(cellFactory);
-        typeCombo.setButtonCell(cellFactory.call(null)); // Τρόπος εμφάνισης όταν επιλεγεί
-    }
-
-    private void updateRemainingDays(LeaveType type) {
-        if (remainingDaysLabel != null && currentEmployee != null) {
-            // Κλήση στο Service για τον υπολογισμό
-            int remaining = leaveRequestService.getRemainingDays(currentEmployee, type);
-
-            remainingDaysLabel.setText("Remaining Balance: " + remaining + " days");
-
-            // Αλλαγή χρώματος: Κόκκινο αν τελειώνουν, Πράσινο αν έχει υπόλοιπο
-            if (remaining <= 0) {
-                remainingDaysLabel.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-font-size: 14px;");
-            } else {
-                remainingDaysLabel.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold; -fx-font-size: 14px;");
-            }
+            showAlert("Error", "Could not load user data: " + e.getMessage());
         }
     }
 
     @FXML
     private void handleSubmit() {
         try {
-            // Λήψη τιμών από τη φόρμα
-            LeaveType selectedType = typeCombo.getValue();
+            LeaveType type = typeCombo.getValue();
             LocalDate start = startDatePicker.getValue();
             LocalDate end = endDatePicker.getValue();
             String reason = reasonArea.getText();
 
-            // Βασικοί έλεγχοι UI
-            if (selectedType == null || start == null || end == null) {
-                showAlert("Validation Error", "Please fill in Leave Type and Dates.");
+            // Βασικός έλεγχος ότι συμπλήρωσε τα πάντα
+            if (type == null || start == null || end == null) {
+                showAlert("Validation Error", "Please fill all required fields.");
                 return;
             }
 
-            // Δημιουργία αντικειμένου
+            // Δημιουργία του αντικειμένου
             LeaveRequest request = new LeaveRequest();
             request.setEmployee(currentEmployee);
-            request.setLeaveType(selectedType);
+            request.setLeaveType(type);
             request.setStartDate(start);
             request.setEndDate(end);
             request.setReason(reason);
 
-            // Αποστολή στο Service (Εκεί γίνονται οι έλεγχοι υπολοίπου & ημερομηνιών)
+            // Αποστολή στο Service (Εδώ γίνονται οι έλεγχοι για Σ/Κ και υπόλοιπο)
             leaveRequestService.submitRequest(request);
 
-            // Επιτυχία
-            showAlert("Success", "Leave request submitted successfully!");
-
-            // Καθαρισμός και ενημέρωση του υπολοίπου
-            handleClear();
-            // Ξανα-επιλέγουμε τον τύπο για να δούμε το νέο μειωμένο υπόλοιπο (αν θέλουμε)
-            // typeCombo.getSelectionModel().clearSelection();
+            showAlert("Success", "Request submitted successfully!");
+            handleClear(); // Καθαρισμός φόρμας
 
         } catch (RuntimeException e) {
-            // Εδώ πιάνουμε τα μηνύματα "Not enough balance" ή "End date before start date"
-            showAlert("Request Failed", e.getMessage());
+            // Πιάνουμε τα μηνύματα λάθους του Service (π.χ. "Not enough days")
+            showAlert("Error", e.getMessage());
         }
     }
 
@@ -155,17 +121,29 @@ public class LeavesController implements Initializable {
         typeCombo.setValue(null);
         startDatePicker.setValue(null);
         endDatePicker.setValue(null);
-        if (reasonArea != null) reasonArea.clear();
-        if (remainingDaysLabel != null) remainingDaysLabel.setText("Select a leave type to see balance");
+        reasonArea.clear();
+        remainingDaysLabel.setText("Select a type...");
     }
 
-    private void showAlert(String title, String message) {
+    // Βοηθητική μέθοδος για να δείχνει το όνομα στο ComboBox αντί για memory address
+    private void setupComboBoxRenderer() {
+        Callback<ListView<LeaveType>, ListCell<LeaveType>> cellFactory = lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(LeaveType item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? "" : item.getName());
+            }
+        };
+        typeCombo.setCellFactory(cellFactory);
+        typeCombo.setButtonCell(cellFactory.call(null));
+    }
+
+    private void showAlert(String title, String content) {
         Alert.AlertType type = title.equals("Success") ? Alert.AlertType.INFORMATION : Alert.AlertType.ERROR;
         Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(null);
-        alert.setContentText(message);
-
+        alert.setContentText(content);
         alert.showAndWait();
     }
 }
