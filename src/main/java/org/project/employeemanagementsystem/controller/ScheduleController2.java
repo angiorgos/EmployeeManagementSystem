@@ -102,10 +102,33 @@ public class ScheduleController2 implements Initializable {
 
     private ObservableList<String> buildTimes() {
         ObservableList<String> items = FXCollections.observableArrayList();
+
+        items.add(""); // κενή επιλογή (ξε-επιλογή)
+
         for (LocalTime t = LocalTime.of(9, 0); !t.isAfter(LocalTime.of(21, 0)); t = t.plusMinutes(30)) {
-            items.add(t.format(TIME_12H)); // 09:00, 09:30, ...
+            items.add(t.format(TIME_12H)); // 9:00 AM, 9:30 AM, ...
         }
         return items;
+    }
+
+    //Κρυψιμο Null τιμης στο combo box
+    private void makeBlankSelectable(ComboBox<String> cb) {
+        cb.setCellFactory(lv -> new javafx.scene.control.ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? "" : item);
+            }
+        });
+        cb.setButtonCell(new javafx.scene.control.ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? "" : item);
+            }
+        });
+
+        cb.getSelectionModel().select(null); // ξεκινάει κενό
     }
 
     @FXML
@@ -148,6 +171,7 @@ public class ScheduleController2 implements Initializable {
         for (ComboBox<String> cb : new ComboBox[]{ monStart, monEnd, tueStart, tueEnd, wedStart, wedEnd, thuStart, thuEnd, friStart, friEnd }) {
             if (cb == null) continue;
             cb.setItems(times);
+            makeBlankSelectable(cb); // κενή επιλογή + σωστό rendering
         }
     }
 }
