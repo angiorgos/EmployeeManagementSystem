@@ -5,70 +5,118 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane xmlns="http://javafx.com/javafx/24.0.1"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.project.employeemanagementsystem.controller.leave.LeavesController"
-            stylesheets="@../theme.css"
-            prefWidth="1366.0" prefHeight="768.0">
+<BorderPane prefHeight="768.0" prefWidth="1366.0" stylesheets="@../theme.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.project.employeemanagementsystem.controller.LeavesController">
 
     <!-- Topbar -->
     <top>
-        <fx:include source="topbar.fxml"/>
+        <fx:include source="topbar.fxml" />
     </top>
 
     <!-- Sidebar -->
     <left>
-        <fx:include source="sidebar.fxml"/>
+        <fx:include source="sidebar.fxml" />
     </left>
 
-    <!-- Center Form -->
+    <!-- Main Content -->
     <center>
-        <VBox alignment="TOP_CENTER" spacing="15.0">
+        <VBox spacing="15" BorderPane.alignment="CENTER">
             <padding>
-                <Insets top="20" right="20" bottom="20" left="20"/>
+                <Insets bottom="30" left="30" right="30" top="30" />
             </padding>
 
-            <Label text="Submit Leave Request" styleClass="form-header"/>
+            <!-- Review Button -->
+            <Button styleClass="btn-danger" text="Review Requests" />
 
-            <GridPane hgap="10" vgap="10">
-                <columnConstraints>
-                    <ColumnConstraints percentWidth="30"/>
-                    <ColumnConstraints percentWidth="70"/>
-                </columnConstraints>
+            <!-- Card -->
+            <VBox spacing="15" styleClass="card">
 
-                <!-- First Name -->
-                <Label text="First Name:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                <TextField fx:id="firstNameField" promptText="Enter first name" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                <Label styleClass="card-title" text="Make a Leave Request" />
 
-                <!-- Last Name -->
-                <Label text="Last Name:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                <TextField fx:id="lastNameField" promptText="Enter last name" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                <!-- Form Grid -->
+                <GridPane hgap="30" vgap="20">
+                    <padding>
+                        <Insets bottom="20" left="20" right="20" top="20" />
+                    </padding>
 
-                <!-- Phone Number -->
-                <Label text="Phone Number:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                <TextField fx:id="phoneField" promptText="Enter phone number" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                    <!-- Two equal columns -->
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS" />
+                        <ColumnConstraints hgrow="ALWAYS" />
+                    </columnConstraints>
 
-                <!-- Leave Type -->
-                <Label text="Leave Type:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-                <ComboBox fx:id="leaveTypeCombo" promptText="Select leave type" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                    <!-- Four rows -->
+                    <rowConstraints>
+                        <RowConstraints prefHeight="50" />
+                        <RowConstraints prefHeight="50" />
+                        <RowConstraints prefHeight="50" />
+                        <RowConstraints prefHeight="50" />
+                    </rowConstraints>
 
-                <!-- Start Date -->
-                <Label text="Start Date:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-                <DatePicker fx:id="startDatePicker" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                    <!-- Row 0 -->
+                    <VBox spacing="5" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                        <Label text="First Name" />
+                        <TextField />
+                    </VBox>
 
-                <!-- End Date -->
-                <Label text="End Date:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-                <DatePicker fx:id="endDatePicker" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
-            </GridPane>
+                    <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <Label text="Last Name" />
+                        <TextField />
+                    </VBox>
 
-            <!-- Submit Button -->
-            <Button fx:id="submitBtn" text="Submit Request" onAction="#handleSubmitLeave" maxWidth="200"/>
+                    <!-- Row 1 -->
+                    <VBox spacing="5" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                        <Label text="Phone" />
+                        <TextField />
+                    </VBox>
+
+                    <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <Label text="Email" />
+                        <TextField />
+                    </VBox>
+
+                    <!-- Row 2 -->
+                    <VBox spacing="5" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                        <Label text="Leave Type" />
+                  <ComboBox fx:id="typeCombo" prefHeight="40.0" prefWidth="180.0" />
+                    </VBox>
+
+                    <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                        <!-- intentionally empty -->
+                    </VBox>
+
+                    <!-- Row 3 -->
+                    <VBox spacing="5" GridPane.columnIndex="0" GridPane.rowIndex="3">
+                        <Label text="Start Date" />
+                        <DatePicker fx:id="startDatePicker" />
+                    </VBox>
+
+                    <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                        <Label text="End Date" />
+                        <DatePicker fx:id="endDatePicker" />
+                    </VBox>
+
+                </GridPane>
+
+                <!-- Reason -->
+                <TextArea fx:id="reasonArea" prefHeight="150" promptText="Reason for leave" />
+
+                <!-- Action Buttons -->
+                <HBox alignment="CENTER_RIGHT" spacing="10">
+                    <Button onAction="#handleClear" styleClass="btn-danger" text="Clear" />
+                    <Button onAction="#handleSubmit" styleClass="btn-primary" text="Submit" />
+                </HBox>
+
+            </VBox>
         </VBox>
     </center>
+
 </BorderPane>
