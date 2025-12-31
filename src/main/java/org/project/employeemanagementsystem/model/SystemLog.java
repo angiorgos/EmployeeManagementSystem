@@ -19,6 +19,8 @@ public class SystemLog {
     private String action;
     private LocalDateTime timestamp;
 
+    private String username;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

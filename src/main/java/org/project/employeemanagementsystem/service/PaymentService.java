@@ -27,51 +27,46 @@ public class PaymentService {
 
     @Transactional
     public void calculateAndSavePayroll(Employee emp, double hoursWorked, double otHours, double sundayHours,
-                                        double otRate, double sundayRate, double insuranceRate) {
+                                        double otRate, double sundayRate,
+                                        double totalTaxRate, double employerSplitPct) { // Νέες παράμετροι
 
-        // Σταθερές
-        double standardHours = 176.0; // Τυπικό 8ωρο x 22 μέρες
-
-        // Αν ο μισθός είναι null, θεωρούμε 0 για να μην σκάσει
+        double standardHours = 176.0;
         double salary = (emp.getSalary() != null) ? emp.getSalary() : 0.0;
 
         double hourlyPay = salary / standardHours;
         double otPay = hourlyPay * otRate * otHours;
         double sunPay = hourlyPay * sundayRate * sundayHours;
-
-        // Πέναλτι αν δούλεψε λιγότερο από το κανονικό (χωρίς άδεια)
         double penalty = (hoursWorked < standardHours) ? (standardHours - hoursWorked) * hourlyPay : 0;
+        double bonus = 0.0;
 
-        double bonus = 0.0; // Αρχικό bonus: 0
-
-        // Υπολογισμός Μικτών
+        // 1. Υπολογισμός Μικτών
         double gross = salary - penalty + otPay + sunPay + bonus;
 
-        // Υπολογισμός Κρατήσεων (Εργαζόμενου)
-        double deductions = gross * insuranceRate * 0.5; // Π.χ. το μισό της εισφοράς
+        // 2. Υπολογισμός Φόρων (Η λογική του φίλου σου, διορθωμένη)
+        // Παράδειγμα: Gross 1000€, TaxRate 0.40 (400€ φόρος)
+        // EmployerSplit 0.60 (Ο εργοδότης πληρώνει το 60% του φόρου)
 
-        // Υπολογισμός Καθαρών
-        double netAmount = gross - deductions;
+        double totalTaxValue = gross * totalTaxRate; // 400€
 
-        // --- ΔΗΜΙΟΥΡΓΙΑ ΕΓΓΡΑΦΗΣ ---
+        double employerShare = totalTaxValue * employerSplitPct; // 400 * 0.60 = 240€ (Επιβάρυνση Εργοδότη)
+        double employeeShare = totalTaxValue - employerShare;    // 400 - 240 = 160€ (Κράτηση Υπαλλήλου)
+
+        // 3. Καθαρά (Μικτά - Μερίδιο Υπαλλήλου)
+        double netAmount = gross - employeeShare;
+
         Payment payment = new Payment();
-
-        // SOS: Αυτό έλειπε και πετούσε το DataIntegrityViolationException
         payment.setEmployee(emp);
-
         payment.setPaymentDate(LocalDate.now());
         payment.setMonthYear(LocalDate.now().format(DateTimeFormatter.ofPattern("MM/yyyy")));
 
         payment.setBaseSalary(salary);
-        payment.setHoursWorked(hoursWorked);
-        payment.setOvertimeHours(otHours);
-        payment.setSundayHours(sundayHours);
-
-        payment.setBonus(bonus);
         payment.setGrossPay(round(gross));
-        payment.setDeductions(round(deductions));
-        payment.setAmount(round(netAmount));
 
+        // Αποθήκευση των μεριδίων
+        payment.setDeductions(round(employeeShare)); // Αυτά αφαιρούνται από τον υπάλληλο
+        payment.setEmployerTax(round(employerShare)); // Αυτά τα πληρώνει η εταιρεία εξτρά
+
+        payment.setAmount(round(netAmount));
         payment.setStatus("PENDING");
 
         paymentRepository.save(payment);

@@ -69,6 +69,7 @@
                             <TableColumn fx:id="colMonth" prefWidth="100.0" text="Month" />
                             <TableColumn fx:id="colGross" prefWidth="100.0" text="Gross (€)" />
                             <TableColumn fx:id="colDeductions" prefWidth="100.0" text="Deductions" />
+                            <TableColumn fx:id="colEmployerTax" prefWidth="100.0" text="Employer Tax" />
                             <TableColumn fx:id="colAmount" prefWidth="120.0" text="NET PAY (€)" style="-fx-font-weight: bold;" />
                             <TableColumn fx:id="colStatus" prefWidth="120.0" text="Status" />
                             <TableColumn fx:id="colActions" prefWidth="100.0" text="Actions" />
