@@ -138,31 +138,31 @@
                <content>
                   <BorderPane prefHeight="619.0" prefWidth="1107.0">
                      <center>
-                        <VBox prefHeight="603.0" prefWidth="829.0">
+                        <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="603.0" prefWidth="829.0" BorderPane.alignment="TOP_LEFT">
                            <children>
-                              <HBox prefHeight="596.0" prefWidth="832.0">
+                              <HBox prefHeight="596.0" prefWidth="832.0" VBox.vgrow="ALWAYS">
                                  <children>
                                     <VBox prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
                                        <children>
-                                          <VBox prefHeight="10.0" prefWidth="42.0" VBox.vgrow="ALWAYS" />
-                                          <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="535.0" prefWidth="42.0" VBox.vgrow="ALWAYS">
+                                          <HBox prefHeight="52.0" prefWidth="42.0" VBox.vgrow="NEVER" />
+                                          <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="535.0" prefWidth="60.0" VBox.vgrow="ALWAYS">
                                             <columnConstraints>
-                                                <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" percentWidth="100.0" prefWidth="100.0" />
+                                                <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
                                             </columnConstraints>
                                             <rowConstraints>
-                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
-                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
-                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
-                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
-                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
-                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
-                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
-                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
-                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
-                                              <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
-                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
-                                                <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
-                                              <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
                                             </rowConstraints>
                                              <children>
                                                 <Label text="9 am" />
@@ -184,7 +184,7 @@
                                     </VBox>
                                     <VBox prefHeight="550.0" prefWidth="845.0" HBox.hgrow="ALWAYS">
                                        <children>
-                                          <HBox prefHeight="50.0" prefWidth="838.0" VBox.vgrow="ALWAYS">
+                                          <HBox prefHeight="50.0" prefWidth="838.0" VBox.vgrow="NEVER">
                                              <children>
                                                 <VBox alignment="CENTER" prefHeight="35.0" prefWidth="120.0" HBox.hgrow="ALWAYS">
                                                    <children>
@@ -253,15 +253,13 @@
                                           </HBox>
                                           <GridPane alignment="CENTER" gridLinesVisible="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="612.0" prefWidth="835.0" styleClass="calendar-grid" VBox.vgrow="ALWAYS">
                                             <columnConstraints>
-                                                <ColumnConstraints />
-                                                <ColumnConstraints />
-                                                <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
-                                              <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
-                                                <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
-                                                <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
-                                                <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
-                                                <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
-                                                <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
+                                                <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" />
+                                              <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" />
+                                                <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" />
+                                                <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" />
+                                                <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" />
+                                                <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" />
+                                                <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" />
                                             </columnConstraints>
                                             <rowConstraints>
                                                 <RowConstraints minHeight="10.0" percentHeight="7.692" prefHeight="30.0" vgrow="ALWAYS" />
