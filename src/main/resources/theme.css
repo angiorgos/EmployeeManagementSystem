@@ -221,13 +221,28 @@
     -fx-border-color: #9CA3AF;
 }
 
-/* 4. ΚΟΚΚΙΝΟ ΚΟΥΜΠΙ */
 .btn-danger {
     -fx-background-color: #FEE2E2;
     -fx-text-fill: #EF4444;
     -fx-border-color: transparent;
 }
 .btn-danger:hover { -fx-background-color: #FECACA; }
+
+
+.text-field, .password-field {
+    -fx-background-color: #F9FAFB; /* Απαλό γκρι φόντο */
+    -fx-border-color: #E5E7EB;     /* Γκρι περίγραμμα */
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-text-fill: #374151;        /* Σκούρο κείμενο */
+    -fx-padding: 8 12;             /* Άνετο padding */
+}
+
+.text-field:focused, .password-field:focused {
+    -fx-border-color: #3B82F6;     /* Μπλε περίγραμμα */
+    -fx-background-color: #FFFFFF; /* Λευκό φόντο */
+    -fx-effect: dropshadow(three-pass-box, rgba(59, 130, 246, 0.1), 5, 0, 0, 0); /* Προαιρετική μπλε λάμψη */
+}
 
 /* Text Area */
 .text-area {
