@@ -188,7 +188,7 @@
                                              <children>
                                                 <VBox alignment="CENTER" prefHeight="35.0" prefWidth="120.0" HBox.hgrow="ALWAYS">
                                                    <children>
-                                                      <Label prefHeight="14.0" prefWidth="50.0" text="Mon">
+                                                      <Label prefHeight="14.0" prefWidth="50.0" text="Mon" textFill="#7c7c7c">
                                                          <font>
                                                             <Font size="24.0" />
                                                          </font>
@@ -197,7 +197,7 @@
                                                 </VBox>
                                                 <VBox alignment="CENTER" layoutX="10.0" layoutY="10.0" prefHeight="43.0" prefWidth="118.42" HBox.hgrow="ALWAYS">
                                                    <children>
-                                                      <Label text="Tue">
+                                                      <Label text="Tue" textFill="#7c7c7c">
                                                          <font>
                                                             <Font size="24.0" />
                                                          </font>
@@ -206,7 +206,7 @@
                                                 </VBox>
                                                 <VBox alignment="CENTER" layoutX="10.0" layoutY="10.0" prefHeight="43.0" prefWidth="118.42" HBox.hgrow="ALWAYS">
                                                    <children>
-                                                      <Label text="Wed">
+                                                      <Label text="Wed" textFill="#7c7c7c">
                                                          <font>
                                                             <Font size="24.0" />
                                                          </font>
@@ -215,7 +215,7 @@
                                                 </VBox>
                                                 <VBox alignment="CENTER" layoutX="110.0" layoutY="10.0" prefHeight="43.0" prefWidth="118.42" HBox.hgrow="ALWAYS">
                                                    <children>
-                                                      <Label text="Thu">
+                                                      <Label text="Thu" textFill="#7c7c7c">
                                                          <font>
                                                             <Font size="24.0" />
                                                          </font>
@@ -224,7 +224,7 @@
                                                 </VBox>
                                                 <VBox alignment="CENTER" layoutX="310.0" layoutY="10.0" prefHeight="43.0" prefWidth="118.42" HBox.hgrow="ALWAYS">
                                                    <children>
-                                                      <Label text="Fri">
+                                                      <Label text="Fri" textFill="#7c7c7c">
                                                          <font>
                                                             <Font size="24.0" />
                                                          </font>
@@ -233,7 +233,7 @@
                                                 </VBox>
                                                 <VBox alignment="CENTER" layoutX="410.0" layoutY="10.0" prefHeight="43.0" prefWidth="118.42" HBox.hgrow="ALWAYS">
                                                    <children>
-                                                      <Label text="Sat">
+                                                      <Label text="Sat" textFill="#7c7c7c">
                                                          <font>
                                                             <Font size="24.0" />
                                                          </font>
@@ -242,7 +242,7 @@
                                                 </VBox>
                                                 <VBox alignment="CENTER" layoutX="510.0" layoutY="10.0" prefHeight="43.0" prefWidth="118.42" HBox.hgrow="ALWAYS">
                                                    <children>
-                                                      <Label text="Sun">
+                                                      <Label text="Sun" textFill="#7c7c7c">
                                                          <font>
                                                             <Font size="24.0" />
                                                          </font>
@@ -251,7 +251,7 @@
                                                 </VBox>
                                              </children>
                                           </HBox>
-                                          <GridPane alignment="CENTER" gridLinesVisible="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="612.0" prefWidth="835.0" styleClass="calendar-grid" VBox.vgrow="ALWAYS">
+                                          <GridPane fx:id="weekGrid" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="612.0" prefWidth="835.0" styleClass="calendar-grid" VBox.vgrow="ALWAYS">
                                             <columnConstraints>
                                                 <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" />
                                               <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" />
@@ -287,47 +287,91 @@
                      <left>
                         <VBox maxWidth="-Infinity" prefHeight="593.0" prefWidth="255.0" BorderPane.alignment="CENTER">
                            <children>
-                              <ComboBox prefHeight="40.0" prefWidth="247.0" promptText="Choose Employee" />
-                              <VBox prefHeight="10.0" prefWidth="255.0" />
-                              <HBox alignment="CENTER_LEFT" prefHeight="54.0" prefWidth="255.0">
+                              <ComboBox prefHeight="40.0" prefWidth="252.0" promptText="Choose Employee" />
+                              <VBox prefHeight="35.0" prefWidth="255.0" />
+                              <VBox prefHeight="419.0" prefWidth="255.0">
                                  <children>
-                                    <Label text="Mon:" />
+                                    <GridPane prefHeight="420.0" prefWidth="255.0">
+                                      <columnConstraints>
+                                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="80.0" minWidth="10.0" prefWidth="37.0" />
+                                          <ColumnConstraints hgrow="SOMETIMES" maxWidth="134.0" minWidth="10.0" prefWidth="91.0" />
+                                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="105.0" minWidth="10.0" prefWidth="18.0" />
+                                          <ColumnConstraints hgrow="SOMETIMES" maxWidth="112.0" minWidth="10.0" prefWidth="110.0" />
+                                      </columnConstraints>
+                                      <rowConstraints>
+                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                      </rowConstraints>
+                                       <children>
+                                          <Label text="Mon" />
+                                          <Label text="Tue" GridPane.rowIndex="1" />
+                                          <Label text="Wed" GridPane.rowIndex="2" />
+                                          <Label text="Thu" GridPane.rowIndex="3" />
+                                          <Label text="Fri" GridPane.rowIndex="4" />
+                                          <Label text="Sat" GridPane.rowIndex="5" />
+                                          <Label text="Sun" GridPane.rowIndex="6" />
+                                          <ComboBox prefHeight="26.0" prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" />
+                                          <Label text="-" textAlignment="CENTER" textFill="#7c7c7c" GridPane.columnIndex="2">
+                                             <font>
+                                                <Font name="System Bold" size="40.0" />
+                                             </font>
+                                          </Label>
+                                          <Label text="-" textAlignment="CENTER" textFill="#7c7c7c" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                                             <font>
+                                                <Font name="System Bold" size="40.0" />
+                                             </font>
+                                          </Label>
+                                          <Label text="-" textAlignment="CENTER" textFill="#7c7c7c" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                                             <font>
+                                                <Font name="System Bold" size="40.0" />
+                                             </font>
+                                          </Label>
+                                          <Label prefHeight="58.0" prefWidth="3.0" text="-" textAlignment="CENTER" textFill="#7c7c7c" GridPane.columnIndex="2" GridPane.rowIndex="3">
+                                             <font>
+                                                <Font name="System Bold" size="40.0" />
+                                             </font>
+                                          </Label>
+                                          <Label text="-" textAlignment="CENTER" textFill="#7c7c7c" GridPane.columnIndex="2" GridPane.rowIndex="4">
+                                             <font>
+                                                <Font name="System Bold" size="40.0" />
+                                             </font>
+                                          </Label>
+                                          <Label text="-" textFill="#7c7c7c" GridPane.columnIndex="2" GridPane.rowIndex="5">
+                                             <font>
+                                                <Font name="System Bold" size="40.0" />
+                                             </font>
+                                          </Label>
+                                          <Label text="-" textAlignment="CENTER" textFill="#7c7c7c" GridPane.columnIndex="2" GridPane.rowIndex="6">
+                                             <font>
+                                                <Font name="System Bold" size="40.0" />
+                                             </font>
+                                          </Label>
+                                          <ComboBox prefHeight="30.0" prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" />
+                                          <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                          <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                                          <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                          <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+                                          <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                          <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+                                          <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                          <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" GridPane.rowIndex="4" />
+                                          <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                          <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" GridPane.rowIndex="5" />
+                                          <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                                          <ComboBox prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" GridPane.rowIndex="6" />
+                                       </children>
+                                    </GridPane>
                                  </children>
-                              </HBox>
-                              <HBox alignment="CENTER_LEFT" prefHeight="54.0" prefWidth="255.0">
-                                 <children>
-                                    <Label text="Tue:" />
-                                 </children>
-                              </HBox>
-                              <HBox alignment="CENTER_LEFT" prefHeight="54.0" prefWidth="255.0">
-                                 <children>
-                                    <Label text="Wed:" />
-                                 </children>
-                              </HBox>
-                              <HBox alignment="CENTER_LEFT" prefHeight="54.0" prefWidth="255.0">
-                                 <children>
-                                    <Label text="Thu:" />
-                                 </children>
-                              </HBox>
-                              <HBox alignment="CENTER_LEFT" prefHeight="54.0" prefWidth="255.0">
-                                 <children>
-                                    <Label prefHeight="18.0" prefWidth="20.0" text="Fri:" />
-                                 </children>
-                              </HBox>
-                              <HBox alignment="CENTER_LEFT" prefHeight="54.0" prefWidth="255.0">
-                                 <children>
-                                    <Label text="Sat:" />
-                                 </children>
-                              </HBox>
-                              <HBox alignment="CENTER_LEFT" prefHeight="54.0" prefWidth="255.0">
-                                 <children>
-                                    <Label text="Sun:" />
-                                 </children>
-                              </HBox>
+                              </VBox>
                               <HBox alignment="CENTER_RIGHT" prefHeight="42.0" prefWidth="255.0">
                                  <children>
-                                    <Button mnemonicParsing="false" prefHeight="33.0" prefWidth="82.0" text="Sumbit" />
-                                    <VBox prefHeight="42.0" prefWidth="9.0" />
+                                    <Button mnemonicParsing="false" prefHeight="33.0" prefWidth="79.0" text="Sumbit" />
+                                    <VBox prefHeight="42.0" prefWidth="20.0" />
                                  </children>
                               </HBox>
                            </children>

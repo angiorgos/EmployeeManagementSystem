@@ -171,3 +171,40 @@
 }
 /* ============================================================
    ============================================================ */
+/* κάνει το control να μοιάζει με “καθαρό” πεδίο */
+.time-picker {
+    -fx-background-color: #E5E7EB;       /* σαν το παράδειγμα */
+    -fx-background-radius: 6;
+    -fx-border-color: transparent;
+    -fx-padding: 6 10;
+}
+
+/* ορατό κείμενο */
+.time-picker .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #111827;
+    -fx-font-weight: 500;
+}
+
+/* κρύβει το arrow button */
+.time-picker .arrow-button {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-opacity: 0;          /* “εξαφάνιση” */
+    -fx-max-width: 0;
+    -fx-pref-width: 0;
+    -fx-min-width: 0;
+}
+
+/* και το ίδιο το βελάκι */
+.time-picker .arrow {
+    -fx-opacity: 0;
+}
+
+/* focus state (προαιρετικό) */
+.time-picker:focused {
+    -fx-background-color: #EFF6FF;
+    -fx-border-color: #2563EB;
+    -fx-border-radius: 6;
+}
