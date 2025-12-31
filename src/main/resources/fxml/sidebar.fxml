@@ -46,7 +46,7 @@
             <graphic> <FontIcon iconLiteral="mdi2b-beach" /> </graphic>
         </ToggleButton>
 
-        <ToggleButton fx:id="leaveTypesBtn" mnemonicParsing="false" onAction="#goToLeaveTypes" prefHeight="45.0" prefWidth="230.0" text="Leave Types" toggleGroup="$sidebarGroup">
+        <ToggleButton fx:id="leaveTypeBtn" mnemonicParsing="false" onAction="#goToLeaveTypes" prefHeight="45.0" prefWidth="230.0" text="Leave Types" toggleGroup="$sidebarGroup">
             <graphic>
                 <FontIcon iconLiteral="mdi2f-format-list-bulleted-type" />
             </graphic>
