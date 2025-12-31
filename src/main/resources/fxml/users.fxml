@@ -86,7 +86,7 @@
                         </VBox>
                         <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="10.0" styleClass="card">
                            <children>
-                              <Button alignment="BOTTOM_LEFT" fx:id="editUserButton" mnemonicParsing="false" styleClass="btn-primary" text="Edit User" />
+                              <Button alignment="BOTTOM_LEFT" fx:id="editUserButton" onAction="#onEditUser" mnemonicParsing="false" styleClass="btn-primary" text="Edit User" />
                               <Button alignment="BOTTOM_LEFT" fx:id="deleteUserButton" onAction="#onDeleteUser" mnemonicParsing="false" styleClass="btn-danger" text="Delete User" />
                            </children>
                         </HBox>
