@@ -34,6 +34,7 @@
                                  <columns>
                                     <TableColumn fx:id="idCol" prefWidth="75.0" text="ID" />
                                     <TableColumn fx:id="nameCol" prefWidth="100.0" text="Name" />
+                                    <TableColumn fx:id="employeeCountCol" prefWidth="155.99993896484375" text="Number of Employees" />
                                  </columns>
                               </TableView>
                            </children>
@@ -42,7 +43,7 @@
                            <children>
                               <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="10.0" styleClass="card">
                                  <children>
-                                    <Button fx:id="CreateDepartmentButton" onAction="#onCreateDepartment" alignment="BOTTOM_LEFT" mnemonicParsing="false" styleClass="btn-primary" text="Create Department" />
+                                    <Button fx:id="CreateDepartmentButton" alignment="BOTTOM_LEFT" mnemonicParsing="false" onAction="#onCreateDepartment" styleClass="btn-primary" text="Create Department" />
                                  </children>
                               </HBox>
                            </children>
@@ -89,8 +90,8 @@
                         </VBox>
                         <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="10.0" styleClass="card">
                            <children>
-                              <Button fx:id="EditDepartmentButton"  onAction="#onEditDepartment" alignment="BOTTOM_LEFT" mnemonicParsing="false" styleClass="btn-primary" text="Edit Department" />
-                              <Button fx:id="DeleteDepartMentButton" onAction="#onDeleteDepartment" alignment="BOTTOM_LEFT" mnemonicParsing="false" styleClass="btn-danger" text="Delete Department" />
+                              <Button fx:id="EditDepartmentButton" alignment="BOTTOM_LEFT" mnemonicParsing="false" onAction="#onEditDepartment" styleClass="btn-primary" text="Edit Department" />
+                              <Button fx:id="DeleteDepartMentButton" alignment="BOTTOM_LEFT" mnemonicParsing="false" onAction="#onDeleteDepartment" styleClass="btn-danger" text="Delete Department" />
                            </children>
                         </HBox>
                      </children>

@@ -10,19 +10,24 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import org.project.employeemanagementsystem.model.Department;
 import org.project.employeemanagementsystem.service.DepartmentService;
+import org.project.employeemanagementsystem.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 @Controller
 public class DepartmentController implements Initializable {
     //ΣΥΝΔΕΣΗ ΜΕ ΤΟ SERVICE. ΣΟΥ ΕΒΑΛΑ ΚΑΙ ΜΙΑ ΛΙΣΤΑ. ΑΝ ΘΕΣ ΑΛΛΑΞΕ ΤΗ
     @Autowired
     private DepartmentService departmentService;
+    @Autowired
+    private EmployeeService employeeService;
 
-    //TODO LIST FOR 31/12 NA PO TON GEORGE AN POS NA TAVAO TON ARITHMO TON EMPLOYESS APO THN VASI
+
 
   //  @FXML private TableView<Department> departmentTable;
 
@@ -30,6 +35,8 @@ public class DepartmentController implements Initializable {
     @FXML private TableView<Department> departmentTable;
     @FXML private TableColumn<Department, Long> idCol;
     @FXML private TableColumn<Department, String> nameCol;
+    @FXML private TableColumn<Department, Integer> employeeCountCol;
+
 
 
     // Input fields
@@ -53,6 +60,8 @@ public class DepartmentController implements Initializable {
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 
 
+
+
         //selecting the department from the table
         departmentTable.getSelectionModel()
                 .selectedItemProperty()
@@ -70,6 +79,12 @@ public class DepartmentController implements Initializable {
                     }
                 });
 
+        departmentList.setAll(departmentService.getAllDepartments());
+        populateEmployeeCountColumn();
+        departmentTable.setItems(departmentList);
+        populateEmployeeCountColumn();
+        departmentTable.refresh();
+
 
         //setting the text areas and filed with selected department description and name
         departmentTable.getSelectionModel()
@@ -85,9 +100,6 @@ public class DepartmentController implements Initializable {
                 });
 
 
-
-        departmentList.setAll(departmentService.getAllDepartments());
-        departmentTable.setItems(departmentList);
     }
 
 
@@ -240,6 +252,25 @@ public class DepartmentController implements Initializable {
         } catch (RuntimeException e) {
             showAlert("Error", e.getMessage());
         }
+    }
+
+
+    //3rd row number of employess
+    private void populateEmployeeCountColumn() {
+        // Use a map of DepartmentId -> Employee Count
+        Map<Long, Long> employeeCounts = employeeService.getAllEmployees()
+                .stream()
+                .collect(Collectors.groupingBy(
+                        e -> e.getDepartment().getId(),
+                        Collectors.counting()
+                ));
+
+        // Set cell value factory for the TableColumn
+        employeeCountCol.setCellValueFactory(cellData -> {
+            Department dept = cellData.getValue();
+            long count = employeeCounts.getOrDefault(dept.getId(), 0L);
+            return new SimpleIntegerProperty((int) count).asObject();
+        });
     }
 
 
