@@ -41,7 +41,7 @@ public class PayrollController implements Initializable {
     private final SystemSettingService settingService;
 
     // --- DATABASE CONFIG KEYS ---
-    private static final String KEY_WORK_HOURS = "payroll.standard_hours"; // ΝΕΟ: Ώρες εργασίας
+    private static final String KEY_WORK_HOURS = "payroll.standard_hours";
     private static final String KEY_OVERTIME = "payroll.overtime_rate";
     private static final String KEY_SUNDAY = "payroll.sunday_rate";
     private static final String KEY_TAX = "payroll.total_tax_rate";
@@ -76,22 +76,18 @@ public class PayrollController implements Initializable {
     private ObservableList<Payment> masterData = FXCollections.observableArrayList();
     private FilteredList<Payment> filteredData;
 
-    // ============================================================
-    // INITIALIZATION
-    // ============================================================
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         monthPicker.setValue(LocalDate.now());
         setupTableColumns();
         loadData();
 
-        // Listeners για αναζήτηση και φίλτρα
         searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
         monthPicker.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
     }
 
     // ============================================================
-    // MAIN ACTIONS (Generate, Finalize, Excel, Settings)
+    // MAIN ACTIONS
     // ============================================================
 
     @FXML
@@ -102,8 +98,7 @@ public class PayrollController implements Initializable {
             return;
         }
 
-        // 1. Φόρτωση ρυθμίσεων από τη βάση (Τίποτα Hardcoded)
-        double stdHours = settingService.getDouble(KEY_WORK_HOURS, 176.0); // Default 176 αν δεν υπάρχει
+        double stdHours = settingService.getDouble(KEY_WORK_HOURS, 176.0);
         double otRate = settingService.getDouble(KEY_OVERTIME, 1.50);
         double sunRate = settingService.getDouble(KEY_SUNDAY, 1.75);
         double taxRate = settingService.getDouble(KEY_TAX, 0.40);
@@ -115,12 +110,9 @@ public class PayrollController implements Initializable {
         for (Employee emp : employees) {
             if (emp.getSalary() == null) continue;
 
-            // 2. Υπολογισμός με βάση τις δυναμικές ρυθμίσεις
             paymentService.calculateAndSavePayroll(
-                    emp,
-                    selectedDate, // Ημερομηνία από το DatePicker
-                    stdHours,     // Ώρες από το Config
-                    0.0, 0.0,     // Υπερωρίες (θα συνδεθούν μελλοντικά)
+                    emp, selectedDate, stdHours,
+                    0.0, 0.0,
                     otRate, sunRate, taxRate, empSplit
             );
             count++;
@@ -173,7 +165,6 @@ public class PayrollController implements Initializable {
             try (Workbook workbook = new XSSFWorkbook()) {
                 Sheet sheet = workbook.createSheet("Payroll Data");
 
-                // Headers με σωστή ορολογία
                 String[] columns = {
                         "ID", "SSN", "Name", "Month",
                         "Base Salary", "Bonus", "Gross Pay",
@@ -193,16 +184,35 @@ public class PayrollController implements Initializable {
                     cell.setCellStyle(headerStyle);
                 }
 
-                // Data Rows
                 int rowNum = 1;
                 for (Payment p : rows) {
                     Row row = sheet.createRow(rowNum++);
                     row.createCell(0).setCellValue(p.getId());
-                    row.createCell(1).setCellValue((p.getEmployee().getSsn() != null) ? p.getEmployee().getSsn() : "-");
+
+                    org.apache.poi.ss.usermodel.Cell ssnCell = row.createCell(1);
+                    if (p.getEmployee().getSsn() != null) {
+                        ssnCell.setCellValue(p.getEmployee().getSsn());
+                    } else {
+                        ssnCell.setCellValue("-");
+                    }
+
                     row.createCell(2).setCellValue(p.getEmployee().getLastName() + " " + p.getEmployee().getFirstName());
                     row.createCell(3).setCellValue(p.getMonthYear());
-                    row.createCell(4).setCellValue(p.getBaseSalary() != null ? p.getBaseSalary() : 0.0);
-                    row.createCell(5).setCellValue(p.getBonus() != null ? p.getBonus() : 0.0);
+
+                    org.apache.poi.ss.usermodel.Cell baseCell = row.createCell(4);
+                    if (p.getBaseSalary() != null) {
+                        baseCell.setCellValue(p.getBaseSalary());
+                    } else {
+                        baseCell.setCellValue(0.0);
+                    }
+
+                    org.apache.poi.ss.usermodel.Cell bonusCell = row.createCell(5);
+                    if (p.getBonus() != null) {
+                        bonusCell.setCellValue(p.getBonus());
+                    } else {
+                        bonusCell.setCellValue(0.0);
+                    }
+
                     row.createCell(6).setCellValue(p.getGrossPay());
                     row.createCell(7).setCellValue(p.getDeductions());
                     row.createCell(8).setCellValue(p.getEmployerTax());
@@ -234,7 +244,6 @@ public class PayrollController implements Initializable {
         ButtonType saveBtnType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(saveBtnType, ButtonType.CANCEL);
 
-        // Styling Buttons
         Button btnSave = (Button) dialog.getDialogPane().lookupButton(saveBtnType);
         btnSave.getStyleClass().add("btn-primary");
         Button btnCancel = (Button) dialog.getDialogPane().lookupButton(ButtonType.CANCEL);
@@ -243,7 +252,6 @@ public class PayrollController implements Initializable {
         GridPane grid = new GridPane();
         grid.setHgap(10); grid.setVgap(10); grid.setPadding(new Insets(20));
 
-        // Φόρτωση τιμών από DB
         double curHours = settingService.getDouble(KEY_WORK_HOURS, 176.0);
         double curOt = settingService.getDouble(KEY_OVERTIME, 1.50);
         double curSun = settingService.getDouble(KEY_SUNDAY, 1.75);
@@ -256,7 +264,6 @@ public class PayrollController implements Initializable {
         TextField taxField = new TextField(String.valueOf(curTax));
         TextField splitField = new TextField(String.valueOf(curSplit));
 
-        // Styling TextFields
         String fieldStyle = "-fx-background-radius: 4; -fx-border-color: #D1D5DB; -fx-border-radius: 4;";
         hoursField.setStyle(fieldStyle); otField.setStyle(fieldStyle); sunField.setStyle(fieldStyle);
         taxField.setStyle(fieldStyle); splitField.setStyle(fieldStyle);
@@ -266,17 +273,13 @@ public class PayrollController implements Initializable {
         grid.addRow(2, new Label("Sunday Rate (x):"), sunField);
         grid.addRow(3, new Label("Total Tax Rate (0.xx):"), taxField);
         grid.addRow(4, new Label("Employer Split (0.xx):"), splitField);
-
-        Label hint = new Label("(e.g. 0.60 means Employer pays 60% of tax)");
-        hint.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 11px;");
-        grid.add(hint, 1, 5);
+        grid.add(new Label("(e.g. 0.60 means Employer pays 60% of tax)"), 1, 5);
 
         dialog.getDialogPane().setContent(grid);
 
         dialog.showAndWait().ifPresent(response -> {
             if (response == saveBtnType) {
                 try {
-                    // Αποθήκευση στη DB
                     settingService.setDouble(KEY_WORK_HOURS, Double.parseDouble(hoursField.getText()));
                     settingService.setDouble(KEY_OVERTIME, Double.parseDouble(otField.getText()));
                     settingService.setDouble(KEY_SUNDAY, Double.parseDouble(sunField.getText()));
@@ -292,11 +295,18 @@ public class PayrollController implements Initializable {
     }
 
     // ============================================================
-    // HELPER METHODS (Dialogs, Tables, Logic)
+    // HELPER METHODS
     // ============================================================
 
     private void openBonusDialog(Payment payment) {
-        TextInputDialog dialog = new TextInputDialog(payment.getBonus() != null ? payment.getBonus().toString() : "0.0");
+        String currentBonus;
+        if (payment.getBonus() != null) {
+            currentBonus = payment.getBonus().toString();
+        } else {
+            currentBonus = "0.0";
+        }
+
+        TextInputDialog dialog = new TextInputDialog(currentBonus);
         dialog.setTitle("Add Bonus");
         dialog.setHeaderText("Bonus for: " + payment.getEmployee().getLastName());
         styleAlert(dialog);
@@ -305,10 +315,9 @@ public class PayrollController implements Initializable {
             try {
                 double newBonus = Double.parseDouble(amountStr);
 
-                // Δυναμικός φόρος για το Bonus
                 double taxRate = settingService.getDouble(KEY_TAX, 0.40);
                 double empShare = settingService.getDouble(KEY_EMPLOYER_SHARE, 0.60);
-                double employeeTaxRate = taxRate * (1 - empShare); // Ο εργαζόμενος πληρώνει το μερίδιό του
+                double employeeTaxRate = taxRate * (1 - empShare);
 
                 paymentService.updateBonus(payment, newBonus, employeeTaxRate);
                 loadData();
@@ -324,11 +333,35 @@ public class PayrollController implements Initializable {
         alert.setHeaderText("Payroll: " + p.getEmployee().getLastName());
         styleAlert(alert);
 
-        double deductions = (p.getDeductions() != null) ? p.getDeductions() : 0.0;
-        double employerCost = (p.getEmployerTax() != null) ? p.getEmployerTax() : 0.0;
+        double deductions;
+        if (p.getDeductions() != null) {
+            deductions = p.getDeductions();
+        } else {
+            deductions = 0.0;
+        }
+
+        double employerCost;
+        if (p.getEmployerTax() != null) {
+            employerCost = p.getEmployerTax();
+        } else {
+            employerCost = 0.0;
+        }
+
         double totalStateTax = deductions + employerCost;
-        double bonus = (p.getBonus() != null) ? p.getBonus() : 0.0;
-        String ssn = (p.getEmployee().getSsn() != null) ? p.getEmployee().getSsn() : "-";
+
+        double bonus;
+        if (p.getBonus() != null) {
+            bonus = p.getBonus();
+        } else {
+            bonus = 0.0;
+        }
+
+        String ssn;
+        if (p.getEmployee().getSsn() != null) {
+            ssn = p.getEmployee().getSsn();
+        } else {
+            ssn = "-";
+        }
 
         String content = String.format(
                 "SSN:              %s\n" +
@@ -374,14 +407,29 @@ public class PayrollController implements Initializable {
 
     private void setupTableColumns() {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
+
         colSsn.setCellValueFactory(cell -> {
             Employee emp = cell.getValue().getEmployee();
-            return new SimpleStringProperty((emp != null && emp.getSsn() != null) ? emp.getSsn() : "-");
+            String ssnValue;
+            if (emp != null && emp.getSsn() != null) {
+                ssnValue = emp.getSsn();
+            } else {
+                ssnValue = "-";
+            }
+            return new SimpleStringProperty(ssnValue);
         });
+
         colName.setCellValueFactory(cell -> {
             Employee emp = cell.getValue().getEmployee();
-            return new SimpleStringProperty(emp != null ? emp.getLastName() + " " + emp.getFirstName() : "Unknown");
+            String fullName;
+            if (emp != null) {
+                fullName = emp.getLastName() + " " + emp.getFirstName();
+            } else {
+                fullName = "Unknown";
+            }
+            return new SimpleStringProperty(fullName);
         });
+
         colMonth.setCellValueFactory(new PropertyValueFactory<>("monthYear"));
         colGross.setCellValueFactory(new PropertyValueFactory<>("grossPay"));
         colDeductions.setCellValueFactory(new PropertyValueFactory<>("deductions"));
@@ -389,22 +437,26 @@ public class PayrollController implements Initializable {
         colAmount.setCellValueFactory(new PropertyValueFactory<>("amount"));
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
 
-        // Status Colors
         colStatus.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                if (item == null || empty) { setText(null); setStyle(""); }
-                else {
+                if (item == null || empty) {
+                    setText(null);
+                    setStyle("");
+                } else {
                     setText(item);
-                    if ("PAID".equalsIgnoreCase(item)) setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
-                    else if ("PENDING".equalsIgnoreCase(item)) setStyle("-fx-text-fill: #F59E0B; -fx-font-weight: bold;");
-                    else setStyle("-fx-text-fill: #EF4444;");
+                    if ("PAID".equalsIgnoreCase(item)) {
+                        setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
+                    } else if ("PENDING".equalsIgnoreCase(item)) {
+                        setStyle("-fx-text-fill: #F59E0B; -fx-font-weight: bold;");
+                    } else {
+                        setStyle("-fx-text-fill: #EF4444;");
+                    }
                 }
             }
         });
 
-        // Action Buttons (Info / Bonus)
         colActions.setCellFactory(param -> new TableCell<>() {
             private final Button btnInfo = new Button("Info");
             private final Button btnBonus = new Button("Bonus");
@@ -467,13 +519,23 @@ public class PayrollController implements Initializable {
         long pendingCount = currentList.stream().filter(p -> "PENDING".equalsIgnoreCase(p.getStatus())).count();
         lblPendingCount.setText(String.valueOf(pendingCount));
 
-        if (currentList.isEmpty()) { setButtonsVisible(true, false); }
-        else if (pendingCount > 0) { setButtonsVisible(false, true); }
-        else { setButtonsVisible(false, false); }
+        if (currentList.isEmpty()) {
+            setButtonsVisible(true, false);
+        } else if (pendingCount > 0) {
+            setButtonsVisible(false, true);
+        } else {
+            setButtonsVisible(false, false);
+        }
     }
 
     private void setButtonsVisible(boolean generate, boolean finalizeBtn) {
-        if (btnGenerate != null) { btnGenerate.setVisible(generate); btnGenerate.setManaged(generate); }
-        if (btnFinalize != null) { btnFinalize.setVisible(finalizeBtn); btnFinalize.setManaged(finalizeBtn); }
+        if (btnGenerate != null) {
+            btnGenerate.setVisible(generate);
+            btnGenerate.setManaged(generate);
+        }
+        if (btnFinalize != null) {
+            btnFinalize.setVisible(finalizeBtn);
+            btnFinalize.setManaged(finalizeBtn);
+        }
     }
 }
