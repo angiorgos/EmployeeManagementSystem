@@ -2,11 +2,9 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
@@ -30,18 +28,20 @@
                                 <Label styleClass="card-title" text="Users List" />
                                 <VBox prefHeight="472.0" prefWidth="457.0">
                                     <children>
-                                        <TableView fx:id="usersTable"  prefHeight="486.0" prefWidth="457.0">
+                                        <TableView fx:id="usersTable" prefHeight="486.0" prefWidth="457.0">
                                             <columns>
                                                 <TableColumn fx:id="idCol" prefWidth="75.0" text="ID" />
-                                                <TableColumn fx:id="usernameCol" prefWidth="100.0" text="User Name" />
-                                                <TableColumn fx:id="roleCol" prefWidth="85.0" text="Role" />
+                                                <TableColumn fx:id="usernameCol" prefWidth="141.59998321533203" text="User Name" />
+                                                <TableColumn fx:id="roleCol" prefWidth="207.199951171875" text="Role" />
                                             </columns>
                                         </TableView>
                                     </children>
                                 </VBox>
                         <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="10.0" styleClass="card">
                            <children>
-                              <Button alignment="BOTTOM_LEFT" fx:id="createUserButton" onAction="#onCreateUser" mnemonicParsing="false" styleClass="btn-primary" text="Create User" />
+                              <Button fx:id="createUserButton" alignment="BOTTOM_LEFT" mnemonicParsing="false" onAction="#onCreateUser" styleClass="btn-primary" text="Create User" />
+                              <Button fx:id="editUserButton" alignment="BOTTOM_LEFT" mnemonicParsing="false" onAction="#onEditUser" styleClass="btn-primary" text="Edit User" />
+                              <Button fx:id="deleteUserButton" alignment="BOTTOM_LEFT" mnemonicParsing="false" onAction="#onDeleteUser" styleClass="btn-danger" text="Delete User" />
                            </children>
                         </HBox>
                             </children>
@@ -49,51 +49,7 @@
                     </children>
                 </VBox>
                 <VBox prefHeight="627.0" prefWidth="40.0" />
-                <VBox prefHeight="627.0" prefWidth="380.0" spacing="10.0">
-                    <children>
-                        <VBox prefHeight="266.0" prefWidth="380.0" spacing="10.0" styleClass="card">
-                            <children>
-                                  <VBox prefHeight="95.0" prefWidth="300.0" spacing="10.0" styleClass="card">
-                                      <children>
-                                          <Label styleClass="card-title" text="User Name">
-                                              <padding>
-                                                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                                              </padding>
-                                          </Label>
-                                          <TextField fx:id="usernameTextField" alignment="CENTER" prefHeight="36.0" prefWidth="1.0" promptText="Name of user">
-                                              <VBox.margin>
-                                                  <Insets />
-                                              </VBox.margin>
-                                              <padding>
-                                                  <Insets left="10.0" right="10.0" top="10.0" />
-                                              </padding>
-                                          </TextField>
-                                      </children>
-                                  </VBox>
-                        <VBox prefHeight="95.0" prefWidth="300.0" spacing="10.0" styleClass="card">
-                           <children>
-                                      <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="10.0" styleClass="card">
-                                          <children>
-                                    <Label styleClass="card-title" text="User Role">
-                                       <padding>
-                                          <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                                       </padding>
-                                    </Label>
-                                    <ComboBox fx:id="roleComboBox" prefWidth="150.0" promptText="Role" />
-                                          </children>
-                                      </HBox>
-                           </children>
-                        </VBox>
-                        <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="10.0" styleClass="card">
-                           <children>
-                              <Button alignment="BOTTOM_LEFT" fx:id="editUserButton" onAction="#onEditUser" mnemonicParsing="false" styleClass="btn-primary" text="Edit User" />
-                              <Button alignment="BOTTOM_LEFT" fx:id="deleteUserButton" onAction="#onDeleteUser" mnemonicParsing="false" styleClass="btn-danger" text="Delete User" />
-                           </children>
-                        </HBox>
-                            </children>
-                        </VBox>
-                    </children>
-                </VBox>
+                <VBox prefHeight="627.0" prefWidth="380.0" spacing="10.0" />
             </children>
             <BorderPane.margin>
                 <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />

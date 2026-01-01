@@ -258,33 +258,90 @@ public class UsersController implements Initializable {
         User selected = usersTable.getSelectionModel().getSelectedItem();
         if (selected == null) return;
 
-        String newUsername = usernameTextField.getText().trim();
-        Role newRole = roleComboBox.getValue();
+        boolean admin = isAdmin();
 
-        if (newUsername.isEmpty() || newRole == null) {
-            showAlert("Error", "Username and Role cannot be empty.");
-            return;
+        Dialog<User> dialog = new Dialog<>();
+        dialog.setTitle("Edit User");
+        dialog.setHeaderText("Edit user details");
+
+        ButtonType editButtonType = new ButtonType("Edit User", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(editButtonType, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+
+        TextField usernameField = new TextField(selected.getUsername());
+
+        ComboBox<Role> roleField = new ComboBox<>();
+        roleField.getItems().setAll(roleService.getAllRoles());
+        roleField.getSelectionModel().select(selected.getRole());
+
+        PasswordField passwordField = new PasswordField();
+        passwordField.setPromptText("New Password");
+
+        grid.add(new Label("Username:"), 0, 0);
+        grid.add(usernameField, 1, 0);
+        grid.add(new Label("Role:"), 0, 1);
+        grid.add(roleField, 1, 1);
+
+        // Password only for ADMIN
+        if (admin) {
+            grid.add(new Label("Password:"), 0, 2);
+            grid.add(passwordField, 1, 2);
         }
 
-        // Check if the new username already exists (and is not the same user)
-        if (!newUsername.equals(selected.getUsername()) && userService.findByUsername(newUsername).isPresent()) {
-            showAlert("Error", "Username already exists!");
-            return;
-        }
+        dialog.getDialogPane().setContent(grid);
 
-        // Update user
-        selected.setUsername(newUsername);
-        selected.setRole(newRole);
+        // Disable Edit button if invalid
+        Button editButton = (Button) dialog.getDialogPane().lookupButton(editButtonType);
+        editButton.setDisable(true);
 
-        try {
-            userService.saveUser(selected); // save updates to the DB
-            usersTable.refresh();
-        } catch (RuntimeException e) {
-            showAlert("Error", e.getMessage());
-        }
+        Runnable validate = () -> {
+            boolean usernameValid = !usernameField.getText().trim().isEmpty();
+            boolean roleValid = roleField.getValue() != null;
+            editButton.setDisable(!(usernameValid && roleValid));
+        };
+
+        usernameField.textProperty().addListener((o, a, b) -> validate.run());
+        roleField.valueProperty().addListener((o, a, b) -> validate.run());
+
+        validate.run();
+
+        dialog.setResultConverter(button -> {
+            if (button == editButtonType) {
+                selected.setUsername(usernameField.getText().trim());
+                selected.setRole(roleField.getValue());
+
+                // Only admin can change password
+                if (admin && !passwordField.getText().trim().isEmpty()) {
+                    selected.setPassword(passwordField.getText().trim());
+                }
+
+                return selected;
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(user -> {
+            try {
+                userService.saveUser(user);
+                usersTable.refresh();
+            } catch (RuntimeException e) {
+                showAlert("Error", e.getMessage());
+            }
+        });
     }
 
 
+
+
+    private boolean isAdmin() {
+        User current = userSession.getCurrentUser();
+        return current != null
+                && current.getRole() != null
+                && "ADMIN".equalsIgnoreCase(current.getRole().getName());
+    }
 
 
     private void showAlert(String title, String message) {
