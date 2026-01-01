@@ -6,32 +6,23 @@
 
 <VBox spacing="15.0" VBox.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.project.employeemanagementsystem.controller.LeavesController2">
 
-    <!-- Padding around everything -->
-    <padding>
-        <Insets bottom="20" left="20" right="20" top="20" />
-    </padding>
 
-    <!-- Search / Filter Bar -->
     <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);">
         <children>
-            <!-- Status filter ComboBox -->
             <ComboBox fx:id="statusFilterCombo" prefWidth="150.0" promptText="Status" style="-fx-background-color: white;" stylesheets="@../theme.css" />
-
-            <!-- Spacer -->
-            <Region prefHeight="0.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
-
-            <!-- Search Field -->
             <TextField fx:id="searchField" prefHeight="35.0" prefWidth="195.0" promptText="Search by employee name" styleClass="search-field" />
-
-            <!-- Refresh Button -->
+            <Region prefHeight="0.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
             <Button fx:id="refreshBtn" minHeight="14.0" mnemonicParsing="false" onAction="#onRefresh" prefHeight="14.0" prefWidth="77.0" styleClass="btn-secondary" stylesheets="@../theme.css" text="Refresh" />
         </children>
     </HBox>
 
-    <!-- Scrollable area for request cards -->
-    <ScrollPane fitToHeight="true" fitToWidth="true" style="-fx-background: white; -fx-background-color: white; -fx-border-color: transparent; -fx-padding: 0; -fx-background-insets: 0;" VBox.vgrow="ALWAYS">
+    <ScrollPane fitToHeight="true" fitToWidth="true"
+                style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-border-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);"
+                VBox.vgrow="ALWAYS">
         <content>
-            <FlowPane fx:id="requestsFlowPane" hgap="15" prefWrapLength="1000" style="-fx-background-color: white;" vgap="15" />
+            <FlowPane fx:id="requestsFlowPane" hgap="15" vgap="15"
+                      style="-fx-background-color: white; -fx-background-radius: 8;">
+            </FlowPane>
         </content>
     </ScrollPane>
 

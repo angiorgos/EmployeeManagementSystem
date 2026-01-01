@@ -775,3 +775,24 @@
 /* Χρώματα για μηνύματα */
 .status-success { -fx-text-fill: #059669; -fx-font-weight: bold; } /* Πράσινο */
 .status-error   { -fx-text-fill: #DC2626; -fx-font-weight: bold; } /* Κόκκινο */
+
+/* --- ΕΙΔΙΚΗ ΚΛΑΣΗ ΓΙΑ ΔΙΑΦΑΝΑ TABS (LEAVES) --- */
+
+/* 1. Αφαιρεί το φόντο από το κυρίως σώμα */
+.transparent-tabs .tab-content-area {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+}
+
+/* 2. Αφαιρεί το φόντο από την περιοχή των κουμπιών (headers) */
+.transparent-tabs .tab-header-area {
+    -fx-background-color: transparent;
+    -fx-padding: 0 0 10 0;
+}
+
+/* 3. Αφαιρεί το φόντο πίσω από τα headers */
+.transparent-tabs .headers-region {
+    -fx-background-color: transparent;
+}
