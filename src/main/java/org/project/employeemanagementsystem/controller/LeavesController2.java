@@ -8,7 +8,9 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import org.project.employeemanagementsystem.model.LeaveRequest;
 import org.project.employeemanagementsystem.model.LeaveStatus;
+import org.project.employeemanagementsystem.model.User;
 import org.project.employeemanagementsystem.service.LeaveRequestService;
+import org.project.employeemanagementsystem.util.UserSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -22,32 +24,42 @@ public class LeavesController2 {
     @Autowired
     private LeaveRequestService leaveRequestService;
 
+    @Autowired
+    private UserSession userSession;
+
     @FXML private FlowPane requestsFlowPane;
     @FXML private TextField searchField;
     @FXML private ComboBox<LeaveStatus> statusFilterCombo;
     @FXML private Button refreshBtn;
 
     private List<LeaveRequest> allRequests;
+    private boolean isAdmin;
 
     @FXML
     public void initialize() {
-        // 1. Setup Status Filter
+        // --- Determine if current user is admin
+        User currentUser = userSession.getCurrentUser();
+        isAdmin = currentUser != null
+                && currentUser.getRole() != null
+                && "ROLE_ADMIN".equals(currentUser.getRole().getName());
+
+        // --- Setup Status Filter
         List<LeaveStatus> statuses = new ArrayList<>();
         statuses.add(null); // "All"
         statuses.addAll(List.of(LeaveStatus.values()));
         statusFilterCombo.setItems(FXCollections.observableArrayList(statuses));
         statusFilterCombo.setPromptText("All");
 
-        // 2. Setup Listeners for Filtering
+        // --- Setup Listeners for Filtering
         searchField.textProperty().addListener((obs, oldVal, newVal) -> refreshUIOnly());
         statusFilterCombo.valueProperty().addListener((obs, oldVal, newVal) -> refreshUIOnly());
 
-        // 3. Setup FlowPane
+        // --- Setup FlowPane
         requestsFlowPane.setHgap(15);
         requestsFlowPane.setVgap(15);
         requestsFlowPane.setPadding(new Insets(10));
 
-        // 4. Initial Load
+        // --- Initial Load
         loadDataFromDB();
     }
 
@@ -56,16 +68,13 @@ public class LeavesController2 {
         loadDataFromDB();
     }
 
-    /** 1. Φορτώνει τα δεδομένα από τη βάση */
     private void loadDataFromDB() {
         allRequests = leaveRequestService.getAllRequests();
-        refreshUIOnly(); // Μετά το load, ζωγράφισε τα
+        refreshUIOnly();
     }
 
-    /** 2. Ζωγραφίζει τις κάρτες (Φιλτράρισμα στη μνήμη) */
     private void refreshUIOnly() {
         requestsFlowPane.getChildren().clear();
-
         if (allRequests == null) return;
 
         String search = (searchField.getText() != null) ? searchField.getText().toLowerCase().trim() : "";
@@ -82,21 +91,15 @@ public class LeavesController2 {
         filtered.forEach(this::createRequestCard);
     }
 
-    /** Δημιουργία Κάρτας */
     private void createRequestCard(LeaveRequest request) {
         VBox card = new VBox(5);
         card.setPadding(new Insets(10));
-        card.setSpacing(8); // Λίγο περισσότερο κενό
-
-        // Σταθερό μέγεθος για ομοιομορφία
+        card.setSpacing(8);
         card.setMinWidth(220);
         card.setPrefWidth(220);
         card.setMaxWidth(220);
-
-        // Στυλ
         card.setStyle(getStatusStyle(request.getStatus()));
 
-        // Labels
         Label title = new Label("REQ #" + request.getId() + " - " + request.getLeaveType().getName());
         title.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
 
@@ -106,10 +109,9 @@ public class LeavesController2 {
         Label dates = new Label(request.getStartDate() + " to " + request.getEndDate());
         dates.setStyle("-fx-text-fill: #555; -fx-font-size: 11px;");
 
-        // Reason Button
         Button reasonBtn = new Button("View Reason");
-        reasonBtn.setMaxWidth(Double.MAX_VALUE); // Stretch
-        reasonBtn.getStyleClass().add("btn-secondary"); // Αν έχεις theme, αλλιώς βγάλτο
+        reasonBtn.setMaxWidth(Double.MAX_VALUE);
+        reasonBtn.getStyleClass().add("btn-secondary");
         reasonBtn.setOnAction(e -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Leave Reason");
@@ -118,39 +120,31 @@ public class LeavesController2 {
             alert.showAndWait();
         });
 
-        // Status ComboBox for Actions
         ComboBox<LeaveStatus> statusCombo = new ComboBox<>(FXCollections.observableArrayList(LeaveStatus.values()));
         statusCombo.setValue(request.getStatus());
         statusCombo.setMaxWidth(Double.MAX_VALUE);
 
-        // --- Η ΚΡΙΣΙΜΗ ΑΛΛΑΓΗ ΕΔΩ ---
-        statusCombo.setOnAction(e -> {
-            LeaveStatus newStatus = statusCombo.getValue();
+        // --- Disable ComboBox if user is not admin
+        statusCombo.setDisable(!isAdmin);
 
-            // 1. Ενημερώνουμε το αντικείμενο
+        statusCombo.setOnAction(e -> {
+            if (!isAdmin) return; // safety check
+
+            LeaveStatus newStatus = statusCombo.getValue();
             request.setStatus(newStatus);
 
             try {
-                // 2. Καλούμε τη ΣΩΣΤΗ μέθοδο update (όχι submit)
                 leaveRequestService.updateRequestStatus(request);
-
-                // 3. Αλλάζουμε χρώμα επιτόπου
                 card.setStyle(getStatusStyle(newStatus));
-                System.out.println("Update success for REQ #" + request.getId());
-
             } catch (Exception ex) {
                 ex.printStackTrace();
-                // Αν αποτύχει, γύρνα το ComboBox πίσω στο παλιό
                 statusCombo.setValue(request.getStatus());
                 Alert alert = new Alert(Alert.AlertType.ERROR, "Update failed: " + ex.getMessage());
                 alert.show();
             }
         });
 
-        // Add to Card
         card.getChildren().addAll(title, name, dates, reasonBtn, new Separator(), new Label("Set Status:"), statusCombo);
-
-        // Add to FlowPane
         requestsFlowPane.getChildren().add(card);
     }
 
@@ -158,9 +152,9 @@ public class LeavesController2 {
         String base = "-fx-border-radius: 8; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1); -fx-padding: 10;";
         if (status == null) return base + " -fx-background-color: #f9f9f9;";
         switch (status) {
-            case PENDING:  return base + " -fx-background-color: #FFF3CD; -fx-border-color: #FFC107;"; // Yellow
-            case APPROVED: return base + " -fx-background-color: #DCFCE7; -fx-border-color: #22C55E;"; // Green
-            case REJECTED: return base + " -fx-background-color: #FEE2E2; -fx-border-color: #EF4444;"; // Red
+            case PENDING:  return base + " -fx-background-color: #FFF3CD; -fx-border-color: #FFC107;";
+            case APPROVED: return base + " -fx-background-color: #DCFCE7; -fx-border-color: #22C55E;";
+            case REJECTED: return base + " -fx-background-color: #FEE2E2; -fx-border-color: #EF4444;";
             default:       return base + " -fx-background-color: #f9f9f9;";
         }
     }

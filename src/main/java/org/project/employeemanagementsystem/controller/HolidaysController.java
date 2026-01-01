@@ -1,16 +1,17 @@
 package org.project.employeemanagementsystem.controller;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import org.project.employeemanagementsystem.model.Holiday;
+import org.project.employeemanagementsystem.model.User;
 import org.project.employeemanagementsystem.service.HolidayService;
+import org.project.employeemanagementsystem.util.UserSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.project.employeemanagementsystem.service.HolidayService;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -22,6 +23,9 @@ public class HolidaysController implements Initializable {
     @Autowired
     private HolidayService holidayService;
 
+    @Autowired
+    private UserSession userSession;
+
     @FXML private TableView<Holiday> holidaysTable;
     @FXML private TableColumn<Holiday, Long> holidaysID;
     @FXML private TableColumn<Holiday, String> holidaysName;
@@ -32,10 +36,18 @@ public class HolidaysController implements Initializable {
     @FXML private Button holidaysRemoveBtn;
     @FXML private Button holidaysAddBtn;
 
-    private Holiday selectedHoliday = null; // Holds the currently selected holiday
+    private Holiday selectedHoliday = null;
+    private boolean isAdmin;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // --- Determine if the current user is an admin
+        User currentUser = userSession.getCurrentUser();
+        isAdmin = currentUser != null
+                && currentUser.getRole() != null
+                && "ROLE_ADMIN".equals(currentUser.getRole().getName());
+
+        // --- Table setup
         holidaysTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         holidaysID.setCellValueFactory(new PropertyValueFactory<>("id"));
         holidaysName.setCellValueFactory(new PropertyValueFactory<>("name"));
@@ -43,24 +55,28 @@ public class HolidaysController implements Initializable {
 
         loadHolidays();
 
-        // 1️⃣ Listen for selection in the table
+        // --- Listen for table selection
         holidaysTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
             if (newSel != null) {
                 selectedHoliday = newSel;
-                holidaysNameField.setText(selectedHoliday.getName());
-                holidaysDatePicker.setValue(selectedHoliday.getDate());
+                holidaysNameField.setText(newSel.getName());
+                holidaysDatePicker.setValue(newSel.getDate());
                 holidaysAddBtn.setText("Confirm Changes");
             } else {
-                // No selection, reset
-                selectedHoliday = null;
-                holidaysNameField.clear();
-                holidaysDatePicker.setValue(null);
-                holidaysAddBtn.setText("Add");
+                clearForm();
             }
         });
 
-        // 2️⃣ Remove button disables if nothing is selected
-        holidaysRemoveBtn.disableProperty().bind(holidaysTable.getSelectionModel().selectedItemProperty().isNull());
+        // --- Disable Remove button if nothing selected OR user is not admin
+        holidaysRemoveBtn.disableProperty().bind(
+                holidaysTable.getSelectionModel().selectedItemProperty().isNull()
+                        .or(new SimpleBooleanProperty(!isAdmin))
+        );
+
+        // --- Disable Add/Confirm and form fields for non-admins
+        holidaysAddBtn.setDisable(!isAdmin);
+        holidaysNameField.setDisable(!isAdmin);
+        holidaysDatePicker.setDisable(!isAdmin);
     }
 
     private void loadHolidays() {
@@ -69,6 +85,11 @@ public class HolidaysController implements Initializable {
 
     @FXML
     private void handleAddOrUpdateHoliday() {
+        if (!isAdmin) {
+            showAccessDenied();
+            return;
+        }
+
         String name = holidaysNameField.getText();
         LocalDate date = holidaysDatePicker.getValue();
 
@@ -79,19 +100,16 @@ public class HolidaysController implements Initializable {
 
         try {
             if (selectedHoliday != null) {
-                // ✅ Update existing holiday
                 selectedHoliday.setName(name);
                 selectedHoliday.setDate(date);
                 holidayService.saveHoliday(selectedHoliday);
             } else {
-                // ✅ Add new holiday
                 Holiday newHoliday = new Holiday();
                 newHoliday.setName(name);
                 newHoliday.setDate(date);
                 holidayService.saveHoliday(newHoliday);
             }
 
-            // Refresh table and reset form
             loadHolidays();
             clearForm();
 
@@ -102,6 +120,11 @@ public class HolidaysController implements Initializable {
 
     @FXML
     private void handleRemoveHoliday() {
+        if (!isAdmin) {
+            showAccessDenied();
+            return;
+        }
+
         if (selectedHoliday != null) {
             try {
                 holidayService.deleteHoliday(selectedHoliday.getId());
@@ -128,5 +151,12 @@ public class HolidaysController implements Initializable {
         alert.setContentText(message);
         alert.showAndWait();
     }
-}
 
+    private void showAccessDenied() {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Access Denied");
+        alert.setHeaderText(null);
+        alert.setContentText("Only administrators can modify holidays.");
+        alert.showAndWait();
+    }
+}
