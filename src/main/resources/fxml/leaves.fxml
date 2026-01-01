@@ -27,13 +27,13 @@
     </left>
 
     <center>
-        <TabPane tabClosingPolicy="UNAVAILABLE">
+        <TabPane tabClosingPolicy="UNAVAILABLE" styleClass="transparent-tabs">
             <tabs>
 
                 <!-- WRITE REQUEST TAB -->
                 <Tab text="Write a Leave Request">
                     <content>
-                        <VBox spacing="15">
+                        <VBox spacing="15" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);">
                             <padding>
                                 <Insets bottom="30" left="30" right="30" top="30" />
                             </padding>
@@ -115,8 +115,8 @@
                 </Tab>
 
                 <!-- REVIEW TAB -->
-                <Tab text="Review Requests" style="-fx-background-color: transparent;">
-                    <content>
+                <Tab text="Review Requests">
+                    <content >
                         <fx:include source="leaves2.fxml" />
                     </content>
                 </Tab>
