@@ -2,7 +2,7 @@ package org.project.employeemanagementsystem.service;
 
 import org.project.employeemanagementsystem.model.*;
 import org.project.employeemanagementsystem.repository.*;
-import org.project.employeemanagementsystem.util.UserSession; // Import του δικού σου Session
+import org.project.employeemanagementsystem.util.UserSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,38 +18,32 @@ public class LeaveRequestService {
     private final LeaveRequestRepository leaveRequestRepository;
     private final HolidayRepository holidayRepository;
     private final LeaveTypeRepository leaveTypeRepository;
-
     private final UserSession userSession;
 
     @Autowired
     public LeaveRequestService(LeaveRequestRepository leaveRequestRepository,
                                HolidayRepository holidayRepository,
                                LeaveTypeRepository leaveTypeRepository,
-                               UserSession userSession) { // Injection εδώ
+                               UserSession userSession) {
         this.leaveRequestRepository = leaveRequestRepository;
         this.holidayRepository = holidayRepository;
         this.leaveTypeRepository = leaveTypeRepository;
         this.userSession = userSession;
     }
 
-    // --- 1. ΕΥΡΕΣΗ ΣΥΝΔΕΔΕΜΕΝΟΥ ΥΠΑΛΛΗΛΟΥ (ΜΕ UserSession) ---
+    // --- 1. CURRENT USER HELPER ---
     public Employee getLoggedInEmployee() {
-        // Παίρνουμε τον χρήστη κατευθείαν από το Session που έφτιαξες
         User currentUser = userSession.getCurrentUser();
-
         if (currentUser == null) {
             throw new RuntimeException("No user logged in! Please login first.");
         }
-
         if (currentUser.getEmployee() == null) {
             throw new RuntimeException("Logged in user (" + currentUser.getUsername() + ") is not linked to an Employee profile!");
         }
-
         return currentUser.getEmployee();
     }
 
-    // --- 2. ΥΠΟΛΟΙΠΕΣ ΜΕΘΟΔΟΙ (ΙΔΙΕΣ ΜΕ ΠΡΙΝ) ---
-
+    // --- 2. GETTERS ---
     public List<LeaveRequest> getAllRequests() {
         return leaveRequestRepository.findAll();
     }
@@ -58,6 +52,7 @@ public class LeaveRequestService {
         return leaveTypeRepository.findAll();
     }
 
+    // --- 3. SUBMIT NEW REQUEST (Για το Tab 1 - Πάντα PENDING) ---
     @Transactional
     public void submitRequest(LeaveRequest request) {
         if (request.getEndDate().isBefore(request.getStartDate())) {
@@ -74,14 +69,22 @@ public class LeaveRequestService {
             throw new RuntimeException("Not enough leave balance! Remaining: " + remaining + ", Requested: " + requestedDays);
         }
 
+        // ΕΔΩ ΕΙΝΑΙ Η ΛΟΓΙΚΗ ΔΗΜΙΟΥΡΓΙΑΣ
         request.setStatus(LeaveStatus.PENDING);
         leaveRequestRepository.save(request);
     }
 
+    // --- 4. UPDATE EXISTING REQUEST (Για το Tab 2 - Admin Actions) ---
+    // ΑΥΤΗ Η ΜΕΘΟΔΟΣ ΕΛΕΙΠΕ
+    @Transactional
     public void updateRequestStatus(LeaveRequest request) {
+        // Σώζουμε το request όπως μας ήρθε (π.χ. APPROVED ή REJECTED)
+        // Χωρίς να το γυρίσουμε σε PENDING
         leaveRequestRepository.save(request);
+        System.out.println("SERVICE: Request " + request.getId() + " updated to " + request.getStatus());
     }
 
+    // --- 5. CALCULATIONS ---
     public int getRemainingDays(Employee employee, LeaveType leaveType) {
         int maxAllowed = leaveType.getMaxDays();
         List<LeaveRequest> approvedRequests = leaveRequestRepository
