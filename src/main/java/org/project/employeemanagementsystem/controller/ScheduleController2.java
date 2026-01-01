@@ -97,7 +97,7 @@ public class ScheduleController2 implements Initializable {
     }
 
     private static final DateTimeFormatter TIME_12H = DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH);
-    @FXML private ComboBox<String> monStart, monEnd, tueStart, tueEnd, wedStart, wedEnd,thuStart, thuEnd, friStart, friEnd;
+    @FXML private ComboBox<String> monStart, monEnd, tueStart, tueEnd, wedStart, wedEnd, thuStart, thuEnd, friStart, friEnd, satStart, satEnd, sunStart, sunEnd;
 
 
     private ObservableList<String> buildTimes() {
@@ -129,6 +129,108 @@ public class ScheduleController2 implements Initializable {
         });
 
         cb.getSelectionModel().select(null); // ξεκινάει κενό
+    }
+    private final List<Label> previewChips = new ArrayList<>();
+
+    private LocalTime parseTime(String s) {
+        if (s == null || s.isBlank()) return null;
+        return LocalTime.parse(s, TIME_12H);
+    }
+
+    private int toRow(LocalTime t) {
+        // μετατρέπει ώρα σε row του grid (startHour..endHour)
+        return t.getHour() - startHour;
+    }
+
+    private void clearPreview() {
+        for (Label chip : previewChips) {
+            if (chip.getParent() instanceof VBox v) v.getChildren().remove(chip);
+        }
+        previewChips.clear();
+    }
+
+    private void addChipToCell(DayOfWeek day, int hourRow, String employee) {
+        int hour = startHour + hourRow;
+        VBox cell = cellMap.get(key(day, hour));
+        if (cell == null) return;
+
+        Label chip = new Label(employee);
+        chip.getStyleClass().add("employee-chip");
+        chip.setMaxWidth(Double.MAX_VALUE);
+
+        cell.getChildren().add(chip);
+        previewChips.add(chip);
+    }
+
+    private void refreshPreviewFromPickers() {
+        clearPreview();
+
+        if (employeeComboBox == null) return;
+        String employee = employeeComboBox.getValue();
+        if (employee == null || employee.isBlank()) return;
+
+        applyDayRange(DayOfWeek.MONDAY,    monStart, monEnd, employee);
+        applyDayRange(DayOfWeek.TUESDAY,   tueStart, tueEnd, employee);
+        applyDayRange(DayOfWeek.WEDNESDAY, wedStart, wedEnd, employee);
+        applyDayRange(DayOfWeek.THURSDAY,  thuStart, thuEnd, employee);
+        applyDayRange(DayOfWeek.FRIDAY,    friStart, friEnd, employee);
+        applyDayRange(DayOfWeek.SATURDAY,  satStart, satEnd, employee);
+        applyDayRange(DayOfWeek.SUNDAY,    sunStart, sunEnd, employee);
+    }
+
+    private void applyDayRange(DayOfWeek day, ComboBox<String> startCb, ComboBox<String> endCb, String employee) {
+        if (startCb == null || endCb == null) return;
+
+        LocalTime start = parseTime(startCb.getValue());
+        LocalTime end   = parseTime(endCb.getValue());
+
+        if (start == null || end == null) return;
+        if (!end.isAfter(start)) return; // πρέπει end > start
+
+        // επειδή το grid είναι ανά 1 ώρα, “στρογγυλεύουμε” προς τα κάτω στην ώρα
+        int startRow = toRow(start);
+        int endRowExclusive = toRow(end);
+        // αν end είναι π.χ 10:30, το toRow=10-startHour, άρα καλύπτει μέχρι 10:xx => σωστό σαν preview
+
+        startRow = Math.max(0, startRow);
+        endRowExclusive = Math.min((endHour - startHour) + 1, endRowExclusive + 1);
+
+        for (int r = startRow; r < endRowExclusive; r++) {
+            addChipToCell(day, r, employee);
+        }
+    }
+
+    private void attachAutoPreview(ComboBox<String> cb) {
+        if (cb == null) return;
+        cb.valueProperty().addListener((obs, o, n) -> refreshPreviewFromPickers());
+    }
+
+    private void onSaveSchedule() {
+        // ΠΡΟΣΩΡΙΝΑ: εδώ αργότερα θα κάνεις persist + update του Overview.
+        // Τώρα: καθαρίζουμε preview + inputs για να περάσεις στον επόμενο employee.
+
+        clearPreview();
+
+        // clear time pickers
+        for (ComboBox<String> cb : new ComboBox[]{
+                monStart, monEnd, tueStart, tueEnd, wedStart, wedEnd, thuStart, thuEnd,
+                friStart, friEnd, satStart, satEnd, sunStart, sunEnd
+        }) {
+            if (cb == null) continue;
+            cb.getSelectionModel().clearSelection();
+            cb.setValue(""); // επειδή έχεις βάλει "" σαν πρώτη επιλογή
+        }
+
+        // clear employee selection
+        if (employeeComboBox != null) {
+            employeeComboBox.getSelectionModel().clearSelection();
+            employeeComboBox.setValue(null);
+        }
+
+        // clear selected cell highlight
+        if (selectedCell != null) selectedCell.getStyleClass().remove("selected-day");
+        selectedCell = null;
+        selectedDay = null;
     }
 
     @FXML
@@ -172,6 +274,17 @@ public class ScheduleController2 implements Initializable {
             if (cb == null) continue;
             cb.setItems(times);
             makeBlankSelectable(cb); // κενή επιλογή + σωστό rendering
+        }
+
+        if (employeeComboBox != null) {
+            employeeComboBox.valueProperty().addListener((obs, o, n) -> refreshPreviewFromPickers());
+        }
+
+        for (ComboBox<String> cb : new ComboBox[]{
+                monStart, monEnd, tueStart, tueEnd, wedStart, wedEnd, thuStart, thuEnd,
+                friStart, friEnd, satStart, satEnd, sunStart, sunEnd
+        }) {
+            attachAutoPreview(cb);
         }
     }
 }
