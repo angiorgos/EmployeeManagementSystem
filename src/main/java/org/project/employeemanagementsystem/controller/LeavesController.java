@@ -19,69 +19,82 @@ import java.util.ResourceBundle;
 @Controller
 public class LeavesController implements Initializable {
 
-    // 1. ΣΥΝΔΕΣΗ ΜΕ ΤΟ SERVICE
+    // ===== SERVICE =====
     @Autowired
     private LeaveRequestService leaveRequestService;
 
-    // FXML Στοιχεία (Πρέπει να έχουν τα ίδια fx:id στο SceneBuilder)
+    // ===== FXML FIELDS =====
     @FXML private TextField firstNameField;
     @FXML private TextField lastNameField;
     @FXML private TextField emailField;
+    @FXML private TextField phoneField;
 
     @FXML private ComboBox<LeaveType> typeCombo;
     @FXML private DatePicker startDatePicker;
     @FXML private DatePicker endDatePicker;
     @FXML private TextArea reasonArea;
-    @FXML private Label remainingDaysLabel; // Το Label που δείχνει το υπόλοιπο
+    @FXML private Label remainingDaysLabel;
 
     private Employee currentEmployee;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         try {
-            // 2. ΦΟΡΤΩΣΗ ΔΕΔΟΜΕΝΩΝ ΚΑΤΑ ΤΗΝ ΕΚΚΙΝΗΣΗ
-
-            // Βρίσκουμε ποιος είναι συνδεδεμένος (μέσω του UserSession που έχει το Service)
+            // ===== LOAD LOGGED-IN EMPLOYEE =====
             currentEmployee = leaveRequestService.getLoggedInEmployee();
 
-            // Γεμίζουμε τα πεδία που δεν αλλάζουν (Read-Only)
+            // ===== AUTO-FILL EMPLOYEE INFO =====
             firstNameField.setText(currentEmployee.getFirstName());
             lastNameField.setText(currentEmployee.getLastName());
             emailField.setText(currentEmployee.getEmail());
+            phoneField.setText(currentEmployee.getPhone());
 
-            // Κλειδώνουμε τα πεδία για να μην τα πειράξει ο χρήστης
+            // ===== LOCK FIELDS =====
             firstNameField.setEditable(false);
             lastNameField.setEditable(false);
             emailField.setEditable(false);
+            phoneField.setEditable(false);
 
-            // Γεμίζουμε το ComboBox με τους τύπους άδειας
-            typeCombo.setItems(FXCollections.observableArrayList(leaveRequestService.getAllLeaveTypes()));
-
-            // Ρύθμιση για να φαίνονται τα ονόματα σωστά στο ComboBox
+            // ===== LEAVE TYPES =====
+            typeCombo.setItems(
+                    FXCollections.observableArrayList(
+                            leaveRequestService.getAllLeaveTypes()
+                    )
+            );
             setupComboBoxRenderer();
 
-            // 3. LISTENER: ΥΠΟΛΟΓΙΣΜΟΣ ΥΠΟΛΟΙΠΟΥ ΣΕ ΠΡΑΓΜΑΤΙΚΟ ΧΡΟΝΟ
-            // Μόλις ο χρήστης διαλέξει τύπο άδειας, τρέχει αυτός ο κώδικας
-            typeCombo.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-                if (newVal != null) {
-                    int remaining = leaveRequestService.getRemainingDays(currentEmployee, newVal);
+            // ===== REMAINING DAYS LISTENER =====
+            typeCombo.getSelectionModel().selectedItemProperty().addListener(
+                    (obs, oldVal, newVal) -> {
+                        if (newVal != null) {
+                            int remaining =
+                                    leaveRequestService.getRemainingDays(
+                                            currentEmployee, newVal
+                                    );
 
-                    remainingDaysLabel.setText("Remaining Days: " + remaining);
+                            remainingDaysLabel.setText(
+                                    "Remaining Days: " + remaining
+                            );
 
-                    // Αλλαγή χρώματος: Κόκκινο αν δεν έχει μέρες, Πράσινο αν έχει
-                    if (remaining <= 0) {
-                        remainingDaysLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
-                    } else {
-                        remainingDaysLabel.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
+                            if (remaining <= 0) {
+                                remainingDaysLabel.setStyle(
+                                        "-fx-text-fill: red; -fx-font-weight: bold;"
+                                );
+                            } else {
+                                remainingDaysLabel.setStyle(
+                                        "-fx-text-fill: green; -fx-font-weight: bold;"
+                                );
+                            }
+                        }
                     }
-                }
-            });
+            );
 
         } catch (Exception e) {
             showAlert("Error", "Could not load user data: " + e.getMessage());
         }
     }
 
+    // ===== SUBMIT REQUEST =====
     @FXML
     private void handleSubmit() {
         try {
@@ -90,13 +103,11 @@ public class LeavesController implements Initializable {
             LocalDate end = endDatePicker.getValue();
             String reason = reasonArea.getText();
 
-            // Βασικός έλεγχος ότι συμπλήρωσε τα πάντα
             if (type == null || start == null || end == null) {
                 showAlert("Validation Error", "Please fill all required fields.");
                 return;
             }
 
-            // Δημιουργία του αντικειμένου
             LeaveRequest request = new LeaveRequest();
             request.setEmployee(currentEmployee);
             request.setLeaveType(type);
@@ -104,18 +115,19 @@ public class LeavesController implements Initializable {
             request.setEndDate(end);
             request.setReason(reason);
 
-            // Αποστολή στο Service (Εδώ γίνονται οι έλεγχοι για Σ/Κ και υπόλοιπο)
             leaveRequestService.submitRequest(request);
 
             showAlert("Success", "Request submitted successfully!");
-            handleClear(); // Καθαρισμός φόρμας
+            handleClear();
 
         } catch (RuntimeException e) {
-            // Πιάνουμε τα μηνύματα λάθους του Service (π.χ. "Not enough days")
             showAlert("Error", e.getMessage());
+        } finally {
+            //I caught Br Br Patapim
         }
     }
 
+    // ===== CLEAR FORM =====
     @FXML
     private void handleClear() {
         typeCombo.setValue(null);
@@ -125,22 +137,35 @@ public class LeavesController implements Initializable {
         remainingDaysLabel.setText("Select a type...");
     }
 
-    // Βοηθητική μέθοδος για να δείχνει το όνομα στο ComboBox αντί για memory address
+    // ===== COMBOBOX RENDERER =====
     private void setupComboBoxRenderer() {
-        Callback<ListView<LeaveType>, ListCell<LeaveType>> cellFactory = lv -> new ListCell<>() {
-            @Override
-            protected void updateItem(LeaveType item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(empty || item == null ? "" : item.getName());
-            }
-        };
+        Callback<ListView<LeaveType>, ListCell<LeaveType>> cellFactory =
+                lv -> new ListCell<>() {
+                    @Override
+                    protected void updateItem(
+                            LeaveType item, boolean empty
+                    ) {
+                        super.updateItem(item, empty);
+                        setText(
+                                empty || item == null
+                                        ? ""
+                                        : item.getName()
+                        );
+                    }
+                };
+
         typeCombo.setCellFactory(cellFactory);
         typeCombo.setButtonCell(cellFactory.call(null));
     }
 
+    // ===== ALERT HELPER =====
     private void showAlert(String title, String content) {
-        Alert.AlertType type = title.equals("Success") ? Alert.AlertType.INFORMATION : Alert.AlertType.ERROR;
-        Alert alert = new Alert(type);
+        Alert.AlertType alertType =
+                title.equals("Success")
+                        ? Alert.AlertType.INFORMATION
+                        : Alert.AlertType.ERROR;
+
+        Alert alert = new Alert(alertType);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(content);

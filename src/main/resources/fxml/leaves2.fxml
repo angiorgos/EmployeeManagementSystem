@@ -24,11 +24,14 @@
 
                         <TableView fx:id="leaveRequestsTable" VBox.vgrow="ALWAYS">
                             <columns>
-                                <TableColumn fx:id="employeeCol" prefWidth="180" text="Employee" />
-                                <TableColumn fx:id="leaveTypeCol" prefWidth="150" text="Leave Type" />
+                        <TableColumn prefWidth="75.0" text="ID" />
+                                <TableColumn fx:id="employeeCol" prefWidth="180" text="Employee Full Name" />
+                        <TableColumn prefWidth="131.0" text="Phone Number" />
+                                <TableColumn fx:id="leaveTypeCol" prefWidth="94.0" text="Leave Type" />
                                 <TableColumn fx:id="startDateCol" prefWidth="120" text="Start Date" />
                                 <TableColumn fx:id="endDateCol" prefWidth="120" text="End Date" />
                                 <TableColumn fx:id="statusCol" prefWidth="120" text="Status" />
+                        <TableColumn prefWidth="220.0" text="Actions" />
                             </columns>
                         </TableView>
                     </children>
