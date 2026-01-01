@@ -89,18 +89,16 @@
                                  </styleClass>
                               </ToggleButton>
                               <HBox prefHeight="37.0" prefWidth="11.0" />
-                              <HBox prefHeight="37.0" prefWidth="478.0" HBox.hgrow="ALWAYS">
+                              <HBox prefHeight="38.0" prefWidth="422.0" HBox.hgrow="ALWAYS">
                                  <children>
                                     <ToggleButton fx:id="todayBtn" mnemonicParsing="false" onAction="#onToday" prefHeight="44.0" prefWidth="70.0" styleClass="view-btn" text="Today" />
                                  </children></HBox>
-                              <ToggleButton mnemonicParsing="false" onAction="#onToday" prefHeight="46.0" prefWidth="76.0" styleClass="view-btn" text="Day">
+                              <ToggleButton mnemonicParsing="false" onAction="#onToday" prefHeight="44.0" prefWidth="76.0" styleClass="view-btn" text="Week">
                                  <toggleGroup>
                                     <ToggleGroup fx:id="viewGroup" />
-                                 </toggleGroup>
-                              </ToggleButton>
-                              <ToggleButton mnemonicParsing="false" onAction="#onToday" prefHeight="44.0" prefWidth="76.0" styleClass="view-btn" text="Week" toggleGroup="$viewGroup" />
+                                 </toggleGroup></ToggleButton>
                               <ToggleButton mnemonicParsing="false" onAction="#onToday" prefHeight="44.0" prefWidth="76.0" styleClass="view-btn" text="Month" toggleGroup="$viewGroup" />
-                              <HBox prefHeight="37.0" prefWidth="68.0" />
+                              <HBox prefHeight="38.0" prefWidth="141.0" />
                                         
                                     </children>
                                 </HBox>
@@ -134,7 +132,7 @@
                 </Tab>
                 <Tab text="New Schedule">
                     <content>
-                        <fx:include source="schedule2.fxml" />
+                        <fx:include fx:id="newScheduleView" source="schedule2.fxml" />
                     </content>
                 </Tab>
             </tabs>
