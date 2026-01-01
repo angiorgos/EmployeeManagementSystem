@@ -115,11 +115,14 @@
                 </Tab>
 
                 <!-- REVIEW TAB -->
-                <Tab text="Review Requests">
+                <Tab text="Review Requests" style="-fx-background-color: white;">
                     <content>
-                        <fx:include source="leaves2.fxml" />
+                        <VBox spacing="0" style="-fx-background-color: white;" VBox.vgrow="ALWAYS">
+                            <fx:include source="leaves2.fxml" />
+                        </VBox>
                     </content>
                 </Tab>
+
 
             </tabs>
          <BorderPane.margin>

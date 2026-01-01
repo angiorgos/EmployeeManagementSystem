@@ -10,59 +10,34 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox spacing="15.0"
-      xmlns="http://javafx.com/javafx/25"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="org.project.employeemanagementsystem.controller.LeavesController2"
-      style="-fx-background-color: white;"
-      VBox.vgrow="ALWAYS">
+<VBox prefHeight="467.0" prefWidth="1042.0" spacing="15.0" style="-fx-background-color: white;" VBox.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.project.employeemanagementsystem.controller.LeavesController2">
 
     <!-- Padding around everything -->
     <padding>
-        <Insets bottom="20" left="20" right="20" top="20"/>
+        <Insets bottom="20" left="20" right="20" top="20" />
     </padding>
 
     <!-- Search / Filter Bar -->
     <HBox spacing="10.0">
         <children>
             <!-- Status filter ComboBox -->
-            <ComboBox fx:id="statusFilterCombo"
-                      prefWidth="150.0"
-                      promptText="Status"
-                      stylesheets="@../theme.css"/>
+            <ComboBox fx:id="statusFilterCombo" prefWidth="150.0" promptText="Status" stylesheets="@../theme.css" />
 
             <!-- Spacer -->
-            <Region prefHeight="0.0" prefWidth="200.0" HBox.hgrow="ALWAYS"/>
+            <Region prefHeight="0.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
 
             <!-- Search Field -->
-            <TextField fx:id="searchField"
-                       prefHeight="35.0"
-                       prefWidth="156.0"
-                       promptText="Search by employee name"/>
+            <TextField fx:id="searchField" prefHeight="35.0" prefWidth="156.0" promptText="Search by employee name" />
 
             <!-- Refresh Button -->
-            <Button fx:id="refreshBtn"
-                    minHeight="14.0"
-                    mnemonicParsing="false"
-                    onAction="#onRefresh"
-                    prefHeight="14.0"
-                    prefWidth="77.0"
-                    styleClass="btn-secondary"
-                    stylesheets="@../theme.css"
-                    text="Refresh"/>
+            <Button fx:id="refreshBtn" minHeight="14.0" mnemonicParsing="false" onAction="#onRefresh" prefHeight="14.0" prefWidth="77.0" styleClass="btn-secondary" stylesheets="@../theme.css" text="Refresh" />
         </children>
     </HBox>
 
     <!-- Scrollable area for request cards -->
-    <ScrollPane fitToWidth="true"
-                style="-fx-background: white; -fx-background-color: white; -fx-border-color: transparent; -fx-padding: 0; -fx-background-insets: 0;"
-                VBox.vgrow="ALWAYS">
+    <ScrollPane fitToWidth="true" style="-fx-background: white; -fx-background-color: white; -fx-border-color: transparent; -fx-padding: 0; -fx-background-insets: 0;" VBox.vgrow="ALWAYS">
         <content>
-            <FlowPane fx:id="requestsFlowPane"
-                      hgap="15"
-                      vgap="15"
-                      prefWrapLength="1000"
-                      style="-fx-background-color: white;"/>
+            <FlowPane fx:id="requestsFlowPane" hgap="15" prefWrapLength="1000" style="-fx-background-color: white;" vgap="15" />
         </content>
     </ScrollPane>
 
