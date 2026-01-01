@@ -6,6 +6,7 @@ import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
+import org.project.employeemanagementsystem.model.Employee;
 import org.project.employeemanagementsystem.model.LeaveRequest;
 import org.project.employeemanagementsystem.model.LeaveStatus;
 import org.project.employeemanagementsystem.model.User;
@@ -34,32 +35,37 @@ public class LeavesController2 {
 
     private List<LeaveRequest> allRequests;
     private boolean isAdmin;
+    private Employee currentEmployee;
 
     @FXML
     public void initialize() {
-        // --- Determine if current user is admin
+        // --- Check current user
         User currentUser = userSession.getCurrentUser();
         isAdmin = currentUser != null
                 && currentUser.getRole() != null
                 && "ROLE_ADMIN".equals(currentUser.getRole().getName());
 
-        // --- Setup Status Filter
+        if (!isAdmin && currentUser != null) {
+            currentEmployee = currentUser.getEmployee();
+        }
+
+        // --- Status filter setup
         List<LeaveStatus> statuses = new ArrayList<>();
-        statuses.add(null); // "All"
+        statuses.add(null); // Represents "All"
         statuses.addAll(List.of(LeaveStatus.values()));
         statusFilterCombo.setItems(FXCollections.observableArrayList(statuses));
         statusFilterCombo.setPromptText("All");
 
-        // --- Setup Listeners for Filtering
+        // --- Filtering listeners
         searchField.textProperty().addListener((obs, oldVal, newVal) -> refreshUIOnly());
         statusFilterCombo.valueProperty().addListener((obs, oldVal, newVal) -> refreshUIOnly());
 
-        // --- Setup FlowPane
+        // --- FlowPane setup
         requestsFlowPane.setHgap(15);
         requestsFlowPane.setVgap(15);
         requestsFlowPane.setPadding(new Insets(10));
 
-        // --- Initial Load
+        // --- Initial load
         loadDataFromDB();
     }
 
@@ -70,6 +76,15 @@ public class LeavesController2 {
 
     private void loadDataFromDB() {
         allRequests = leaveRequestService.getAllRequests();
+
+        // --- Non-admins see only their requests
+        if (!isAdmin && currentEmployee != null) {
+            Long empId = currentEmployee.getId();
+            allRequests = allRequests.stream()
+                    .filter(r -> r.getEmployee() != null && r.getEmployee().getId().equals(empId))
+                    .collect(Collectors.toList());
+        }
+
         refreshUIOnly();
     }
 
@@ -100,6 +115,7 @@ public class LeavesController2 {
         card.setMaxWidth(220);
         card.setStyle(getStatusStyle(request.getStatus()));
 
+        // Labels
         Label title = new Label("REQ #" + request.getId() + " - " + request.getLeaveType().getName());
         title.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
 
@@ -109,6 +125,7 @@ public class LeavesController2 {
         Label dates = new Label(request.getStartDate() + " to " + request.getEndDate());
         dates.setStyle("-fx-text-fill: #555; -fx-font-size: 11px;");
 
+        // Reason Button
         Button reasonBtn = new Button("View Reason");
         reasonBtn.setMaxWidth(Double.MAX_VALUE);
         reasonBtn.getStyleClass().add("btn-secondary");
@@ -120,29 +137,27 @@ public class LeavesController2 {
             alert.showAndWait();
         });
 
+        // Status ComboBox (admins only)
         ComboBox<LeaveStatus> statusCombo = new ComboBox<>(FXCollections.observableArrayList(LeaveStatus.values()));
         statusCombo.setValue(request.getStatus());
         statusCombo.setMaxWidth(Double.MAX_VALUE);
+        statusCombo.setDisable(!isAdmin); // 🔐 disable for non-admins
 
-        // --- Disable ComboBox if user is not admin
-        statusCombo.setDisable(!isAdmin);
-
-        statusCombo.setOnAction(e -> {
-            if (!isAdmin) return; // safety check
-
-            LeaveStatus newStatus = statusCombo.getValue();
-            request.setStatus(newStatus);
-
-            try {
-                leaveRequestService.updateRequestStatus(request);
-                card.setStyle(getStatusStyle(newStatus));
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                statusCombo.setValue(request.getStatus());
-                Alert alert = new Alert(Alert.AlertType.ERROR, "Update failed: " + ex.getMessage());
-                alert.show();
-            }
-        });
+        if (isAdmin) {
+            statusCombo.setOnAction(e -> {
+                LeaveStatus newStatus = statusCombo.getValue();
+                request.setStatus(newStatus);
+                try {
+                    leaveRequestService.updateRequestStatus(request);
+                    card.setStyle(getStatusStyle(newStatus));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    statusCombo.setValue(request.getStatus());
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "Update failed: " + ex.getMessage());
+                    alert.show();
+                }
+            });
+        }
 
         card.getChildren().addAll(title, name, dates, reasonBtn, new Separator(), new Label("Set Status:"), statusCombo);
         requestsFlowPane.getChildren().add(card);
