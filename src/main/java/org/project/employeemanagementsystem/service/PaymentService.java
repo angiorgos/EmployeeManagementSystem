@@ -26,48 +26,42 @@ public class PaymentService {
      * Υπολογισμός Αρχικής Μισθοδοσίας
      */
     public void calculateAndSavePayroll(Employee emp, LocalDate payrollDate,
-                                        Double standardMonthlyHours, // Η ρύθμιση από τη βάση (π.χ. 176)
+                                        Double standardMonthlyHours,
                                         Double overtimeHours, Double sundayHours,
                                         double overtimeRate, double sundayRate,
                                         double totalTaxRate, double employerShare) {
 
         String currentMonth = payrollDate.format(DateTimeFormatter.ofPattern("MM/yyyy"));
 
-        // 1. Βρίσκουμε το ωρομίσθιο με βάση τις Πρότυπες Ώρες (Standard Hours)
-        // Αν είναι κενό, βάζουμε μια ασφάλεια (173.33)
         double divisor = (standardMonthlyHours != null && standardMonthlyHours > 0) ? standardMonthlyHours : 173.33;
         double hourlyRate = emp.getSalary() / divisor;
 
-        // 2. Υπολογισμός Αποδοχών Εργασίας
         double basePay = emp.getSalary();
         double overtimePay = overtimeHours * hourlyRate * overtimeRate;
         double sundayPay = sundayHours * hourlyRate * sundayRate;
 
-        // 3. Αρχικά Μεικτά (χωρίς bonus ακόμα)
         double grossPay = basePay + overtimePay + sundayPay;
 
-        // 4. Υπολογισμός Φόρων
         double totalTaxAmount = grossPay * totalTaxRate;
-        double employerTaxAmount = totalTaxAmount * employerShare;       // Κόστος Εργοδότη
-        double employeeTaxAmount = totalTaxAmount * (1 - employerShare); // Κρατήσεις Υπαλλήλου (Deductions)
+        double employerTaxAmount = totalTaxAmount * employerShare;
+        double employeeTaxAmount = totalTaxAmount * (1 - employerShare);
 
-        // 5. Αποθήκευση
         Payment payment = new Payment();
         payment.setEmployee(emp);
         payment.setMonthYear(currentMonth);
         payment.setPaymentDate(payrollDate);
 
         payment.setBaseSalary(basePay);
-        payment.setHoursWorked(standardMonthlyHours); // Αποθηκεύουμε το πρότυπο για αναφορά
+        payment.setHoursWorked(standardMonthlyHours);
         payment.setOvertimeHours(overtimeHours);
         payment.setSundayHours(sundayHours);
-        payment.setBonus(0.0); // Αρχικά μηδέν
+        payment.setBonus(0.0);
 
         payment.setGrossPay(grossPay);
         payment.setEmployerTax(employerTaxAmount);
         payment.setDeductions(employeeTaxAmount);
 
-        payment.setAmount(grossPay - employeeTaxAmount); // Καθαρό = Μεικτά - Κρατήσεις
+        payment.setAmount(grossPay - employeeTaxAmount);
         payment.setStatus("PENDING");
 
         paymentRepository.save(payment);
@@ -75,8 +69,9 @@ public class PaymentService {
 
     /**
      * Ενημέρωση Bonus (Προσθήκη στο Gross -> Επανυπολογισμός Φόρων -> Νέο Καθαρό)
+     * ΑΛΛΑΓΗ: Επιστρέφει πλέον Payment αντί για void.
      */
-    public void updateBonus(Payment payment, double newBonus, double totalTaxRate, double employerShare) {
+    public Payment updateBonus(Payment payment, double newBonus, double totalTaxRate, double employerShare) {
 
         // 1. Βρίσκουμε τον μισθό εργασίας αφαιρώντας το παλιό bonus (αν υπήρχε)
         double oldBonus = (payment.getBonus() != null) ? payment.getBonus() : 0.0;
@@ -99,7 +94,8 @@ public class PaymentService {
         // 5. Νέο Καθαρό Πληρωτέο
         payment.setAmount(newGross - employeeTaxAmount);
 
-        paymentRepository.save(payment);
+        // ΑΛΛΑΓΗ ΕΔΩ: Επιστρέφουμε το αντικείμενο που μόλις σώσαμε
+        return paymentRepository.save(payment);
     }
 
     public void updatePaymentStatus(Payment payment, String status) {

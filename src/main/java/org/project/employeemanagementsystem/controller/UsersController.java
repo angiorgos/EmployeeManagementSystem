@@ -1,362 +1,197 @@
 package org.project.employeemanagementsystem.controller;
 
-import javafx.beans.property.SimpleStringProperty;
+import javafx.animation.FadeTransition;
+import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.util.Duration;
+import javafx.util.StringConverter;
 import org.project.employeemanagementsystem.model.Role;
 import org.project.employeemanagementsystem.model.User;
 import org.project.employeemanagementsystem.service.RoleService;
 import org.project.employeemanagementsystem.service.UserService;
-import org.project.employeemanagementsystem.util.UserSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
-//xx
+
 @Controller
 public class UsersController implements Initializable {
 
-    @Autowired private UserService userService; // Σύνδεση για Χρήστες
-    @Autowired private RoleService roleService; // Σύνδεση για Ρόλους (στο dropdown)
-    @Autowired private UserSession userSession; // connection to user session
+    @Autowired private UserService userService;
+    @Autowired private RoleService roleService;
 
-   // @FXML private TableView<User> usersTable;
-    @FXML private ComboBox<Role> roleComboBox; // Για επιλογή ρόλου (ADMIN, EMPLOYEE, HR, ACCOUNTANT)
+    @FXML private VBox tableViewContainer;
+    @FXML private VBox formViewContainer;
+    @FXML private VBox loadingOverlay;
+    @FXML private Label formTitle;
 
     @FXML private TableView<User> usersTable;
     @FXML private TableColumn<User, Long> idCol;
     @FXML private TableColumn<User, String> usernameCol;
     @FXML private TableColumn<User, String> roleCol;
+    @FXML private TableColumn<User, Void> actionCol;
 
-    @FXML private TextField usernameTextField;
+    @FXML private TextField searchField;
+    @FXML private TextField usernameField;
+    @FXML private PasswordField passwordField;
+    @FXML private ComboBox<Role> roleComboBox;
 
-    @FXML private Button createUserButton;
-    @FXML private Button deleteUserButton;
-    @FXML Button editUserButton;
-
-
-
-
-    private ObservableList<User> userList = FXCollections.observableArrayList();
+    private FilteredList<User> filteredData;
+    private User selectedUser;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        setupTableColumns();
+        loadRoles();
+        Platform.runLater(this::loadUsers);
 
-       // --- 1. Initialize TableView columns ---
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilter(newVal));
+    }
+
+    private void loadUsers() {
+        loadingOverlay.setVisible(true);
+        tableViewContainer.setVisible(false);
+
+        Task<List<User>> task = new Task<>() {
+            @Override
+            protected List<User> call() {
+                return userService.getAllUsers();
+            }
+        };
+
+        task.setOnSucceeded(event -> {
+            filteredData = new FilteredList<>(FXCollections.observableArrayList(task.getValue()));
+            usersTable.setItems(filteredData);
+            applyFilter(searchField.getText());
+            addActionButtonsToTable();
+
+            // Fade out loading overlay
+            PauseTransition delay = new PauseTransition(Duration.seconds(0.3));
+            delay.setOnFinished(e -> {
+                FadeTransition fade = new FadeTransition(Duration.seconds(0.5), loadingOverlay);
+                fade.setFromValue(1.0);
+                fade.setToValue(0.0);
+                fade.setOnFinished(evt -> loadingOverlay.setVisible(false));
+                fade.play();
+                tableViewContainer.setVisible(true);
+            });
+            delay.play();
+        });
+
+        task.setOnFailed(event -> loadingOverlay.setVisible(false));
+        new Thread(task).start();
+    }
+
+    private void setupTableColumns() {
         idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         usernameCol.setCellValueFactory(new PropertyValueFactory<>("username"));
-        roleCol.setCellValueFactory(cellData -> {
-            Role role = cellData.getValue().getRole();
-            return new SimpleStringProperty(role != null ? role.getName() : "");
+        roleCol.setCellValueFactory(cell -> {
+            Role role = cell.getValue().getRole();
+            return new javafx.beans.property.SimpleStringProperty(role != null ? role.getName() : "");
         });
-
-        // Φόρτωση Χρηστών στον Πίνακα
-        userList.setAll(userService.getAllUsers());
-        usersTable.setItems(userList);
-
-        // Φόρτωση Ρόλων στο Dropdown
-        if (roleComboBox != null) {
-            roleComboBox.getItems().setAll(roleService.getAllRoles());
-        }
-
-
-        //seting the right tab for usename and password
-        usersTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            if (newSelection != null) {
-                // Set username in text field
-                usernameTextField.setText(newSelection.getUsername());
-
-                // Set role in combo box
-                Role role = newSelection.getRole();
-                if (role != null) {
-                    roleComboBox.getSelectionModel().select(role);
-                } else {
-                    roleComboBox.getSelectionModel().clearSelection();
-                }
-            } else {
-                // Clear fields if nothing selected
-                usernameTextField.clear();
-                roleComboBox.getSelectionModel().clearSelection();
-            }
-        });
-
-
-        // Disable delete button initially
-        deleteUserButton.setDisable(true);
-
-        // Enable delete button only when a user is selected
-        usersTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            deleteUserButton.setDisable(newSelection == null);
-        });
-
-
-        editUserButton.setDisable(true);
-
-// Enable edit button only when a user is selected
-        usersTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            boolean selectedNotNull = newSelection != null;
-            editUserButton.setDisable(!selectedNotNull);
-        });
-
-
     }
 
-
-
-    @FXML
-    private void onUserTableClick() {
-        User selected = usersTable.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            // Show username in TextField
-            usernameTextField.setText(selected.getUsername());
-
-            // Show role in ComboBox
-            Role role = selected.getRole();
-            if (role != null) {
-                roleComboBox.getSelectionModel().select(role);
-            } else {
-                roleComboBox.getSelectionModel().clearSelection();
-            }
+    private void applyFilter(String query) {
+        if (query == null || query.isEmpty()) filteredData.setPredicate(u -> true);
+        else {
+            String lower = query.toLowerCase();
+            filteredData.setPredicate(u -> u.getUsername().toLowerCase().contains(lower));
         }
     }
 
-
+    private void loadRoles() {
+        roleComboBox.getItems().setAll(roleService.getAllRoles());
+        roleComboBox.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(Role role) { return role != null ? role.getName() : ""; }
+            @Override
+            public Role fromString(String s) { return null; }
+        });
+    }
 
     @FXML
     private void onCreateUser() {
-        // Create dialog
-        Dialog<User> dialog = new Dialog<>();
-        dialog.setTitle("Create User");
-        dialog.setHeaderText("Enter user details");
+        showForm(null);
+    }
 
-        // Buttons
-        ButtonType createButtonType = new ButtonType("Create", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(createButtonType, ButtonType.CANCEL);
+    @FXML
+    private void handleBackToTable() {
+        formViewContainer.setVisible(false);
+        tableViewContainer.setVisible(true);
+    }
 
-        // Fields
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
+    @FXML
+    private void onSaveUser() {
+        String username = usernameField.getText().trim();
+        Role role = roleComboBox.getValue();
+        String password = passwordField.getText();
 
-        TextField usernameField = new TextField();
-        usernameField.setPromptText("Username");
+        if(username.isEmpty() || role == null) return;
 
-        PasswordField passwordField = new PasswordField();
-        passwordField.setPromptText("Password");
+        if(selectedUser == null) selectedUser = new User();
+        selectedUser.setUsername(username);
+        selectedUser.setRole(role);
+        if(password != null && !password.isEmpty()) selectedUser.setPassword(password);
 
-        ComboBox<Role> roleField = new ComboBox<>();
-        roleField.getItems().setAll(roleService.getAllRoles());
+        userService.saveUser(selectedUser);
+        loadUsers();
+        handleBackToTable();
+    }
 
-        grid.add(new Label("Username:"), 0, 0);
-        grid.add(usernameField, 1, 0);
-        grid.add(new Label("Password:"), 0, 1);
-        grid.add(passwordField, 1, 1);
-        grid.add(new Label("Role:"), 0, 2);
-        grid.add(roleField, 1, 2);
+    private void addActionButtonsToTable() {
+        actionCol.setCellFactory(param -> new TableCell<>() {
+            private final Button btnEdit = new Button("Edit");
+            private final Button btnDelete = new Button("Delete");
+            private final HBox pane = new HBox(5, btnEdit, btnDelete);
 
-        dialog.getDialogPane().setContent(grid);
+            {
+                pane.getStyleClass().add("action-box");
+                btnEdit.getStyleClass().addAll("table-btn", "table-btn-edit");
+                btnDelete.getStyleClass().addAll("table-btn", "table-btn-delete");
 
-        // Enable Create button only when all fields are filled
-        Button createButton = (Button) dialog.getDialogPane().lookupButton(createButtonType);
-        createButton.setDisable(true);
-
-        usernameField.textProperty().addListener((obs, oldVal, newVal) ->
-                createButton.setDisable(newVal.trim().isEmpty() || passwordField.getText().trim().isEmpty() || roleField.getValue() == null)
-        );
-        passwordField.textProperty().addListener((obs, oldVal, newVal) ->
-                createButton.setDisable(newVal.trim().isEmpty() || usernameField.getText().trim().isEmpty() || roleField.getValue() == null)
-        );
-        roleField.valueProperty().addListener((obs, oldVal, newVal) ->
-                createButton.setDisable(newVal == null || usernameField.getText().trim().isEmpty() || passwordField.getText().trim().isEmpty())
-        );
-
-        // Convert result
-        dialog.setResultConverter(button -> {
-            if (button == createButtonType) {
-                User user = new User();
-                user.setUsername(usernameField.getText().trim());
-                user.setPassword(passwordField.getText().trim());
-                user.setRole(roleField.getValue());
-                return user;
+                btnEdit.setOnAction(e -> showForm(getTableView().getItems().get(getIndex())));
+                btnDelete.setOnAction(e -> {
+                    User user = getTableView().getItems().get(getIndex());
+                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Delete user: " + user.getUsername() + "?");
+                    confirm.showAndWait().ifPresent(r -> { if(r==ButtonType.OK) { userService.deleteUser(user); loadUsers(); }});
+                });
             }
-            return null;
-        });
 
-        // Show dialog and save user
-        dialog.showAndWait().ifPresent(user -> {
-            try {
-                userService.saveUser(user);
-                userList.add(user);
-                usersTable.refresh();
-            } catch (RuntimeException e) {
-                showAlert("Error", e.getMessage());
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : pane);
             }
         });
     }
 
-
-
-
-    @FXML
-    private void onDeleteUser() {
-        User selected = usersTable.getSelectionModel().getSelectedItem();
-        if (selected == null) return;
-
-        User currentUser = userSession.getCurrentUser();
-        boolean currentUserIsAdmin = currentUser != null && currentUser.getRole() != null
-                && "ADMIN".equalsIgnoreCase(currentUser.getRole().getName());
-
-        if (!currentUserIsAdmin) {
-            // Prompt for password of the user to be deleted
-            TextInputDialog passwordDialog = new TextInputDialog();
-            passwordDialog.setTitle("Password Required");
-            passwordDialog.setHeaderText("Enter password of user: " + selected.getUsername());
-            passwordDialog.setContentText("Password:");
-
-            passwordDialog.showAndWait().ifPresent(password -> {
-                if (!selected.getPassword().equals(password)) {
-                    showAlert("Error", "Incorrect password! Cannot delete user.");
-                } else {
-                    confirmAndDeleteUser(selected);
-                }
-            });
+    private void showForm(User user) {
+        selectedUser = user;
+        if(user == null){
+            formTitle.setText("New User");
+            usernameField.clear();
+            passwordField.clear();
+            roleComboBox.setValue(null);
         } else {
-            // Admin can delete without password
-            confirmAndDeleteUser(selected);
+            formTitle.setText("Edit User");
+            usernameField.setText(user.getUsername());
+            roleComboBox.setValue(user.getRole());
         }
+        tableViewContainer.setVisible(false);
+        formViewContainer.setVisible(true);
     }
-
-    // Helper method to confirm deletion
-    private void confirmAndDeleteUser(User user) {
-        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmation.setTitle("Delete User");
-        confirmation.setHeaderText("Are you sure you want to delete this user?");
-        confirmation.setContentText(user.getUsername());
-
-        confirmation.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                try {
-                    userService.deleteUser(user);
-                    userList.remove(user);
-                    usersTable.refresh();
-                } catch (RuntimeException e) {
-                    showAlert("Error", e.getMessage());
-                }
-            }
-        });
-    }
-
-
 
     @FXML
-    private void onEditUser() {
-        User selected = usersTable.getSelectionModel().getSelectedItem();
-        if (selected == null) return;
-
-        boolean admin = isAdmin();
-
-        Dialog<User> dialog = new Dialog<>();
-        dialog.setTitle("Edit User");
-        dialog.setHeaderText("Edit user details");
-
-        ButtonType editButtonType = new ButtonType("Edit User", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(editButtonType, ButtonType.CANCEL);
-
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-
-        TextField usernameField = new TextField(selected.getUsername());
-
-        ComboBox<Role> roleField = new ComboBox<>();
-        roleField.getItems().setAll(roleService.getAllRoles());
-        roleField.getSelectionModel().select(selected.getRole());
-
-        PasswordField passwordField = new PasswordField();
-        passwordField.setPromptText("New Password");
-
-        grid.add(new Label("Username:"), 0, 0);
-        grid.add(usernameField, 1, 0);
-        grid.add(new Label("Role:"), 0, 1);
-        grid.add(roleField, 1, 1);
-
-        // Password only for ADMIN
-        if (admin) {
-            grid.add(new Label("Password:"), 0, 2);
-            grid.add(passwordField, 1, 2);
-        }
-
-        dialog.getDialogPane().setContent(grid);
-
-        // Disable Edit button if invalid
-        Button editButton = (Button) dialog.getDialogPane().lookupButton(editButtonType);
-        editButton.setDisable(true);
-
-        Runnable validate = () -> {
-            boolean usernameValid = !usernameField.getText().trim().isEmpty();
-            boolean roleValid = roleField.getValue() != null;
-            editButton.setDisable(!(usernameValid && roleValid));
-        };
-
-        usernameField.textProperty().addListener((o, a, b) -> validate.run());
-        roleField.valueProperty().addListener((o, a, b) -> validate.run());
-
-        validate.run();
-
-        dialog.setResultConverter(button -> {
-            if (button == editButtonType) {
-                selected.setUsername(usernameField.getText().trim());
-                selected.setRole(roleField.getValue());
-
-                // Only admin can change password
-                if (admin && !passwordField.getText().trim().isEmpty()) {
-                    selected.setPassword(passwordField.getText().trim());
-                }
-
-                return selected;
-            }
-            return null;
-        });
-
-        dialog.showAndWait().ifPresent(user -> {
-            try {
-                userService.saveUser(user);
-                usersTable.refresh();
-            } catch (RuntimeException e) {
-                showAlert("Error", e.getMessage());
-            }
-        });
-    }
-
-
-
-
-    private boolean isAdmin() {
-        User current = userSession.getCurrentUser();
-        return current != null
-                && current.getRole() != null
-                && "ADMIN".equalsIgnoreCase(current.getRole().getName());
-    }
-
-
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-
-
-
-
-
-
-
+    private void handleRefresh() { loadUsers(); }
 }
