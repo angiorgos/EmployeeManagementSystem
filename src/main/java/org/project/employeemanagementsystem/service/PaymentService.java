@@ -22,64 +22,82 @@ public class PaymentService {
         return paymentRepository.findAll();
     }
 
-    // --- ΔΙΟΡΘΩΣΗ: Προστέθηκε η παράμετρος 'payrollDate' ---
+    /**
+     * Υπολογισμός Αρχικής Μισθοδοσίας
+     */
     public void calculateAndSavePayroll(Employee emp, LocalDate payrollDate,
-                                        Double hoursWorked, Double overtimeHours, Double sundayHours,
-                                        double overtimeRate, double sundayRate, double totalTaxRate, double employerShare) {
+                                        Double standardMonthlyHours, // Η ρύθμιση από τη βάση (π.χ. 176)
+                                        Double overtimeHours, Double sundayHours,
+                                        double overtimeRate, double sundayRate,
+                                        double totalTaxRate, double employerShare) {
 
-        // Χρησιμοποιούμε την ημερομηνία που επιλέχθηκε (payrollDate), ΟΧΙ την τωρινή (now)
         String currentMonth = payrollDate.format(DateTimeFormatter.ofPattern("MM/yyyy"));
 
-        // Έλεγχος: Αν υπάρχει ήδη πληρωμή για αυτόν τον υπάλληλο και αυτόν τον μήνα, ίσως να μην θες να την ξαναφτιάξεις.
-        // Για την ώρα το αφήνουμε απλό (δημιουργεί νέα εγγραφή).
+        // 1. Βρίσκουμε το ωρομίσθιο με βάση τις Πρότυπες Ώρες (Standard Hours)
+        // Αν είναι κενό, βάζουμε μια ασφάλεια (173.33)
+        double divisor = (standardMonthlyHours != null && standardMonthlyHours > 0) ? standardMonthlyHours : 173.33;
+        double hourlyRate = emp.getSalary() / divisor;
 
-        double hourlyRate = emp.getSalary() / 160.0;
-
+        // 2. Υπολογισμός Αποδοχών Εργασίας
         double basePay = emp.getSalary();
         double overtimePay = overtimeHours * hourlyRate * overtimeRate;
         double sundayPay = sundayHours * hourlyRate * sundayRate;
 
+        // 3. Αρχικά Μεικτά (χωρίς bonus ακόμα)
         double grossPay = basePay + overtimePay + sundayPay;
 
+        // 4. Υπολογισμός Φόρων
         double totalTaxAmount = grossPay * totalTaxRate;
-        double employerTaxAmount = totalTaxAmount * employerShare;
-        double employeeTaxAmount = totalTaxAmount * (1 - employerShare);
+        double employerTaxAmount = totalTaxAmount * employerShare;       // Κόστος Εργοδότη
+        double employeeTaxAmount = totalTaxAmount * (1 - employerShare); // Κρατήσεις Υπαλλήλου (Deductions)
 
+        // 5. Αποθήκευση
         Payment payment = new Payment();
         payment.setEmployee(emp);
-        payment.setMonthYear(currentMonth); // "02/2026" π.χ.
-        payment.setPaymentDate(payrollDate); // Η ημερομηνία που επέλεξες
+        payment.setMonthYear(currentMonth);
+        payment.setPaymentDate(payrollDate);
+
         payment.setBaseSalary(basePay);
-        payment.setHoursWorked(hoursWorked);
+        payment.setHoursWorked(standardMonthlyHours); // Αποθηκεύουμε το πρότυπο για αναφορά
         payment.setOvertimeHours(overtimeHours);
         payment.setSundayHours(sundayHours);
+        payment.setBonus(0.0); // Αρχικά μηδέν
 
         payment.setGrossPay(grossPay);
-        payment.setDeductions(employeeTaxAmount);
         payment.setEmployerTax(employerTaxAmount);
+        payment.setDeductions(employeeTaxAmount);
 
-        payment.setAmount(grossPay - employeeTaxAmount);
+        payment.setAmount(grossPay - employeeTaxAmount); // Καθαρό = Μεικτά - Κρατήσεις
         payment.setStatus("PENDING");
 
         paymentRepository.save(payment);
     }
 
-    public void updateBonus(Payment payment, double bonusAmount, double employeeTaxRate) {
-        payment.setBonus(bonusAmount);
+    /**
+     * Ενημέρωση Bonus (Προσθήκη στο Gross -> Επανυπολογισμός Φόρων -> Νέο Καθαρό)
+     */
+    public void updateBonus(Payment payment, double newBonus, double totalTaxRate, double employerShare) {
 
-        // Προσθήκη Bonus στο Gross Pay
-        // Σημείωση: Εδώ κάνουμε μια απλοποίηση. Αν ήθελες τέλεια ακρίβεια θα έπρεπε να ξανα-υπολογίσεις τα πάντα.
-        // Αλλά για το Bonus, προσθέτουμε απλά το ποσό.
-        double oldGross = payment.getGrossPay();
-        double newGross = oldGross + bonusAmount;
+        // 1. Βρίσκουμε τον μισθό εργασίας αφαιρώντας το παλιό bonus (αν υπήρχε)
+        double oldBonus = (payment.getBonus() != null) ? payment.getBonus() : 0.0;
+        double payFromWork = payment.getGrossPay() - oldBonus;
 
-        double bonusTax = bonusAmount * employeeTaxRate;
+        // 2. Υπολογίζουμε το ΝΕΟ Gross (Μεικτά)
+        double newGross = payFromWork + newBonus;
 
-        double oldDeductions = payment.getDeductions();
-        payment.setDeductions(oldDeductions + bonusTax);
+        // 3. Υπολογίζουμε ξανά τους φόρους στο ΝΕΟ Gross
+        double totalTaxAmount = newGross * totalTaxRate;
+        double employerTaxAmount = totalTaxAmount * employerShare;
+        double employeeTaxAmount = totalTaxAmount * (1 - employerShare);
 
+        // 4. Ενημερώνουμε την εγγραφή
+        payment.setBonus(newBonus);
         payment.setGrossPay(newGross);
-        payment.setAmount(newGross - payment.getDeductions());
+        payment.setEmployerTax(employerTaxAmount);
+        payment.setDeductions(employeeTaxAmount);
+
+        // 5. Νέο Καθαρό Πληρωτέο
+        payment.setAmount(newGross - employeeTaxAmount);
 
         paymentRepository.save(payment);
     }
