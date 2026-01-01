@@ -10,8 +10,8 @@
     <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);">
         <children>
             <ComboBox fx:id="statusFilterCombo" prefWidth="150.0" promptText="Status" style="-fx-background-color: white;" stylesheets="@../theme.css" />
-            <Region prefHeight="0.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
             <TextField fx:id="searchField" prefHeight="35.0" prefWidth="195.0" promptText="Search by employee name" styleClass="search-field" />
+            <Region prefHeight="0.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
             <Button fx:id="refreshBtn" minHeight="14.0" mnemonicParsing="false" onAction="#onRefresh" prefHeight="14.0" prefWidth="77.0" styleClass="btn-secondary" stylesheets="@../theme.css" text="Refresh" />
         </children>
     </HBox>
