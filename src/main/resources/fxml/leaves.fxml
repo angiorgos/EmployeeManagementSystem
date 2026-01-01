@@ -115,7 +115,7 @@
                 </Tab>
 
                 <!-- REVIEW TAB -->
-                <Tab text="Review Requests">
+                <Tab text="Review Requests" style="-fx-background-color: transparent;">
                     <content>
                         <fx:include source="leaves2.fxml" />
                     </content>
