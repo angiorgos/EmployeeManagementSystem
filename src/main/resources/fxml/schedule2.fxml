@@ -20,14 +20,14 @@
                         <children>
                             <VBox prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
                                 <children>
-                                    <HBox prefHeight="52.0" prefWidth="42.0" VBox.vgrow="NEVER" />
-                                    <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="535.0" prefWidth="60.0" VBox.vgrow="ALWAYS">
+                                    <HBox prefHeight="19.0" prefWidth="53.0" VBox.vgrow="NEVER" />
+                                    <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="594.0" prefWidth="53.0" VBox.vgrow="ALWAYS">
                                         <columnConstraints>
-                                            <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
+                                            <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="10.0" prefWidth="100.0" />
                                         </columnConstraints>
                                         <rowConstraints>
-                                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
-                                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                                            <RowConstraints maxHeight="40.60001220703125" minHeight="10.0" prefHeight="40.60001220703125" vgrow="ALWAYS" />
+                                            <RowConstraints maxHeight="50.19998779296875" minHeight="10.0" prefHeight="50.19998779296875" vgrow="ALWAYS" />
                                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
                                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
                                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
@@ -41,19 +41,19 @@
                                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
                                         </rowConstraints>
                                         <children>
-                                            <Label text="9 am" />
-                                            <Label text="10 am" GridPane.rowIndex="1" />
-                                            <Label text="11 am" GridPane.rowIndex="2" />
-                                            <Label text="12 am" GridPane.rowIndex="3" />
-                                            <Label text="1 pm" GridPane.rowIndex="4" />
-                                            <Label text="2 pm" GridPane.rowIndex="5" />
-                                            <Label text="3 pm" GridPane.rowIndex="6" />
-                                            <Label text="5 pm" GridPane.rowIndex="8" />
-                                            <Label text="4 pm" GridPane.rowIndex="7" />
-                                            <Label text="6 pm" GridPane.rowIndex="9" />
-                                            <Label text="7 pm" GridPane.rowIndex="10" />
-                                            <Label text="9 pm" GridPane.rowIndex="12" />
-                                            <Label text="8 pm" GridPane.rowIndex="11" />
+                                            <Label text="9 am " />
+                                            <Label text="10 am " GridPane.rowIndex="1" />
+                                            <Label text="11 am " GridPane.rowIndex="2" />
+                                            <Label text="12 am " GridPane.rowIndex="3" />
+                                            <Label text="1 pm " GridPane.rowIndex="4" />
+                                            <Label text="2 pm " GridPane.rowIndex="5" />
+                                            <Label text="3 pm " GridPane.rowIndex="6" />
+                                            <Label text="5 pm " GridPane.rowIndex="8" />
+                                            <Label text="4 pm " GridPane.rowIndex="7" />
+                                            <Label text="6 pm " GridPane.rowIndex="9" />
+                                            <Label text="7 pm " GridPane.rowIndex="10" />
+                                            <Label text="9 pm " GridPane.rowIndex="12" />
+                                            <Label text="8 pm " GridPane.rowIndex="11" />
                                         </children>
                                     </GridPane>
                                 </children>
@@ -127,7 +127,7 @@
                                             </VBox>
                                         </children>
                                     </HBox>
-                                    <GridPane fx:id="weekGrid" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="612.0" prefWidth="835.0" styleClass="calendar-grid" VBox.vgrow="ALWAYS">
+                                    <GridPane fx:id="weekGrid" alignment="CENTER" gridLinesVisible="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="612.0" prefWidth="835.0" styleClass="calendar-grid" VBox.vgrow="ALWAYS">
                                         <columnConstraints>
                                             <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" />
                                             <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" />
@@ -163,7 +163,7 @@
         <left>
             <VBox maxWidth="-Infinity" prefHeight="593.0" prefWidth="255.0" BorderPane.alignment="CENTER">
                 <children>
-                    <ComboBox prefHeight="40.0" prefWidth="252.0" promptText="Choose Employee" />
+                    <ComboBox fx:id="employeeComboBox" prefHeight="40.0" prefWidth="252.0" promptText="Choose Employee" />
                     <VBox prefHeight="35.0" prefWidth="255.0" />
                     <VBox prefHeight="419.0" prefWidth="255.0">
                         <children>
@@ -246,8 +246,10 @@
                     </VBox>
                     <HBox alignment="CENTER_RIGHT" prefHeight="42.0" prefWidth="255.0">
                         <children>
-                            <Button fx:id="submitBtn" mnemonicParsing="false" onAction="#onSubmit" prefHeight="33.0" prefWidth="79.0" styleClass="view-btn" text="Sumbit" />
+                  <VBox prefHeight="42.0" prefWidth="20.0" />
+                            <Button fx:id="saveBtn" mnemonicParsing="false" onAction="#saveSchedule" prefHeight="34.0" prefWidth="117.0" styleClass="btn-primary" text="Save Schedule" />
                             <VBox prefHeight="42.0" prefWidth="20.0" />
+                  <Button fx:id="submitBtn" mnemonicParsing="false" onAction="#onSubmit" prefHeight="33.0" prefWidth="79.0" styleClass="btn-primary" text="Sumbit" />
                         </children>
                     </HBox>
                 </children>
