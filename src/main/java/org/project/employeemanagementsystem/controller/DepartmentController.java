@@ -183,7 +183,6 @@ public class DepartmentController implements Initializable {
         handleBackToTable();
     }
 
-    /** Add styled Edit/Delete buttons like EmployeesController */
     private void addActionButtonsToTable() {
         actionCol.setCellFactory(param -> new TableCell<>() {
             private final Button btnEdit = new Button("Edit");
