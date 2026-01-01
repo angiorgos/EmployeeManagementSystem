@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
-
+//xq
 @Controller
 public class DepartmentController implements Initializable {
     //ΣΥΝΔΕΣΗ ΜΕ ΤΟ SERVICE. ΣΟΥ ΕΒΑΛΑ ΚΑΙ ΜΙΑ ΛΙΣΤΑ. ΑΝ ΘΕΣ ΑΛΛΑΞΕ ΤΗ
