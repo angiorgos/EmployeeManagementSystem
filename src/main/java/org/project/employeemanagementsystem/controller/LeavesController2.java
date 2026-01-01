@@ -2,10 +2,7 @@ package org.project.employeemanagementsystem.controller;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import org.project.employeemanagementsystem.model.LeaveRequest;
@@ -15,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class LeavesController2 {
@@ -26,55 +24,94 @@ public class LeavesController2 {
     private FlowPane requestsFlowPane;
 
     @FXML
+    private TextField searchField;
+
+    @FXML
+    private ComboBox<LeaveStatus> statusFilterCombo;
+
+    private List<LeaveRequest> allRequests;
+
+    @FXML
     public void initialize() {
-        // Load all leave requests from DB
-        List<LeaveRequest> leaveRequests = leaveRequestService.getAllRequests();
+        // Load requests once
+        allRequests = leaveRequestService.getAllRequests();
 
-        for (LeaveRequest request : leaveRequests) {
-            VBox requestBox = new VBox(5); // spacing = 5
-            requestBox.setStyle("-fx-padding: 10; -fx-border-color: gray; -fx-border-radius: 5; -fx-background-color: #f9f9f9;");
+        // Setup status filter
+        statusFilterCombo.setItems(
+                FXCollections.observableArrayList(LeaveStatus.values())
+        );
+        statusFilterCombo.setValue(LeaveStatus.PENDING);
 
-            // Title
-            Label title = new Label("Request " + request.getId());
-            title.setStyle("-fx-font-weight: bold; -fx-font-size: 14;");
+        // Listeners
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> refresh());
+        statusFilterCombo.valueProperty().addListener((obs, oldVal, newVal) -> refresh());
 
-            // Employee info
-            Label nameLabel = new Label("Name: " + request.getEmployee().getFirstName() + " " + request.getEmployee().getLastName());
-            Label phoneLabel = new Label("Phone: " + request.getEmployee().getPhone());
-            Label emailLabel = new Label("Email: " + request.getEmployee().getEmail());
+        refresh();
+    }
 
-            // Reason button
-            Button reasonBtn = new Button("Show Reason");
-            reasonBtn.setOnAction(e -> {
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Leave Reason");
-                alert.setHeaderText("Reason for leave request " + request.getId());
-                alert.setContentText(request.getReason());
-                alert.showAndWait();
-            });
+    // ===== Refresh UI =====
+    private void refresh() {
+        requestsFlowPane.getChildren().clear();
 
-            // Status ComboBox
-            ComboBox<String> statusCombo = new ComboBox<>(FXCollections.observableArrayList("Pending", "Accepted", "Rejected"));
-            statusCombo.setValue(request.getStatus() != null ? request.getStatus().name() : "Pending");
-            statusCombo.setOnAction(e -> {
-                String selected = statusCombo.getValue().toUpperCase();
-                try {
-                    request.setStatus(LeaveStatus.valueOf(selected));
-                    leaveRequestService.submitRequest(request); // save change
-                } catch (Exception ex) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Error");
-                    alert.setHeaderText("Could not update status");
-                    alert.setContentText(ex.getMessage());
-                    alert.showAndWait();
-                }
-            });
+        String search = searchField.getText().toLowerCase();
+        LeaveStatus selectedStatus = statusFilterCombo.getValue();
 
-            // Add all nodes to VBox
-            requestBox.getChildren().addAll(title, nameLabel, phoneLabel, emailLabel, reasonBtn, statusCombo);
+        List<LeaveRequest> filtered = allRequests.stream()
+                .filter(r ->
+                        (selectedStatus == null || r.getStatus() == selectedStatus)
+                                &&
+                                (r.getEmployee().getFirstName() + " " +
+                                        r.getEmployee().getLastName())
+                                        .toLowerCase()
+                                        .contains(search)
+                )
+                .collect(Collectors.toList());
 
-            // Add VBox to FlowPane
-            requestsFlowPane.getChildren().add(requestBox);
-        }
+        filtered.forEach(this::createRequestCard);
+    }
+
+    // ===== Create Request Card =====
+    private void createRequestCard(LeaveRequest request) {
+        VBox box = new VBox(5);
+        box.setStyle("""
+                -fx-padding: 10;
+                -fx-border-color: gray;
+                -fx-border-radius: 5;
+                -fx-background-color: #f9f9f9;
+                """);
+
+        Label title = new Label("REQUEST " + request.getId());
+        title.setStyle("-fx-font-weight: bold;");
+
+        Label name = new Label("Name: " +
+                request.getEmployee().getFirstName() + " " +
+                request.getEmployee().getLastName());
+
+        Label phone = new Label("Phone: " + request.getEmployee().getPhone());
+        Label email = new Label("Email: " + request.getEmployee().getEmail());
+
+        Button reasonBtn = new Button("Show Reason");
+        reasonBtn.setOnAction(e -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Leave Reason");
+            alert.setHeaderText(null);
+            alert.setContentText(request.getReason());
+            alert.showAndWait();
+        });
+
+        ComboBox<LeaveStatus> statusCombo =
+                new ComboBox<>(FXCollections.observableArrayList(LeaveStatus.values()));
+        statusCombo.setValue(request.getStatus());
+
+        statusCombo.setOnAction(e -> {
+            request.setStatus(statusCombo.getValue());
+            leaveRequestService.submitRequest(request);
+        });
+
+        box.getChildren().addAll(
+                title, name, phone, email, reasonBtn, statusCombo
+        );
+
+        requestsFlowPane.getChildren().add(box);
     }
 }

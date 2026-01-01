@@ -1,15 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<ScrollPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.project.employeemanagementsystem.controller.LeavesController2"
-            fitToWidth="true">
+<VBox spacing="15.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.project.employeemanagementsystem.controller.LeavesController2">
 
-    <content>
-        <FlowPane fx:id="requestsFlowPane" hgap="15" vgap="15" prefWrapLength="1000"/>
-    </content>
+    <padding>
+        <Insets bottom="20" left="20" right="20" top="20" />
+    </padding>
+   <HBox alignment="TOP_RIGHT" prefHeight="0.0" prefWidth="1002.0" spacing="10.0">
+      <children>
+         <TextField fx:id="searchField" promptText="Search" />
+         <ComboBox fx:id="statusFilterCombo" prefWidth="150.0" />
+      </children>
+   </HBox>
 
-</ScrollPane>
+    <!-- Scrollable area -->
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+        <content>
+            <FlowPane fx:id="requestsFlowPane" hgap="15" prefWrapLength="1000" vgap="15" />
+        </content>
+    </ScrollPane>
+
+</VBox>
