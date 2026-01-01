@@ -56,7 +56,8 @@
     <!-- Scrollable area for request cards -->
     <ScrollPane fitToWidth="true"
                 style="-fx-background: white; -fx-background-color: white; -fx-border-color: transparent; -fx-padding: 0; -fx-background-insets: 0;"
-                VBox.vgrow="ALWAYS">
+                VBox.vgrow="ALWAYS"
+                fitToHeight="true">
         <content>
             <FlowPane fx:id="requestsFlowPane"
                       hgap="15"
