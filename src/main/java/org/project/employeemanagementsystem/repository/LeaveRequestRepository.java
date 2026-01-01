@@ -21,5 +21,5 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     List<LeaveRequest> findByStatus(LeaveStatus status);
 
     // Βρίσκει όλες τις αιτήσεις ενός υπαλλήλου για συγκεκριμένο τύπο και status
-    List<LeaveRequest> findByEmployeeAndLeaveTypeAndStatus_Name(Employee employee, LeaveType leaveType, String statusName);
+    List<LeaveRequest> findByEmployeeAndLeaveTypeAndStatus(Employee employee, LeaveType leaveType, LeaveStatus status);
 }

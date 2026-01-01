@@ -1,5 +1,6 @@
 package org.project.employeemanagementsystem.util;
 
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -16,25 +17,25 @@ public class Navigator {
     public static String CURRENT_VIEW = "";
 
     //FXML PATHS
-    public static final String LOGIN_VIEW       = "/fxml/login.fxml";
+    public static final String LOGIN_VIEW = "/fxml/login.fxml";
     public static final String DASHBOARD_VIEW = "/fxml/dashboard.fxml";
 
     // Workforce
-    public static final String EMPLOYEES_VIEW   = "/fxml/employees.fxml";
+    public static final String EMPLOYEES_VIEW = "/fxml/employees.fxml";
     public static final String DEPARTMENTS_VIEW = "/fxml/departments.fxml";
-    public static final String USERS_VIEW       = "/fxml/users.fxml";
+    public static final String USERS_VIEW = "/fxml/users.fxml";
 
     // Time & Attendance
-    public static final String SCHEDULE_VIEW    = "/fxml/schedule.fxml";
-    public static final String ATTENDANCE_VIEW  = "/fxml/attendance.fxml";
-    public static final String HOLIDAYS_VIEW    = "/fxml/holidays.fxml";
-    public static final String LEAVES_VIEW      = "/fxml/leaves.fxml";
+    public static final String SCHEDULE_VIEW = "/fxml/schedule.fxml";
+    public static final String ATTENDANCE_VIEW = "/fxml/attendance.fxml";
+    public static final String HOLIDAYS_VIEW = "/fxml/holidays.fxml";
+    public static final String LEAVES_VIEW = "/fxml/leaves.fxml";
     public static final String LEAVESTYPES_VIEW = "/fxml/leavetypes.fxml";
     // Financials
-    public static final String PAYROLL_VIEW     = "/fxml/payroll.fxml";
+    public static final String PAYROLL_VIEW = "/fxml/payroll.fxml";
 
     // System
-    public static final String LOGS_VIEW        = "/fxml/logs.fxml";
+    public static final String LOGS_VIEW = "/fxml/logs.fxml";
 
 
     //DEPENDENCIES
@@ -113,10 +114,10 @@ public class Navigator {
 
     // Logout Helper
     public void logout() {
+        isFirstTimeDashboard = true;
         userSession.logout();
         goToLogin();
     }
-
 
 
     //LOADING LOGIC
@@ -152,41 +153,41 @@ public class Navigator {
             System.err.println("ΣΦΑΛΜΑ: Δεν βρέθηκε το αρχείο " + fxmlPath);
         }
     }
-
-    //WINDOW CONFIGURATION HELPERS
-
+    private boolean isFirstTimeDashboard = true;
     private void configureLoginWindow() {
-        // 1. Απελευθερώνουμε τα ελάχιστα όρια που έβαλε το Dashboard
+
         mainStage.setMinWidth(0);
         mainStage.setMinHeight(0);
 
-        // 2. Ρυθμίζουμε το παράθυρο για Login
         mainStage.setMaximized(false);
         mainStage.setResizable(false);
 
-        // 3. Ορίζουμε το ακριβές μέγεθος
         mainStage.setWidth(500);
         mainStage.setHeight(550);
 
-        // 4. Κεντράρισμα (ΠΡΟΣΟΧΗ: Πρέπει να γίνει αφού οριστούν τα μεγέθη)
-        mainStage.centerOnScreen();
+
     }
 
     private void configureMainWindow() {
         mainStage.setResizable(true);
-        mainStage.setMinWidth(1000);
-        mainStage.setMinHeight(700);
+        mainStage.setMinWidth(1400);
+        mainStage.setMinHeight(780);
 
-        if (!mainStage.isMaximized()) {
-            mainStage.setWidth(1400);
-            mainStage.setHeight(900);
+        if (isFirstTimeDashboard) {
             mainStage.centerOnScreen();
+            maximize();
+            isFirstTimeDashboard = false;
         }
+
     }
 
     public void maximize() {
         if (mainStage != null) {
-            mainStage.setMaximized(true);
+            Platform.runLater(() -> {
+                mainStage.setX(0);
+                mainStage.setY(0);
+                mainStage.setMaximized(true);
+            });
         }
     }
 }

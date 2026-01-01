@@ -699,7 +699,79 @@
     -fx-text-fill: #374151;
 }
 
-/* 4. Αφαίρεση του άσχημου εικονιδίου '?' ή '!' αν θες πιο καθαρό look (Προαιρετικό) */
-/* .dialog-pane > .header-panel > .graphic-container {
-    -fx-padding: 0;
-} */
+/* ============================================================
+   TABLE ACTION BUTTONS (COMPACT)
+   ============================================================ */
+
+/* Στο theme.css */
+
+.action-box {
+    -fx-alignment: CENTER_LEFT;  /* <--- Η ΑΛΛΑΓΗ (Ήταν CENTER) */
+    -fx-spacing: 5;
+    -fx-padding: 0;              /* Μηδενίζουμε το padding για να κολλήσει αριστερά */
+}
+
+/* Βασικό στυλ μικρού κουμπιού */
+.table-btn {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-cursor: hand;
+    -fx-padding: 3 8;
+    -fx-min-width: 50px;
+    -fx-alignment: CENTER;
+    -fx-border-width: 0;
+}
+
+/* Edit Button (Μπλε - Όπως το btn-primary) */
+.table-btn-edit {
+    -fx-background-color: #3B82F6;
+}
+.table-btn-edit:hover {
+    -fx-background-color: #2563EB;
+}
+
+/* Salary Button (Πράσινο - Όπως το btn-success) */
+.table-btn-salary {
+    -fx-background-color: #10B981;
+}
+.table-btn-salary:hover {
+    -fx-background-color: #059669;
+}
+
+/* Delete Button (Κόκκινο - Όπως το btn-danger) */
+.table-btn-delete {
+    -fx-background-color: #EF4444;
+}
+.table-btn-delete:hover {
+    -fx-background-color: #DC2626;
+}
+
+/* ================= STATUS BAR ================= */
+
+.status-bar {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E5E7EB;     /* Απαλό γκρι περίγραμμα */
+    -fx-border-width: 1 0 0 0;     /* Γραμμή ΜΟΝΟ από πάνω */
+    -fx-padding: 5 15;             /* Λίγο "αέρα" */
+    -fx-alignment: CENTER_LEFT;
+    -fx-min-height: 35px;
+}
+
+.status-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6B7280;        /* Γκρι κείμενο (Ready state) */
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+/* Έμφαση στον αριθμό των υπαλλήλων */
+.status-count {
+    -fx-font-weight: bold;
+    -fx-text-fill: #374151;        /* Πιο σκούρο για το νούμερο */
+}
+
+/* Χρώματα για μηνύματα */
+.status-success { -fx-text-fill: #059669; -fx-font-weight: bold; } /* Πράσινο */
+.status-error   { -fx-text-fill: #DC2626; -fx-font-weight: bold; } /* Κόκκινο */

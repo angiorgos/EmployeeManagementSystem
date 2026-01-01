@@ -1,10 +1,13 @@
 package org.project.employeemanagementsystem.service;
 
 import org.project.employeemanagementsystem.model.*;
-import org.project.employeemanagementsystem.repository.HolidayRepository;
-import org.project.employeemanagementsystem.repository.LeaveRequestRepository;
+import org.project.employeemanagementsystem.repository.*;
+import org.project.employeemanagementsystem.util.UserSession; // Import του δικού σου Session
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,66 +15,93 @@ import java.util.stream.Collectors;
 @Service
 public class LeaveRequestService {
 
-    @Autowired
-    private LeaveRequestRepository leaveRequestRepository;
+    private final LeaveRequestRepository leaveRequestRepository;
+    private final HolidayRepository holidayRepository;
+    private final LeaveTypeRepository leaveTypeRepository;
+
+    private final UserSession userSession;
 
     @Autowired
-    private HolidayRepository holidayRepository;
+    public LeaveRequestService(LeaveRequestRepository leaveRequestRepository,
+                               HolidayRepository holidayRepository,
+                               LeaveTypeRepository leaveTypeRepository,
+                               UserSession userSession) { // Injection εδώ
+        this.leaveRequestRepository = leaveRequestRepository;
+        this.holidayRepository = holidayRepository;
+        this.leaveTypeRepository = leaveTypeRepository;
+        this.userSession = userSession;
+    }
 
+    // --- 1. ΕΥΡΕΣΗ ΣΥΝΔΕΔΕΜΕΝΟΥ ΥΠΑΛΛΗΛΟΥ (ΜΕ UserSession) ---
+    public Employee getLoggedInEmployee() {
+        // Παίρνουμε τον χρήστη κατευθείαν από το Session που έφτιαξες
+        User currentUser = userSession.getCurrentUser();
+
+        if (currentUser == null) {
+            throw new RuntimeException("No user logged in! Please login first.");
+        }
+
+        if (currentUser.getEmployee() == null) {
+            throw new RuntimeException("Logged in user (" + currentUser.getUsername() + ") is not linked to an Employee profile!");
+        }
+
+        return currentUser.getEmployee();
+    }
+
+    // --- 2. ΥΠΟΛΟΙΠΕΣ ΜΕΘΟΔΟΙ (ΙΔΙΕΣ ΜΕ ΠΡΙΝ) ---
 
     public List<LeaveRequest> getAllRequests() {
         return leaveRequestRepository.findAll();
     }
 
-    public List<LeaveRequest> getRequestsByEmployee(Employee employee) {
-        return leaveRequestRepository.findByEmployee(employee);
+    public List<LeaveType> getAllLeaveTypes() {
+        return leaveTypeRepository.findAll();
     }
 
-    public void saveRequest(LeaveRequest request) {
-        // Έλεγχος: Η ημερομηνία λήξης να μην είναι πριν την έναρξη
+    @Transactional
+    public void submitRequest(LeaveRequest request) {
         if (request.getEndDate().isBefore(request.getStartDate())) {
             throw new RuntimeException("End date cannot be before start date");
         }
+
+        int requestedDays = calculateWorkDays(request.getStartDate(), request.getEndDate());
+        if (requestedDays == 0) {
+            throw new RuntimeException("You selected only weekends or holidays!");
+        }
+
+        int remaining = getRemainingDays(request.getEmployee(), request.getLeaveType());
+        if (requestedDays > remaining) {
+            throw new RuntimeException("Not enough leave balance! Remaining: " + remaining + ", Requested: " + requestedDays);
+        }
+
+        request.setStatus(LeaveStatus.PENDING);
         leaveRequestRepository.save(request);
     }
 
-    public void deleteRequest(LeaveRequest request) {
-        leaveRequestRepository.delete(request);
-    }
-
-    //Υπολογισμός Υπολοίπου
-
     public int getRemainingDays(Employee employee, LeaveType leaveType) {
         int maxAllowed = leaveType.getMaxDays();
-
-        // Βρίσκουμε μόνο τις ΕΓΚΕΚΡΙΜΕΝΕΣ (APPROVED) άδειες
         List<LeaveRequest> approvedRequests = leaveRequestRepository
-                .findByEmployeeAndLeaveTypeAndStatus_Name(employee, leaveType, "APPROVED");
+                .findByEmployeeAndLeaveTypeAndStatus(employee, leaveType, LeaveStatus.APPROVED);
 
-        // Φέρνουμε τις αργίες
+        int usedDays = 0;
+        for (LeaveRequest req : approvedRequests) {
+            if (req.getStartDate().getYear() == LocalDate.now().getYear()) {
+                usedDays += calculateWorkDays(req.getStartDate(), req.getEndDate());
+            }
+        }
+        return maxAllowed - usedDays;
+    }
+
+    private int calculateWorkDays(LocalDate start, LocalDate end) {
         List<LocalDate> holidays = holidayRepository.findAll().stream()
                 .map(Holiday::getDate)
                 .collect(Collectors.toList());
 
-        // Υπολογίζουμε πόσες εργάσιμες "έκαψε"
-        int usedDays = 0;
-        for (LeaveRequest request : approvedRequests) {
-            // Μετράμε μόνο για το τρέχον έτος
-            if (request.getStartDate().getYear() == LocalDate.now().getYear()) {
-                usedDays += calculateWorkDays(request.getStartDate(), request.getEndDate(), holidays);
-            }
-        }
-
-        return maxAllowed - usedDays;
-    }
-
-    private int calculateWorkDays(LocalDate start, LocalDate end, List<LocalDate> holidays) {
         int count = 0;
         LocalDate current = start;
         while (!current.isAfter(end)) {
-            // Εξαιρούμε Σαββατοκύριακα (6=Sat, 7=Sun)
-            boolean isWeekend = (current.getDayOfWeek().getValue() == 6 || current.getDayOfWeek().getValue() == 7);
-            // Εξαιρούμε Αργίες
+            boolean isWeekend = (current.getDayOfWeek() == DayOfWeek.SATURDAY ||
+                    current.getDayOfWeek() == DayOfWeek.SUNDAY);
             boolean isHoliday = holidays.contains(current);
 
             if (!isWeekend && !isHoliday) {
@@ -81,6 +111,4 @@ public class LeaveRequestService {
         }
         return count;
     }
-
-
 }

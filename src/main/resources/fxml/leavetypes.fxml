@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="768.0" prefWidth="1366.0" stylesheets="@../theme.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.project.employeemanagementsystem.controller.LeaveTypesController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="768.0" prefWidth="1366.0" stylesheets="@../theme.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.project.employeemanagementsystem.controller.LeaveTypesController">
 
     <top>
         <fx:include source="topbar.fxml" />
@@ -19,64 +13,68 @@
     <left>
         <fx:include source="sidebar.fxml" />
     </left>
-    <center>
-        <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0" BorderPane.alignment="CENTER">
-            <children>
-                <!-- Holiday Table VBox - resizable -->
-                <VBox prefHeight="687.0" prefWidth="329.0" spacing="10.0" styleClass="card" HBox.hgrow="ALWAYS">
-                    <children>
-                        <Label styleClass="card-title" text="Leave Types" />
-                        <TableView fx:id="leaveTypesTable" prefHeight="650.0" prefWidth="289.0" VBox.vgrow="ALWAYS">
-                            <columns>
-                                <TableColumn fx:id="leaveTypesID" prefWidth="75.0" text="ID" />
-                                <TableColumn fx:id="leaveTypesName" prefWidth="228.0" text="Name" />
-                                <TableColumn fx:id="leaveTypesMaxDays" minWidth="0.0" prefWidth="186.0" text="Max Days" />
-                            </columns>
-                        </TableView>
-                    </children>
-                </VBox>
-
-                <!-- Holiday Scheduling VBox - fixed -->
-                <VBox prefHeight="687.0" prefWidth="279.0">
-                    <children>
-                        <VBox prefHeight="206.0" prefWidth="279.0" spacing="15.0" styleClass="card">
-                            <children>
-                                <Label styleClass="card-title" text="Leave Kinds Control" />
-                                <HBox spacing="15.0">
-                                    <children>
-                                        <VBox spacing="5.0" HBox.hgrow="ALWAYS">
-                                            <children>
-                                                <Label text="Leave Name" />
-                                                <TextField fx:id="leaveTypesNameField" promptText="Enter Holiday Name..." />
-                                            </children>
-                                        </VBox>
-                                    </children>
-                                </HBox>
-                                <HBox spacing="15.0">
-                                    <children>
-                                        <VBox spacing="5.0" HBox.hgrow="ALWAYS">
-                                            <children>
-                                                <Label text="Leave Max Days Owed" />
-                                    <TextField fx:id="leaveTypesMaxDaysField" promptText="Enter Max Leave Days..." />
-                                            </children>
-                                        </VBox>
-                                    </children>
-                                </HBox>
-                                <HBox alignment="CENTER_RIGHT" spacing="10.0">
-                                    <children>
-                                        <Button fx:id="leaveTypesRemoveBtn" onAction="#handleRemoveLeaveType" styleClass="btn-danger" text="Remove" />
-                                        <Button fx:id="leaveTypesAddBtn" onAction="#handleAddOrUpdateLeaveType" styleClass="btn-primary" text="Add" />
-                                    </children>
-                                </HBox>
-                            </children>
-                        </VBox>
-                    </children>
-                </VBox>
-            </children>
-            <BorderPane.margin>
-                <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
-            </BorderPane.margin>
-        </HBox>
-    </center>
+   <center>
+      <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+         <children>
+            <VBox prefHeight="200.0" prefWidth="100.0" VBox.vgrow="ALWAYS">
+               <children>
+                  <Label styleClass="page-title" text="Leave Type Editing" />
+                  <Label style="-fx-text-fill: #6B7280;" text="Add, remove or edit ne Leave types." />
+                    <HBox prefHeight="292.0" prefWidth="1066.0" spacing="10.0" VBox.vgrow="ALWAYS">
+                        <children>
+                              <TableView fx:id="leaveTypesTable" prefHeight="544.0" prefWidth="430.0" HBox.hgrow="ALWAYS">
+                                  <columns>
+                                      <TableColumn fx:id="leaveTypesID" prefWidth="75.0" text="ID" />
+                                      <TableColumn fx:id="leaveTypesName" prefWidth="228.0" text="Name" />
+                                      <TableColumn fx:id="leaveTypesMaxDays" minWidth="0.0" prefWidth="186.0" text="Max Days" />
+                                  </columns>
+                              </TableView>
+            
+                            <!-- Holiday Scheduling VBox - fixed -->
+                            <VBox prefHeight="687.0" prefWidth="279.0">
+                                <children>
+                                    <VBox prefHeight="206.0" prefWidth="279.0" spacing="15.0" styleClass="card">
+                                        <children>
+                                            <Label styleClass="card-title" text="Edit Table" />
+                                            <HBox spacing="15.0">
+                                                <children>
+                                                    <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                                                        <children>
+                                                            <Label text="Leave Name" />
+                                                            <TextField fx:id="leaveTypesNameField" promptText="Enter Holiday Name..." />
+                                                        </children>
+                                                    </VBox>
+                                                </children>
+                                            </HBox>
+                                            <HBox spacing="15.0">
+                                                <children>
+                                                    <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                                                        <children>
+                                                            <Label text="Leave Max Days Owed" />
+                                                <TextField fx:id="leaveTypesMaxDaysField" promptText="Enter Max Leave Days..." />
+                                                        </children>
+                                                    </VBox>
+                                                </children>
+                                            </HBox>
+                                            <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                                                <children>
+                                                    <Button fx:id="leaveTypesRemoveBtn" onAction="#handleRemoveLeaveType" styleClass="btn-danger" text="Remove" />
+                                                    <Button fx:id="leaveTypesAddBtn" onAction="#handleAddOrUpdateLeaveType" styleClass="btn-primary" text="Add" />
+                                                </children>
+                                            </HBox>
+                                        </children>
+                                    </VBox>
+                                </children>
+                            </VBox>
+                        </children>
+                    </HBox>
+               </children>
+            </VBox>
+         </children>
+         <BorderPane.margin>
+            <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+         </BorderPane.margin>
+      </VBox>
+   </center>
 
 </BorderPane>

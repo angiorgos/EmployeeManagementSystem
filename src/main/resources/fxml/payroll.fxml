@@ -18,7 +18,7 @@
                 <HBox alignment="CENTER_LEFT" spacing="20.0">
                     <children>
                         <VBox>
-                            <Label style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #111827;" styleClass="page-title" text="Payroll Management" />
+                            <Label styleClass="page-title" text="Payroll Management" />
                             <Label style="-fx-text-fill: #6B7280;" text="Manage salaries, payments and settings" />
                         </VBox>
 
@@ -42,28 +42,28 @@
 
                     <Region HBox.hgrow="ALWAYS" />
 
-                    <Button fx:id="btnFinalize" onAction="#finalizePayments" text="Confirm &amp; Pay" styleClass="btn-success">
-                        <graphic> <FontIcon iconLiteral="mdi2c-check-circle" iconColor="white"/> </graphic>
+                    <Button fx:id="btnFinalize" onAction="#finalizePayments" styleClass="btn-success" text="Confirm &amp; Pay">
+                        <graphic> <FontIcon iconColor="white" iconLiteral="mdi2c-check-circle" /> </graphic>
                     </Button>
 
-                    <Button text="Export Excel" onAction="#exportToExcel" styleClass="btn-success">
-                        <graphic> <FontIcon iconLiteral="mdi2f-file-excel" iconColor="white"/> </graphic>
+                    <Button onAction="#exportToExcel" styleClass="btn-success" text="Export Excel">
+                        <graphic> <FontIcon iconColor="white" iconLiteral="mdi2f-file-excel" /> </graphic>
                     </Button>
 
-                    <Button onAction="#openSettingsDialog" text="Config" styleClass="btn-secondary">
+                    <Button onAction="#openSettingsDialog" styleClass="btn-secondary" text="Config">
                         <graphic>
-                            <FontIcon iconLiteral="mdi2c-cog" iconColor="#374151"/>
+                            <FontIcon iconColor="#374151" iconLiteral="mdi2c-cog" />
                         </graphic>
                     </Button>
 
-                    <Button fx:id="btnGenerate" onAction="#generatePayroll" text="Generate Draft" styleClass="btn-primary">
-                        <graphic> <FontIcon iconLiteral="mdi2c-calculator" iconColor="white"/> </graphic>
+                    <Button fx:id="btnGenerate" onAction="#generatePayroll" styleClass="btn-primary" text="Generate Draft">
+                        <graphic> <FontIcon iconColor="white" iconLiteral="mdi2c-calculator" /> </graphic>
                     </Button>
 
                 </HBox>
 
                 <VBox style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 0;" styleClass="card" VBox.vgrow="ALWAYS">
-                    <TableView fx:id="payrollTable" VBox.vgrow="ALWAYS" style="-fx-background-radius: 8;">
+                    <TableView fx:id="payrollTable" style="-fx-background-radius: 8;" VBox.vgrow="ALWAYS">
                         <columns>
                             <TableColumn fx:id="colId" prefWidth="50.0" text="#" />
                             <TableColumn fx:id="colSsn" prefWidth="100.0" text="SSN" />
@@ -72,7 +72,7 @@
                             <TableColumn fx:id="colGross" prefWidth="100.0" text="Gross (€)" />
                             <TableColumn fx:id="colDeductions" prefWidth="100.0" text="Deductions" />
                             <TableColumn fx:id="colEmployerTax" prefWidth="100.0" text="Employer Cost" />
-                            <TableColumn fx:id="colAmount" prefWidth="120.0" text="NET PAY (€)" style="-fx-font-weight: bold;" />
+                            <TableColumn fx:id="colAmount" prefWidth="120.0" style="-fx-font-weight: bold;" text="NET PAY (€)" />
                             <TableColumn fx:id="colStatus" prefWidth="120.0" text="Status" />
                             <TableColumn fx:id="colActions" prefWidth="100.0" text="Actions" />
                         </columns>
