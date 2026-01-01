@@ -42,8 +42,6 @@ public class DashboardController extends BaseController implements Initializable
     @Autowired private AttendanceService attendanceService;
 
 
-    @FXML private FontIcon loadingIcon;
-    private ScaleTransition pulseAnimation;
 
     @FXML private Label totalEmployeesLabel;
     @FXML private Label workingTodayLabel;

@@ -1,13 +1,19 @@
 package org.project.employeemanagementsystem.controller;
 
+import javafx.animation.FadeTransition;
+import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.util.Duration;
 import javafx.util.StringConverter;
 import org.project.employeemanagementsystem.model.Department;
 import org.project.employeemanagementsystem.model.Employee;
@@ -16,6 +22,7 @@ import org.project.employeemanagementsystem.service.EmployeeService;
 import org.springframework.stereotype.Controller;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 @Controller
@@ -29,9 +36,10 @@ public class EmployeesController implements Initializable {
         this.departmentService = departmentService;
     }
 
-    // --- CONTAINERS ---
+    // --- VIEWS & OVERLAYS ---
     @FXML private VBox tableViewContainer;
     @FXML private VBox formViewContainer;
+    @FXML private VBox loadingOverlay; // <--- ΤΟ ΝΕΟ LOADING SCREEN
 
     // --- TABLE ELEMENTS ---
     @FXML private TableView<Employee> employeeTable;
@@ -63,16 +71,109 @@ public class EmployeesController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         setupTableColumns();
         setupDepartmentCombo();
-        loadData();
 
+        // Ξεκινάμε τη φόρτωση μόλις είναι έτοιμο το UI (όπως στο Dashboard)
+        Platform.runLater(this::loadData);
+
+        // Search listener
         searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilter(newVal));
     }
 
+    // --- LOADING LOGIC (ΙΔΙΑ ΜΕ DASHBOARD) ---
+
+    private void loadData() {
+        // Εμφανίζουμε το Loading Overlay σε περίπτωση που ήταν κρυμμένο (π.χ. στο Refresh)
+        loadingOverlay.setVisible(true);
+        loadingOverlay.setOpacity(1.0);
+
+        Task<List<Employee>> task = new Task<>() {
+            @Override
+            protected List<Employee> call() throws Exception {
+                // ΒΑΡΙΑ ΔΟΥΛΕΙΑ ΣΤΟ BACKGROUND
+                return employeeService.getAllEmployees();
+            }
+        };
+
+        task.setOnSucceeded(event -> {
+            List<Employee> employees = task.getValue();
+
+            // Ενημέρωση του πίνακα
+            filteredData = new FilteredList<>(FXCollections.observableArrayList(employees));
+            employeeTable.setItems(filteredData);
+            applyFilter(searchField.getText());
+
+            // --- ANIMATION: ΑΦΑΙΡΕΣΗ LOADING SCREEN ---
+            PauseTransition delay = new PauseTransition(Duration.seconds(0.5));
+            delay.setOnFinished(e -> {
+                FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), loadingOverlay);
+                fadeOut.setFromValue(1.0);
+                fadeOut.setToValue(0.0);
+                fadeOut.setOnFinished(evt -> loadingOverlay.setVisible(false));
+                fadeOut.play();
+            });
+            delay.play();
+        });
+
+        task.setOnFailed(event -> {
+            loadingOverlay.setVisible(false);
+            Throwable error = task.getException();
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Failed to load data: " + error.getMessage());
+            styleDialog(alert);
+            alert.show();
+        });
+
+        new Thread(task).start();
+    }
+
+    // --- CRUD ACTIONS ---
+
+    @FXML
+    public void handleRefresh() {
+        loadData(); // Ξανατρέχει το Task και εμφανίζει το overlay
+    }
+
+    @FXML
+    public void handleSaveEmployee() {
+        if (!validateForm()) return;
+
+        if (currentEditingEmployee == null) {
+            currentEditingEmployee = new Employee();
+        }
+
+        currentEditingEmployee.setFirstName(firstNameField.getText());
+        currentEditingEmployee.setLastName(lastNameField.getText());
+        currentEditingEmployee.setEmail(emailField.getText());
+        currentEditingEmployee.setPhone(phoneField.getText());
+        currentEditingEmployee.setSsn(ssnField.getText());
+        currentEditingEmployee.setDepartment(departmentCombo.getValue());
+
+        try {
+            currentEditingEmployee.setSalary(Double.parseDouble(salaryField.getText()));
+        } catch (NumberFormatException e) {
+            currentEditingEmployee.setSalary(0.0);
+        }
+
+        employeeService.saveEmployee(currentEditingEmployee);
+
+        showTable();
+
+        // Alert Success
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Success");
+        alert.setHeaderText(null);
+        alert.setContentText("Employee saved successfully!");
+        styleDialog(alert);
+        alert.showAndWait();
+
+        // Refresh data to show changes
+        loadData();
+    }
+
+    // --- VIEW SWITCHING ---
 
     private void showTable() {
         formViewContainer.setVisible(false);
         tableViewContainer.setVisible(true);
-        loadData();
     }
 
     private void showForm(Employee employee) {
@@ -106,44 +207,6 @@ public class EmployeesController implements Initializable {
         showTable();
     }
 
-    @FXML
-    public void handleSaveEmployee() {
-        if (!validateForm()) return;
-
-        if (currentEditingEmployee == null) {
-            currentEditingEmployee = new Employee();
-        }
-
-        currentEditingEmployee.setFirstName(firstNameField.getText());
-        currentEditingEmployee.setLastName(lastNameField.getText());
-        currentEditingEmployee.setEmail(emailField.getText());
-        currentEditingEmployee.setPhone(phoneField.getText());
-        currentEditingEmployee.setSsn(ssnField.getText());
-        currentEditingEmployee.setDepartment(departmentCombo.getValue());
-
-        try {
-            currentEditingEmployee.setSalary(Double.parseDouble(salaryField.getText()));
-        } catch (NumberFormatException e) {
-            currentEditingEmployee.setSalary(0.0);
-        }
-
-        employeeService.saveEmployee(currentEditingEmployee);
-        showTable();
-
-        // ALERT ME STYLE
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Success");
-        alert.setHeaderText(null);
-        alert.setContentText("Employee saved successfully!");
-        styleDialog(alert); // <--- ΕΔΩ ΕΦΑΡΜΟΖΟΥΜΕ ΤΟ THEME
-        alert.showAndWait();
-    }
-
-    @FXML
-    public void handleRefresh() {
-        loadData();
-    }
-
     // --- TABLE SETUP ---
 
     private void setupTableColumns() {
@@ -172,7 +235,6 @@ public class EmployeesController implements Initializable {
 
             {
                 pane.getStyleClass().add("action-box");
-
                 btnEdit.getStyleClass().addAll("table-btn", "table-btn-edit");
                 btnSalary.getStyleClass().addAll("table-btn", "table-btn-salary");
                 btnDelete.getStyleClass().addAll("table-btn", "table-btn-delete");
@@ -182,25 +244,20 @@ public class EmployeesController implements Initializable {
 
                 btnDelete.setOnAction(event -> {
                     Employee emp = getTableView().getItems().get(getIndex());
-
-                    // DELETE CONFIRMATION ALERT (STYLED)
                     Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
                     confirm.setTitle("Delete Employee");
                     confirm.setHeaderText("Delete " + emp.getLastName() + "?");
-                    confirm.setContentText("Are you sure? This action cannot be undone.");
+                    confirm.setContentText("Are you sure?");
                     styleDialog(confirm);
 
                     if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
                         employeeService.deleteEmployee(emp.getId());
-                        loadData();
 
-                        // DELETE SUCCESS ALERT (STYLED)
-                        Alert info = new Alert(Alert.AlertType.INFORMATION);
-                        info.setTitle("Deleted");
-                        info.setHeaderText(null);
-                        info.setContentText("Employee has been deleted.");
+                        Alert info = new Alert(Alert.AlertType.INFORMATION, "Employee deleted.");
                         styleDialog(info);
                         info.showAndWait();
+
+                        loadData(); // Refresh via Task
                     }
                 });
             }
@@ -218,12 +275,13 @@ public class EmployeesController implements Initializable {
         });
     }
 
+    // --- HELPERS ---
+
     private void openSalaryDialog(Employee employee) {
         TextInputDialog dialog = new TextInputDialog(String.valueOf(employee.getSalary() != null ? employee.getSalary() : 0.0));
         dialog.setTitle("Manage Salary");
         dialog.setHeaderText("Update Salary for: " + employee.getLastName());
         dialog.setContentText("New Salary Amount (€):");
-
         styleDialog(dialog);
 
         dialog.showAndWait().ifPresent(salaryStr -> {
@@ -231,36 +289,24 @@ public class EmployeesController implements Initializable {
                 double newSalary = Double.parseDouble(salaryStr);
                 employee.setSalary(newSalary);
                 employeeService.saveEmployee(employee);
-                employeeTable.refresh();
 
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Salary Updated");
-                alert.setHeaderText(null);
-                alert.setContentText("Salary updated successfully!");
+                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Salary updated successfully!");
                 styleDialog(alert);
                 alert.showAndWait();
 
+                loadData(); // Refresh via Task
             } catch (NumberFormatException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Invalid Input");
-                alert.setHeaderText(null);
-                alert.setContentText("Please enter a valid number!");
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Invalid number format!");
                 styleDialog(alert);
                 alert.showAndWait();
             }
         });
     }
 
-    // --- ΒΟΗΘΗΤΙΚΗ ΜΕΘΟΔΟΣ ΓΙΑ ΣΥΝΔΕΣΗ CSS ---
     private void styleDialog(Dialog<?> dialog) {
-        DialogPane dialogPane = dialog.getDialogPane();
         try {
-            // Συνδέουμε το CSS αρχείο στο DialogPane
-            dialogPane.getStylesheets().add(getClass().getResource("/theme.css").toExternalForm());
-            dialogPane.getStyleClass().add("my-dialog");
-        } catch (Exception e) {
-            System.out.println("Could not load theme.css for dialog.");
-        }
+            dialog.getDialogPane().getStylesheets().add(getClass().getResource("/theme.css").toExternalForm());
+        } catch (Exception e) { /* ignore */ }
     }
 
     private void setupDepartmentCombo() {
@@ -271,12 +317,6 @@ public class EmployeesController implements Initializable {
             @Override
             public Department fromString(String s) { return null; }
         });
-    }
-
-    private void loadData() {
-        filteredData = new FilteredList<>(FXCollections.observableArrayList(employeeService.getAllEmployees()));
-        employeeTable.setItems(filteredData);
-        applyFilter(searchField.getText());
     }
 
     private void applyFilter(String query) {
@@ -302,10 +342,7 @@ public class EmployeesController implements Initializable {
 
     private boolean validateForm() {
         if (firstNameField.getText().isEmpty() || lastNameField.getText().isEmpty() || emailField.getText().isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Validation Error");
-            alert.setHeaderText(null);
-            alert.setContentText("Please fill required fields (Name, Email)");
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Please fill required fields (Name, Email)");
             styleDialog(alert);
             alert.showAndWait();
             return false;
