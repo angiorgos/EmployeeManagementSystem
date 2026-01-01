@@ -1,7 +1,9 @@
 package org.project.employeemanagementsystem.repository;
 
 import org.project.employeemanagementsystem.model.Attendance;
+import org.project.employeemanagementsystem.model.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
@@ -14,4 +16,6 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
     // Βρες παρουσίες συγκεκριμένης ημερομηνίας (π.χ. ποιοι ήρθαν σήμερα)
     List<Attendance> findByDate(LocalDate date);
+
+    List<Attendance> findByEmployeeAndDateBetween(Employee employee, LocalDate startDate, LocalDate endDate);
 }

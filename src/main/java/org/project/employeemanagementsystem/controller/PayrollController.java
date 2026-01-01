@@ -16,6 +16,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.project.employeemanagementsystem.model.Employee;
 import org.project.employeemanagementsystem.model.Payment;
+import org.project.employeemanagementsystem.service.AttendanceService; // <-- ΝΕΟ IMPORT
 import org.project.employeemanagementsystem.service.EmployeeService;
 import org.project.employeemanagementsystem.service.PaymentService;
 import org.project.employeemanagementsystem.service.SystemSettingService;
@@ -28,7 +29,6 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -38,6 +38,7 @@ public class PayrollController implements Initializable {
     private final PaymentService paymentService;
     private final EmployeeService employeeService;
     private final SystemSettingService settingService;
+    private final AttendanceService attendanceService; // <-- ΝΕΟ FIELD
 
     // --- KEYS SETTINGS ---
     private static final String KEY_WORK_HOURS = "payroll.standard_hours";
@@ -45,14 +46,15 @@ public class PayrollController implements Initializable {
     private static final String KEY_SUNDAY = "payroll.sunday_rate";
     private static final String KEY_TAX = "payroll.total_tax_rate";
     private static final String KEY_EMPLOYER_SHARE = "payroll.employer_share";
-    // Άλλα κλειδιά για Night/Holiday/Company αν θέλεις...
-    private static final String KEY_COMPANY_NAME = "company.name";
     private static final String KEY_CURRENCY = "company.currency";
 
-    public PayrollController(PaymentService paymentService, EmployeeService employeeService, SystemSettingService settingService) {
+    // Προσθέτουμε το attendanceService στον Constructor
+    public PayrollController(PaymentService paymentService, EmployeeService employeeService,
+                             SystemSettingService settingService, AttendanceService attendanceService) {
         this.paymentService = paymentService;
         this.employeeService = employeeService;
         this.settingService = settingService;
+        this.attendanceService = attendanceService;
     }
 
     // --- FXML FIELDS ---
@@ -98,7 +100,7 @@ public class PayrollController implements Initializable {
         }
 
         // 1. Διάβασμα Ρυθμίσεων
-        double stdHours = settingService.getDouble(KEY_WORK_HOURS, 176.0); // Πρότυπες Ώρες
+        double stdHours = settingService.getDouble(KEY_WORK_HOURS, 176.0);
         double otRate   = settingService.getDouble(KEY_OVERTIME, 1.50);
         double sunRate  = settingService.getDouble(KEY_SUNDAY, 1.75);
         double taxRate  = settingService.getDouble(KEY_TAX, 0.40);
@@ -110,12 +112,27 @@ public class PayrollController implements Initializable {
         for (Employee emp : employees) {
             if (emp.getSalary() == null) continue;
 
-            // 2. Κλήση Service με τις σωστές παραμέτρους
+            // --- ΑΥΤΟΜΑΤΟΣ ΥΠΟΛΟΓΙΣΜΟΣ ΑΠΟ ATTENDANCE ---
+
+            // Α. Βρίσκουμε τις συνολικές ώρες που δούλεψε
+            double realHours = attendanceService.calculateTotalHoursWorked(emp, selectedDate);
+
+            // Β. Βρίσκουμε τις ώρες Κυριακής
+            double sundayHours = attendanceService.calculateSundayHours(emp, selectedDate);
+
+            // Γ. Υπολογίζουμε Υπερωρίες (Αν δούλεψε παραπάνω από το stdHours)
+            double overtimeHours = 0.0;
+            if (realHours > stdHours) {
+                overtimeHours = realHours - stdHours;
+            }
+
+            // 3. Αποθήκευση Μισθοδοσίας
             paymentService.calculateAndSavePayroll(
                     emp,
                     selectedDate,
-                    stdHours, // <-- Περνάμε το 176 εδώ
-                    0.0, 0.0, // Overtime & Sunday (αρχικά 0)
+                    stdHours,       // Πρότυπες ώρες (για διαίρεση ωρομισθίου)
+                    overtimeHours,  // Πραγματικές υπερωρίες
+                    sundayHours,    // Πραγματικές ώρες Κυριακής
                     otRate, sunRate, taxRate, empSplit
             );
             count++;
@@ -141,16 +158,18 @@ public class PayrollController implements Initializable {
 
         // Load Current
         TextField hoursField = new TextField(String.valueOf(settingService.getDouble(KEY_WORK_HOURS, 176.0)));
+        TextField otField = new TextField(String.valueOf(settingService.getDouble(KEY_OVERTIME, 1.50)));
+        TextField sunField = new TextField(String.valueOf(settingService.getDouble(KEY_SUNDAY, 1.75))); // Sunday Rate Field
         TextField taxField = new TextField(String.valueOf(settingService.getDouble(KEY_TAX, 0.40)));
         TextField splitField = new TextField(String.valueOf(settingService.getDouble(KEY_EMPLOYER_SHARE, 0.60)));
-        TextField otField = new TextField(String.valueOf(settingService.getDouble(KEY_OVERTIME, 1.50)));
         TextField currencyField = new TextField(settingService.getString(KEY_CURRENCY, "€"));
 
         grid.addRow(0, new Label("Standard Monthly Hours:"), hoursField);
-        grid.addRow(1, new Label("Overtime Rate:"), otField);
-        grid.addRow(2, new Label("Total Tax Rate (0.xx):"), taxField);
-        grid.addRow(3, new Label("Employer Share (0.xx):"), splitField);
-        grid.addRow(4, new Label("Currency:"), currencyField);
+        grid.addRow(1, new Label("Overtime Rate (x):"), otField);
+        grid.addRow(2, new Label("Sunday Rate (x):"), sunField);
+        grid.addRow(3, new Label("Total Tax Rate (0.xx):"), taxField);
+        grid.addRow(4, new Label("Employer Share (0.xx):"), splitField);
+        grid.addRow(5, new Label("Currency:"), currencyField);
 
         dialog.getDialogPane().setContent(grid);
 
@@ -159,6 +178,7 @@ public class PayrollController implements Initializable {
                 try {
                     settingService.save(KEY_WORK_HOURS, Double.parseDouble(hoursField.getText()));
                     settingService.save(KEY_OVERTIME, Double.parseDouble(otField.getText()));
+                    settingService.save(KEY_SUNDAY, Double.parseDouble(sunField.getText()));
                     settingService.save(KEY_TAX, Double.parseDouble(taxField.getText()));
                     settingService.save(KEY_EMPLOYER_SHARE, Double.parseDouble(splitField.getText()));
                     settingService.save(KEY_CURRENCY, currencyField.getText());
@@ -182,14 +202,9 @@ public class PayrollController implements Initializable {
         dialog.showAndWait().ifPresent(amountStr -> {
             try {
                 double newBonus = Double.parseDouble(amountStr);
-
-                // Χρειαζόμαστε τα rates για να υπολογίσουμε σωστά τους φόρους στο Service
                 double taxRate = settingService.getDouble(KEY_TAX, 0.40);
                 double empShare = settingService.getDouble(KEY_EMPLOYER_SHARE, 0.60);
-
-                // Κλήση της μεθόδου Update
                 paymentService.updateBonus(payment, newBonus, taxRate, empShare);
-
                 loadData();
             } catch (NumberFormatException e) {
                 showSimpleAlert(Alert.AlertType.ERROR, "Error", "Invalid bonus amount!");
@@ -199,9 +214,68 @@ public class PayrollController implements Initializable {
 
     @FXML
     public void exportToExcel() {
-        // ... (Ο κώδικας του Export μένει ίδιος όπως πριν) ...
-        // Αν θες να στον ξαναγράψω, πες μου, αλλά είναι μεγάλος και δεν άλλαξε.
-        showSimpleAlert(Alert.AlertType.INFORMATION, "Export", "Excel export logic goes here.");
+        List<Payment> rows = payrollTable.getItems();
+        if (rows.isEmpty()) {
+            showSimpleAlert(Alert.AlertType.WARNING, "No Data", "No payroll data to export!");
+            return;
+        }
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Payroll Excel");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel Files", "*.xlsx"));
+        fileChooser.setInitialFileName("Payroll_" + LocalDate.now() + ".xlsx");
+
+        File file = fileChooser.showSaveDialog(payrollTable.getScene().getWindow());
+
+        if (file != null) {
+            try (Workbook workbook = new XSSFWorkbook()) {
+                Sheet sheet = workbook.createSheet("Payroll Data");
+                String currency = settingService.getString(KEY_CURRENCY, "€");
+
+                String[] columns = {
+                        "ID", "SSN", "Name", "Month",
+                        "Base Salary", "Overtime Hrs", "Sunday Hrs", "Bonus", "Gross Pay",
+                        "Deductions", "Net Pay (" + currency + ")", "Status"
+                };
+
+                Row headerRow = sheet.createRow(0);
+                CellStyle headerStyle = workbook.createCellStyle();
+                Font headerFont = workbook.createFont();
+                headerFont.setBold(true);
+                headerStyle.setFont(headerFont);
+
+                for (int i = 0; i < columns.length; i++) {
+                    org.apache.poi.ss.usermodel.Cell cell = headerRow.createCell(i);
+                    cell.setCellValue(columns[i]);
+                    cell.setCellStyle(headerStyle);
+                }
+
+                int rowNum = 1;
+                for (Payment p : rows) {
+                    Row row = sheet.createRow(rowNum++);
+                    row.createCell(0).setCellValue(p.getId());
+                    row.createCell(1).setCellValue(p.getEmployee().getSsn() != null ? p.getEmployee().getSsn() : "-");
+                    row.createCell(2).setCellValue(p.getEmployee().getLastName() + " " + p.getEmployee().getFirstName());
+                    row.createCell(3).setCellValue(p.getMonthYear());
+                    row.createCell(4).setCellValue(p.getBaseSalary());
+                    row.createCell(5).setCellValue(p.getOvertimeHours());
+                    row.createCell(6).setCellValue(p.getSundayHours());
+                    row.createCell(7).setCellValue(p.getBonus() != null ? p.getBonus() : 0.0);
+                    row.createCell(8).setCellValue(p.getGrossPay());
+                    row.createCell(9).setCellValue(p.getDeductions());
+                    row.createCell(10).setCellValue(p.getAmount());
+                    row.createCell(11).setCellValue(p.getStatus());
+                }
+                for (int i = 0; i < columns.length; i++) sheet.autoSizeColumn(i);
+
+                try (FileOutputStream fileOut = new FileOutputStream(file)) {
+                    workbook.write(fileOut);
+                }
+                showSimpleAlert(Alert.AlertType.INFORMATION, "Success", "Export successful!");
+            } catch (IOException e) {
+                showSimpleAlert(Alert.AlertType.ERROR, "Export Error", e.getMessage());
+            }
+        }
     }
 
     @FXML
@@ -224,7 +298,38 @@ public class PayrollController implements Initializable {
         }
     }
 
-    // --- UI SETUP ---
+    // --- UI SETUP & LOADERS ---
+
+    private void showPaymentDetails(Payment p) {
+        String currency = settingService.getString(KEY_CURRENCY, "€");
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Payslip Analysis");
+        alert.setHeaderText("Payroll: " + p.getEmployee().getLastName());
+        styleAlert(alert);
+
+        double deductions = (p.getDeductions() != null) ? p.getDeductions() : 0.0;
+        double employerCost = (p.getEmployerTax() != null) ? p.getEmployerTax() : 0.0;
+        double bonus = (p.getBonus() != null) ? p.getBonus() : 0.0;
+        String ssn = (p.getEmployee().getSsn() != null) ? p.getEmployee().getSsn() : "-";
+
+        String content = String.format(
+                "SSN: %s\nMonth: %s\nStatus: %s\n" +
+                        "Work Hours: %.1f | Overtime: %.1f | Sunday: %.1f\n" + // Προσθήκη ωρών στην ανάλυση
+                        "-----------------------------\n" +
+                        "Base Salary: %s%.2f\nBonus: %s%.2f\nGROSS PAY: %s%.2f\n" +
+                        "-----------------------------\n" +
+                        "Deductions: -%s%.2f\nEmployer Cost: %s%.2f\n" +
+                        "-----------------------------\n" +
+                        "NET PAY: %s%.2f",
+                ssn, p.getMonthYear(), p.getStatus(),
+                p.getHoursWorked(), p.getOvertimeHours(), p.getSundayHours(),
+                currency, p.getBaseSalary(), currency, bonus, currency, p.getGrossPay(),
+                currency, deductions, currency, employerCost,
+                currency, p.getAmount()
+        );
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
 
     private void setupTableColumns() {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
@@ -253,10 +358,13 @@ public class PayrollController implements Initializable {
         });
 
         colActions.setCellFactory(param -> new TableCell<>() {
+            private final Button btnInfo = new Button("Info");
             private final Button btnBonus = new Button("Bonus");
-            private final HBox pane = new HBox(5, btnBonus);
+            private final HBox pane = new HBox(5, btnInfo, btnBonus);
             {
-                btnBonus.setStyle("-fx-background-color: #F59E0B; -fx-text-fill: white; -fx-cursor: hand; -fx-font-size:11px;");
+                btnInfo.getStyleClass().add("table-btn"); btnInfo.setStyle("-fx-background-color: #3B82F6; -fx-text-fill: white;");
+                btnBonus.getStyleClass().add("table-btn"); btnBonus.setStyle("-fx-background-color: #F59E0B; -fx-text-fill: white;");
+                btnInfo.setOnAction(e -> showPaymentDetails(getTableView().getItems().get(getIndex())));
                 btnBonus.setOnAction(e -> {
                     Payment p = getTableView().getItems().get(getIndex());
                     if ("PAID".equalsIgnoreCase(p.getStatus())) showSimpleAlert(Alert.AlertType.WARNING, "Locked", "Already Paid!");
