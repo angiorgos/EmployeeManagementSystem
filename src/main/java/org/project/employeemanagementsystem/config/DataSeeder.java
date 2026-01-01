@@ -155,11 +155,33 @@ public class DataSeeder implements CommandLineRunner {
 
     // --- HELPER METHODS ---
 
+// Μέσα στο DataSeeder.java
+
     private void seedSettings() {
-        systemSettingRepository.save(new SystemSetting("payroll.tax_rate_employer", "0.30"));
-        systemSettingRepository.save(new SystemSetting("payroll.tax_rate_employee", "0.15"));
-        systemSettingRepository.save(new SystemSetting("company.name", "EMS Solutions Ltd"));
-        systemSettingRepository.save(new SystemSetting("company.currency", "EUR"));
+        System.out.println("Seeding System Settings...");
+
+        // 1. Βασικά Rates Μισθοδοσίας
+        saveSetting("payroll.standard_hours", "176.0"); // Monthly Hours
+        saveSetting("payroll.overtime_rate", "1.5");    // Overtime Rate
+        saveSetting("payroll.sunday_rate", "1.75");     // Sunday Rate
+        saveSetting("payroll.night_rate", "1.25");      // Night Rate (το προσθέσαμε ως extra)
+        saveSetting("payroll.holiday_rate", "2.00");    // Holiday Rate (το προσθέσαμε ως extra)
+
+        // 2. Φορολογικά (Βάσει της λογικής Total Rate + Split)
+        saveSetting("payroll.total_tax_rate", "0.40");  // Total Tax Rate (40%)
+        saveSetting("payroll.employer_share", "0.60");  // Employer Split (60% πληρώνει ο εργοδότης)
+
+        // 3. Στοιχεία Εταιρείας
+        saveSetting("company.name", "EMS Solutions Ltd");
+        saveSetting("company.currency", "€");
+    }
+
+    // Βοηθητική μέθοδος για να μην γράφουμε πολλές γραμμές
+    private void saveSetting(String key, String value) {
+        // Ελέγχουμε αν υπάρχει ήδη για να μην το χαλάσουμε αν κάνουμε restart
+        if (!systemSettingRepository.existsById(key)) {
+            systemSettingRepository.save(new SystemSetting(key, value));
+        }
     }
 
     private void seedHolidays() {
