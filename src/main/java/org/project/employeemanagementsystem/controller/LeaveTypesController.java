@@ -1,12 +1,15 @@
 package org.project.employeemanagementsystem.controller;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import org.project.employeemanagementsystem.model.LeaveType;
+import org.project.employeemanagementsystem.model.User;
 import org.project.employeemanagementsystem.service.LeaveTypeService;
+import org.project.employeemanagementsystem.util.UserSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -19,6 +22,9 @@ public class LeaveTypesController implements Initializable {
     @Autowired
     private LeaveTypeService leaveTypeService;
 
+    @Autowired
+    private UserSession userSession;
+
     @FXML private TableView<LeaveType> leaveTypesTable;
     @FXML private TableColumn<LeaveType, Long> leaveTypesID;
     @FXML private TableColumn<LeaveType, String> leaveTypesName;
@@ -30,9 +36,17 @@ public class LeaveTypesController implements Initializable {
     @FXML private Button leaveTypesRemoveBtn;
 
     private LeaveType selectedLeaveType = null;
+    private boolean isAdmin;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // --- Determine if user is admin
+        User currentUser = userSession.getCurrentUser();
+        isAdmin = currentUser != null
+                && currentUser.getRole() != null
+                && "ROLE_ADMIN".equals(currentUser.getRole().getName());
+
+        // --- Table setup
         leaveTypesTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         leaveTypesID.setCellValueFactory(new PropertyValueFactory<>("id"));
         leaveTypesName.setCellValueFactory(new PropertyValueFactory<>("name"));
@@ -40,7 +54,7 @@ public class LeaveTypesController implements Initializable {
 
         loadLeaveTypes();
 
-        // Selection listener
+        // --- Selection listener
         leaveTypesTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
             if (newSel != null) {
                 selectedLeaveType = newSel;
@@ -52,19 +66,27 @@ public class LeaveTypesController implements Initializable {
             }
         });
 
-        // Disable remove button when nothing is selected
-        leaveTypesRemoveBtn.disableProperty()
-                .bind(leaveTypesTable.getSelectionModel().selectedItemProperty().isNull());
+        // --- Disable Remove button if nothing selected OR user not admin
+        leaveTypesRemoveBtn.disableProperty().bind(
+                leaveTypesTable.getSelectionModel().selectedItemProperty().isNull()
+                        .or(new SimpleBooleanProperty(!isAdmin))
+        );
+
+        // --- Disable Add/Confirm button for non-admins
+        leaveTypesAddBtn.setDisable(!isAdmin);
+
+        // --- Disable text fields for non-admins
+        leaveTypesNameField.setDisable(!isAdmin);
+        leaveTypesMaxDaysField.setDisable(!isAdmin);
     }
 
     private void loadLeaveTypes() {
-        leaveTypesTable.setItems(
-                FXCollections.observableArrayList(leaveTypeService.getAllLeaveTypes())
-        );
+        leaveTypesTable.setItems(FXCollections.observableArrayList(leaveTypeService.getAllLeaveTypes()));
     }
 
     @FXML
     private void handleAddOrUpdateLeaveType() {
+        if (!isAdmin) return;
 
         String name = leaveTypesNameField.getText();
         Integer maxDays;
@@ -82,33 +104,30 @@ public class LeaveTypesController implements Initializable {
         }
 
         if (selectedLeaveType != null) {
-            // UPDATE
+            // --- UPDATE
             selectedLeaveType.setName(name);
             selectedLeaveType.setMaxDays(maxDays);
             leaveTypeService.saveLeaveType(selectedLeaveType);
         } else {
-            // ADD
+            // --- ADD
             LeaveType newLeaveType = new LeaveType();
             newLeaveType.setName(name);
             newLeaveType.setMaxDays(maxDays);
             leaveTypeService.saveLeaveType(newLeaveType);
         }
 
-        // 🔧 THIS IS THE FIX
         loadLeaveTypes();
         leaveTypesTable.refresh();
-
         clearForm();
     }
 
-
     @FXML
     private void handleRemoveLeaveType() {
-        if (selectedLeaveType != null) {
-            leaveTypeService.deleteLeaveType(selectedLeaveType.getId());
-            loadLeaveTypes();
-            clearForm();
-        }
+        if (!isAdmin || selectedLeaveType == null) return;
+
+        leaveTypeService.deleteLeaveType(selectedLeaveType.getId());
+        loadLeaveTypes();
+        clearForm();
     }
 
     private void clearForm() {
