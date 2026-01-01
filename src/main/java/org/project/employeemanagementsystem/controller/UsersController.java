@@ -33,8 +33,10 @@ public class UsersController implements Initializable {
 
     @FXML private VBox tableViewContainer;
     @FXML private VBox formViewContainer;
+    @FXML private VBox roleFormContainer;
     @FXML private VBox loadingOverlay;
     @FXML private Label formTitle;
+    @FXML private Label roleFormTitle;
 
     @FXML private TableView<User> usersTable;
     @FXML private TableColumn<User, Long> idCol;
@@ -46,6 +48,8 @@ public class UsersController implements Initializable {
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
     @FXML private ComboBox<Role> roleComboBox;
+
+    @FXML private TextField roleNameField;
 
     private FilteredList<User> filteredData;
     private User selectedUser;
@@ -65,9 +69,7 @@ public class UsersController implements Initializable {
 
         Task<List<User>> task = new Task<>() {
             @Override
-            protected List<User> call() {
-                return userService.getAllUsers();
-            }
+            protected List<User> call() { return userService.getAllUsers(); }
         };
 
         task.setOnSucceeded(event -> {
@@ -121,14 +123,16 @@ public class UsersController implements Initializable {
     }
 
     @FXML
-    private void onCreateUser() {
-        showForm(null);
-    }
+    private void onCreateUser() { showUserForm(null); }
 
     @FXML
-    private void handleBackToTable() {
+    private void onCreateRole() {
+        roleNameField.clear();
+        roleFormTitle.setText("New Role");
+
+        tableViewContainer.setVisible(false);
         formViewContainer.setVisible(false);
-        tableViewContainer.setVisible(true);
+        roleFormContainer.setVisible(true);
     }
 
     @FXML
@@ -149,6 +153,32 @@ public class UsersController implements Initializable {
         handleBackToTable();
     }
 
+    @FXML
+    private void onSaveRole() {
+        String roleName = roleNameField.getText().trim();
+        if(roleName.isEmpty()) return;
+
+        Role role = new Role();
+        role.setName(roleName);
+        roleService.saveRole(role);
+
+        // Refresh user role ComboBox
+        loadRoles();
+
+        roleFormContainer.setVisible(false);
+        tableViewContainer.setVisible(true);
+    }
+
+    @FXML
+    private void handleBackToTable() {
+        formViewContainer.setVisible(false);
+        roleFormContainer.setVisible(false);
+        tableViewContainer.setVisible(true);
+    }
+
+    @FXML
+    private void handleRefresh() { loadUsers(); }
+
     private void addActionButtonsToTable() {
         actionCol.setCellFactory(param -> new TableCell<>() {
             private final Button btnEdit = new Button("Edit");
@@ -160,7 +190,7 @@ public class UsersController implements Initializable {
                 btnEdit.getStyleClass().addAll("table-btn", "table-btn-edit");
                 btnDelete.getStyleClass().addAll("table-btn", "table-btn-delete");
 
-                btnEdit.setOnAction(e -> showForm(getTableView().getItems().get(getIndex())));
+                btnEdit.setOnAction(e -> showUserForm(getTableView().getItems().get(getIndex())));
                 btnDelete.setOnAction(e -> {
                     User user = getTableView().getItems().get(getIndex());
                     Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Delete user: " + user.getUsername() + "?");
@@ -176,7 +206,7 @@ public class UsersController implements Initializable {
         });
     }
 
-    private void showForm(User user) {
+    private void showUserForm(User user) {
         selectedUser = user;
         if(user == null){
             formTitle.setText("New User");
@@ -191,7 +221,4 @@ public class UsersController implements Initializable {
         tableViewContainer.setVisible(false);
         formViewContainer.setVisible(true);
     }
-
-    @FXML
-    private void handleRefresh() { loadUsers(); }
 }
