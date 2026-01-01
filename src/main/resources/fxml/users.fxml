@@ -14,7 +14,7 @@
     <center>
         <StackPane>
 
-            <!-- Table Container -->
+            <!-- Table Container   -->
             <VBox fx:id="tableViewContainer" spacing="20.0" style="-fx-padding: 20; -fx-background-color: #F3F4F6;">
                 <HBox alignment="CENTER_LEFT" spacing="15.0">
                     <Label styleClass="page-title" text="Users Management"/>
