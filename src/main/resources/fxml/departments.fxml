@@ -90,7 +90,7 @@
                 </HBox>
             </VBox>
 
-            <!-- Loading Overlay -->
+            <!-- Loading Overlay   -->
             <VBox fx:id="loadingOverlay" alignment="CENTER" spacing="20.0" style="-fx-background-color: #F3F4F6;">
                 <ProgressIndicator styleClass="loading-spinner" prefWidth="60.0" prefHeight="60.0"/>
                 <VBox alignment="CENTER" spacing="5.0">
