@@ -31,14 +31,12 @@
    <center>
       <TabPane prefHeight="200.0" prefWidth="1066.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
         <tabs>
-          <Tab text="Untitled Tab 1">
+          <Tab text="Write a Leave Request">
                <content>
                     <VBox prefWidth="1024.0" spacing="15">
             
                         <!-- Card -->
                         <VBox spacing="15" styleClass="card">
-            
-                            <Label styleClass="card-title" text="Make a Leave Request" />
             
                             <!-- Form Grid -->
                             <GridPane hgap="30" vgap="20">
@@ -118,9 +116,9 @@
                     </VBox>
                </content>
           </Tab>
-          <Tab text="Untitled Tab 2">
+          <Tab text="Review Requests">
             <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                <fx:include source="leaves2.fxml" />
             </content>
           </Tab>
         </tabs>

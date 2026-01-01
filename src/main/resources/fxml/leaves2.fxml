@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="768.0" prefWidth="1366.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+
+    <!-- CENTER CONTENT -->
+    <center>
+        <HBox spacing="20" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="30" left="30" right="30" top="30" />
+            </padding>
+
+            <children>
+
+                <!-- TABLE SECTION -->
+                <VBox spacing="10" styleClass="card" HBox.hgrow="ALWAYS">
+                    <children>
+
+                        <TableView fx:id="leaveRequestsTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="employeeCol" prefWidth="180" text="Employee" />
+                                <TableColumn fx:id="leaveTypeCol" prefWidth="150" text="Leave Type" />
+                                <TableColumn fx:id="startDateCol" prefWidth="120" text="Start Date" />
+                                <TableColumn fx:id="endDateCol" prefWidth="120" text="End Date" />
+                                <TableColumn fx:id="statusCol" prefWidth="120" text="Status" />
+                            </columns>
+                        </TableView>
+                    </children>
+                </VBox>
+
+            </children>
+        </HBox>
+    </center>
+
+</BorderPane>
