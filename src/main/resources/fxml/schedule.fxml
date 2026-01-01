@@ -132,7 +132,7 @@
                 </Tab>
                 <Tab text="New Schedule">
                     <content>
-                        <fx:include source="schedule2.fxml" />
+                        <fx:include fx:id="newScheduleView" source="schedule2.fxml" />
                     </content>
                 </Tab>
             </tabs>

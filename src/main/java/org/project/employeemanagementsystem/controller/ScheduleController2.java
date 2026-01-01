@@ -1,7 +1,10 @@
 package org.project.employeemanagementsystem.controller;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
@@ -25,6 +28,13 @@ public class ScheduleController2 implements Initializable {
     @FXML private ComboBox<String> employeeComboBox; // προσωρινά String (UI-only)
     // @FXML private Button submitBtn; // προαιρετικό, δεν χρειάζεται να το κρατάς σαν field
     @FXML private GridPane timePickerGrid;
+    @FXML private Button submitBtn;
+
+    private Runnable onScheduleSaved;
+
+    public void setOnScheduleSaved(Runnable onScheduleSaved) {
+        this.onScheduleSaved = onScheduleSaved;
+    }
 
     // ====== Week config ======
     private static final DayOfWeek[] DAYS = {
@@ -32,8 +42,8 @@ public class ScheduleController2 implements Initializable {
             DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY
     };
 
-    // 06:00 -> 21:00 (16 ώρες αν το κάνεις ανά 1 ώρα)
-    private final int startHour = 6;
+    // 09:00 -> 21:00
+    private final int startHour = 9;
     private final int endHour   = 21;
 
     // Κρατάμε τα cells για εύκολο update
@@ -44,6 +54,38 @@ public class ScheduleController2 implements Initializable {
     private DayOfWeek selectedDay;
     private int selectedHour;
 
+    private void setInputsEnabled(boolean enabled) {
+        boolean disable = !enabled;
+
+        // time pickers
+        for (ComboBox<String> cb : new ComboBox[]{
+                monStart, monEnd, tueStart, tueEnd, wedStart, wedEnd, thuStart, thuEnd,
+                friStart, friEnd, satStart, satEnd, sunStart, sunEnd
+        }) {
+            if (cb != null) cb.setDisable(disable);
+        }
+
+        // submit button
+        if (submitBtn != null) submitBtn.setDisable(disable);
+    }
+
+    private void installEmployeePlaceholder() {
+        if (employeeComboBox == null) return;
+
+        employeeComboBox.setEditable(false);
+
+        employeeComboBox.setButtonCell(new javafx.scene.control.ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText("Choose Employee");
+                } else {
+                    setText(item);
+                }
+            }
+        });
+    }
 
     private void renderWeekGrid() {
         weekGrid.getChildren().clear();
@@ -149,6 +191,10 @@ public class ScheduleController2 implements Initializable {
         previewChips.clear();
     }
 
+    private String key(DayOfWeek day, int hour) {
+        return day + "_" + hour;
+    }
+
     private void addChipToCell(DayOfWeek day, int hourRow, String employee) {
         int hour = startHour + hourRow;
         VBox cell = cellMap.get(key(day, hour));
@@ -187,13 +233,14 @@ public class ScheduleController2 implements Initializable {
         if (start == null || end == null) return;
         if (!end.isAfter(start)) return; // πρέπει end > start
 
-        // επειδή το grid είναι ανά 1 ώρα, “στρογγυλεύουμε” προς τα κάτω στην ώρα
-        int startRow = toRow(start);
-        int endRowExclusive = toRow(end);
-        // αν end είναι π.χ 10:30, το toRow=10-startHour, άρα καλύπτει μέχρι 10:xx => σωστό σαν preview
+        int startRow = start.getHour() - startHour;
+        int endRowExclusive = end.getHour() - startHour;
+
+        // αν το end έχει λεπτά (π.χ. 17:30), τότε να "πιάσει" και την ώρα 17
+        if (end.getMinute() > 0) endRowExclusive++;
 
         startRow = Math.max(0, startRow);
-        endRowExclusive = Math.min((endHour - startHour) + 1, endRowExclusive + 1);
+        endRowExclusive = Math.min((endHour - startHour) + 1, endRowExclusive);
 
         for (int r = startRow; r < endRowExclusive; r++) {
             addChipToCell(day, r, employee);
@@ -205,7 +252,8 @@ public class ScheduleController2 implements Initializable {
         cb.valueProperty().addListener((obs, o, n) -> refreshPreviewFromPickers());
     }
 
-    private void onSaveSchedule() {
+    @FXML
+    private void onSubmit() {
         // ΠΡΟΣΩΡΙΝΑ: εδώ αργότερα θα κάνεις persist + update του Overview.
         // Τώρα: καθαρίζουμε preview + inputs για να περάσεις στον επόμενο employee.
 
@@ -231,29 +279,32 @@ public class ScheduleController2 implements Initializable {
         if (selectedCell != null) selectedCell.getStyleClass().remove("selected-day");
         selectedCell = null;
         selectedDay = null;
+
+        if (onScheduleSaved != null) {
+            onScheduleSaved.run();
+        }
     }
 
-    @FXML
-    private void onSubmit() {
-        if (selectedCell == null) return;
-        if (employeeComboBox == null) return;
 
-        String employee = employeeComboBox.getValue();
-        if (employee == null || employee.isBlank()) return;
+    private void enforceEndAfterStart(ComboBox<String> startCb, ComboBox<String> endCb) {
+        if (startCb == null || endCb == null) return;
 
-        // Προσθέτουμε "chip" σαν label μέσα στο κελί
-        Label chip = new Label(employee);
-        chip.getStyleClass().add("employee-chip");
-        chip.setMaxWidth(Double.MAX_VALUE);
+        endCb.valueProperty().addListener((obs, oldV, newV) -> {
+            LocalTime start = parseTime(startCb.getValue());
+            LocalTime end   = parseTime(newV);
 
-        selectedCell.getChildren().add(chip);
+            if (start == null || end == null) return;
 
-        // εδώ αργότερα θα κάνουμε persist στη βάση με selectedDay/selectedHour
-        // (πχ “employee works Mon 10:00”)
-    }
+            if (!end.isAfter(start)) {
+                // revert
+                endCb.setValue(oldV);
 
-    private String key(DayOfWeek day, int hour) {
-        return day + "_" + hour;
+                Alert a = new Alert(Alert.AlertType.WARNING);
+                a.setHeaderText("Invalid time range");
+                a.setContentText("End time must be later than Start time.");
+                a.showAndWait();
+            }
+        });
     }
 
     @Override
@@ -267,6 +318,19 @@ public class ScheduleController2 implements Initializable {
 
         renderWeekGrid();
 
+        // Αρχικά ΚΛΕΙΔΩΜΕΝΑ
+        setInputsEnabled(false);
+
+        // Μόλις επιλεγεί υπάλληλος => ΞΕΚΛΕΙΔΩΝΟΥΜΕ
+        employeeComboBox.valueProperty().addListener((obs, oldV, newV) -> {
+            boolean ok = newV != null && !newV.isBlank();
+            setInputsEnabled(ok);
+
+            if (!ok) {
+                clearPreview(); // προαιρετικά: καθάρισε preview όταν ξε-επιλεγεί
+            }
+        });
+
         //Γεμισμα ComboBox
         ObservableList<String> times = buildTimes();
 
@@ -276,9 +340,6 @@ public class ScheduleController2 implements Initializable {
             makeBlankSelectable(cb); // κενή επιλογή + σωστό rendering
         }
 
-        if (employeeComboBox != null) {
-            employeeComboBox.valueProperty().addListener((obs, o, n) -> refreshPreviewFromPickers());
-        }
 
         for (ComboBox<String> cb : new ComboBox[]{
                 monStart, monEnd, tueStart, tueEnd, wedStart, wedEnd, thuStart, thuEnd,
@@ -286,5 +347,21 @@ public class ScheduleController2 implements Initializable {
         }) {
             attachAutoPreview(cb);
         }
+
+        enforceEndAfterStart(monStart, monEnd);
+        enforceEndAfterStart(tueStart, tueEnd);
+        enforceEndAfterStart(wedStart, wedEnd);
+        enforceEndAfterStart(thuStart, thuEnd);
+        enforceEndAfterStart(friStart, friEnd);
+        enforceEndAfterStart(satStart, satEnd);
+        enforceEndAfterStart(sunStart, sunEnd);
+
+        // Mock employees για UI
+        if (employeeComboBox != null) {
+            employeeComboBox.getItems().setAll("Maria Pap.", "Giorgos Kon.", "Dimitris Ar.");
+        }
+        installEmployeePlaceholder();
     }
+
+
 }

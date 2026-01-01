@@ -2,22 +2,21 @@ package org.project.employeemanagementsystem.controller;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-
+import javafx.scene.layout.*;
 import org.project.employeemanagementsystem.service.EmployeeService;
 import org.project.employeemanagementsystem.service.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-
 import java.net.URL;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.control.TabPane;
 
 @Controller
 public class ScheduleController implements Initializable {
@@ -25,6 +24,10 @@ public class ScheduleController implements Initializable {
     // ====== Services (backend) ======
     @Autowired private ScheduleService scheduleService;
     @Autowired private EmployeeService employeeService;
+    @FXML private TabPane scheduleTabs;
+
+    @FXML private BorderPane newScheduleView;              // inject-άρει το root node (BorderPane)
+    @FXML private ScheduleController2 newScheduleViewController; // inject-άρει τον controller του include
 
     // ====== Calendar Tab (Overview) ======
     @FXML private Label monthLabel;
@@ -96,18 +99,30 @@ public class ScheduleController implements Initializable {
 
         boolean inMonth = date.getMonth().equals(visibleMonth.getMonth());
 
-        // Weekday label μόνο στην πρώτη σειρά (αν θες αυτό το look)
+        // ===== header: weekday (left, μόνο 1η σειρά) + day number (right, πάντα) =====
+        HBox header = new HBox();
+        header.setAlignment(Pos.TOP_LEFT);
+
+        Label weekdayLabel = null;
         if (rowIndex == 0) {
-            Label weekdayLabel = new Label(date.getDayOfWeek().getDisplayName(java.time.format.TextStyle.SHORT, Locale.ENGLISH));
+            weekdayLabel = new Label(
+                    date.getDayOfWeek().getDisplayName(java.time.format.TextStyle.SHORT, Locale.ENGLISH)
+            );
             weekdayLabel.getStyleClass().add("weekday-label");
-            weekdayLabel.setMaxWidth(Double.MAX_VALUE);
-            root.getChildren().add(weekdayLabel);
         }
 
         Label dayNumber = new Label(String.valueOf(date.getDayOfMonth()));
         dayNumber.getStyleClass().add("day-number");
-        dayNumber.setMaxWidth(Double.MAX_VALUE);
 
+// spacer για να σπρώχνει το dayNumber δεξιά
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+// χτίσιμο header
+        if (weekdayLabel != null) header.getChildren().add(weekdayLabel);
+        header.getChildren().addAll(spacer, dayNumber);
+
+// τα chips κάτω από το header
         VBox employeesBox = new VBox(2);
 
         // προσωρινό mock (μέχρι να το δέσεις με scheduleService)
@@ -118,7 +133,7 @@ public class ScheduleController implements Initializable {
             employeesBox.getChildren().add(employeeChip("Dimitris A."));
         }
 
-        root.getChildren().addAll(dayNumber, employeesBox);
+        root.getChildren().addAll(header, employeesBox);
 
         if (!inMonth) root.getStyleClass().add("out-month");
         if (date.equals(selectedDate)) root.getStyleClass().add("selected-day");
@@ -169,5 +184,19 @@ public class ScheduleController implements Initializable {
             updateRightPanel(selectedDate);
             syncTodayToggle();
         }
+        // ✅ ΠΑΙΡΝΟΥΜΕ ΤΟΝ CONTROLLER ΤΟΥ schedule2.fxml
+        if (newScheduleViewController != null) {
+            newScheduleViewController.setOnScheduleSaved(() -> {
+                renderMonth(currentMonth);
+                updateRightPanel(selectedDate);
+                syncTodayToggle();
+
+                // γύρνα στο Overview tab
+                if (scheduleTabs != null) {
+                    scheduleTabs.getSelectionModel().select(0);
+                }
+            });
+        }
+
     }
 }
