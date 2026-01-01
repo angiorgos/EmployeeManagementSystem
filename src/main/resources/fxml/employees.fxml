@@ -17,7 +17,11 @@
                 <HBox alignment="CENTER_LEFT" spacing="15.0">
                     <Label styleClass="page-title" text="Employee Management" />
                     <Region HBox.hgrow="ALWAYS" />
+
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);">
                     <TextField fx:id="searchField" prefWidth="250" promptText="Search..." styleClass="search-field" />
+                    <Region HBox.hgrow="ALWAYS" />
                     <Button onAction="#handleAddEmployee" styleClass="btn-primary" text="+ Add New" />
                     <Button onAction="#handleRefresh" styleClass="btn-secondary" text="Refresh" />
                 </HBox>
