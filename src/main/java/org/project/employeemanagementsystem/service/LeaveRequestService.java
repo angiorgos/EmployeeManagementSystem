@@ -78,6 +78,10 @@ public class LeaveRequestService {
         leaveRequestRepository.save(request);
     }
 
+    public void updateRequestStatus(LeaveRequest request) {
+        leaveRequestRepository.save(request);
+    }
+
     public int getRemainingDays(Employee employee, LeaveType leaveType) {
         int maxAllowed = leaveType.getMaxDays();
         List<LeaveRequest> approvedRequests = leaveRequestRepository

@@ -115,6 +115,7 @@ public class LeavesController2 {
             request.setStatus(newStatus);
 
             // Persist status change to database
+            leaveRequestService.updateRequestStatus(request);
             leaveRequestService.submitRequest(request);
 
             // Update card color immediately
