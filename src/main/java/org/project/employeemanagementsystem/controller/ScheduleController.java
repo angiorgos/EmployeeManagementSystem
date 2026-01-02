@@ -12,8 +12,10 @@ import javafx.scene.layout.Priority;
 import javafx.util.Duration;
 import org.project.employeemanagementsystem.model.Employee;
 import org.project.employeemanagementsystem.model.Schedule;
+import org.project.employeemanagementsystem.model.User;
 import org.project.employeemanagementsystem.service.EmployeeService;
 import org.project.employeemanagementsystem.service.ScheduleService;
+import org.project.employeemanagementsystem.util.UserSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -28,6 +30,7 @@ public class ScheduleController implements Initializable {
 
     @Autowired private ScheduleService scheduleService;
     @Autowired private EmployeeService employeeService;
+    @Autowired private UserSession userSession; // <-- Added for role-based tab
 
     // --- FXML ELEMENTS ---
     @FXML private TabPane scheduleTabs;
@@ -52,16 +55,15 @@ public class ScheduleController implements Initializable {
     private LocalDate selectedDate = LocalDate.now();
     private String currentViewMode = "MONTH";
 
-    // *** Η ΒΑΣΙΚΗ ΑΛΛΑΓΗ: Κρατάμε ΟΛΑ τα δεδομένα στη μνήμη ***
     private List<Schedule> allSchedulesInMemory = new ArrayList<>();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Setup Toggles
+        // Setup view toggle buttons
         if (monthBtn != null) {
             monthBtn.setOnAction(e -> {
                 currentViewMode = "MONTH";
-                refreshLocalView(); // <-- Τοπικό φιλτράρισμα
+                refreshLocalView();
             });
             monthBtn.setSelected(true);
         }
@@ -70,7 +72,7 @@ public class ScheduleController implements Initializable {
             weekBtn.setOnAction(e -> {
                 currentViewMode = "WEEK";
                 currentWeekStart = selectedDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-                refreshLocalView(); // <-- Τοπικό φιλτράρισμα
+                refreshLocalView();
             });
         }
 
@@ -80,41 +82,49 @@ public class ScheduleController implements Initializable {
             newScheduleViewController.setEmployeeService(employeeService);
         }
 
-        // 1. Φόρτωση από Βάση ΜΟΝΟ στην αρχή
+        // Apply role-based visibility for "New Schedule" tab
+        applyRoleTabVisibility();
+
+        // Load schedules from DB initially
         loadDataFromDB();
     }
 
-    // =========================================================
-    // 1. FETCH FROM DB (ΜΕ LOADING OVERLAY)
-    // Καλέστε το ΜΟΝΟ στην αρχή ή μετά από Save/Delete
-    // =========================================================
+    // ===================== ROLE-BASED TAB VISIBILITY =====================
+    private void applyRoleTabVisibility() {
+        User user = userSession.getCurrentUser();
+        String role = user != null && user.getRole() != null ? user.getRole().getName() : "";
+
+        boolean isAdmin = "Admin".equalsIgnoreCase(role);
+        boolean isHR = "HR".equalsIgnoreCase(role);
+
+        // New Schedule tab is second tab (index 1)
+        if (scheduleTabs != null && scheduleTabs.getTabs().size() > 1) {
+            Tab newScheduleTab = scheduleTabs.getTabs().get(1);
+            if (!(isAdmin || isHR)) {
+                scheduleTabs.getTabs().remove(newScheduleTab); // completely remove for non-admin/HR
+            }
+        }
+    }
+
+    // ===================== DATA LOADING =====================
     private void loadDataFromDB() {
         if (loadingOverlay != null) {
             loadingOverlay.setVisible(true);
             loadingOverlay.setOpacity(1.0);
         }
 
-        // Delay για να φανεί το loading
         PauseTransition uiRenderDelay = new PauseTransition(Duration.millis(50));
         uiRenderDelay.setOnFinished(ev -> {
-
             Task<List<Schedule>> task = new Task<>() {
                 @Override
-                protected List<Schedule> call() throws Exception {
-                    // Τραβάμε ΤΑ ΠΑΝΤΑ (ή π.χ. του τρέχοντος έτους αν είναι πολλά)
-                    // Εδώ υποθέτουμε ότι τα φέρνουμε όλα για να έχουμε γρήγορο navigation
+                protected List<Schedule> call() {
                     return scheduleService.getAllSchedules();
                 }
             };
 
             task.setOnSucceeded(e -> {
-                // Ανανέωση μνήμης
                 allSchedulesInMemory = task.getValue();
-
-                // Ανανέωση UI από τη μνήμη
                 refreshLocalView();
-
-                // Fade Out
                 fadeOutOverlay();
             });
 
@@ -125,7 +135,6 @@ public class ScheduleController implements Initializable {
 
             new Thread(task).start();
         });
-
         uiRenderDelay.play();
     }
 
@@ -138,47 +147,34 @@ public class ScheduleController implements Initializable {
         fadeOut.play();
     }
 
-    // =========================================================
-    // 2. REFRESH LOCAL VIEW (ΧΩΡΙΣ DB CALL - INSTANT)
-    // Καλέστε το σε κάθε κουμπί πλοήγησης (Next/Prev/Week/Month)
-    // =========================================================
+    // ===================== LOCAL VIEW REFRESH =====================
     private void refreshLocalView() {
-        if ("MONTH".equals(currentViewMode)) {
-            renderMonthGrid();
-        } else {
-            renderWeekGrid();
-        }
+        if ("MONTH".equals(currentViewMode)) renderMonthGrid();
+        else renderWeekGrid();
         updateRightPanel(selectedDate);
     }
-
-    // --- NAVIGATION ACTIONS (Καλούν το LOCAL REFRESH) ---
 
     @FXML private void onNextMonth() {
         if ("MONTH".equals(currentViewMode)) currentMonth = currentMonth.plusMonths(1);
         else currentWeekStart = currentWeekStart.plusWeeks(1);
-
-        refreshLocalView(); // <-- Ακαριαίο
+        refreshLocalView();
     }
 
     @FXML private void onPrevMonth() {
         if ("MONTH".equals(currentViewMode)) currentMonth = currentMonth.minusMonths(1);
         else currentWeekStart = currentWeekStart.minusWeeks(1);
-
-        refreshLocalView(); // <-- Ακαριαίο
+        refreshLocalView();
     }
 
     @FXML private void onToday() {
         selectedDate = LocalDate.now();
         currentMonth = YearMonth.now();
         currentWeekStart = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-
         if(todayBtn != null) todayBtn.setSelected(false);
-
-        refreshLocalView(); // <-- Ακαριαίο
+        refreshLocalView();
     }
 
-    // --- RENDER LOGIC (Χρησιμοποιεί το allSchedulesInMemory) ---
-
+    // ===================== GRID RENDERING =====================
     private void renderMonthGrid() {
         monthView.getChildren().clear();
         monthLabel.setText(capitalize(currentMonth.getMonth().toString()) + " " + currentMonth.getYear());
@@ -187,7 +183,6 @@ public class ScheduleController implements Initializable {
         int shift = firstOfMonth.getDayOfWeek().getValue() - 1;
         LocalDate gridStart = firstOfMonth.minusDays(shift);
 
-        // Ομαδοποίηση από τη μνήμη (Πολύ γρήγορο)
         Map<LocalDate, List<Schedule>> scheduleMap = allSchedulesInMemory.stream()
                 .collect(Collectors.groupingBy(Schedule::getDate));
 
@@ -222,12 +217,11 @@ public class ScheduleController implements Initializable {
     private VBox createDayCell(LocalDate date, List<Schedule> dailySchedules, Month visibleMonth) {
         VBox root = new VBox();
         root.getStyleClass().add("day-cell");
-        root.setMinSize(0, 0);
+        root.setMinSize(0,0);
         root.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
         boolean inMonth = date.getMonth().equals(visibleMonth);
 
-        // Header
         HBox header = new HBox();
         header.setAlignment(Pos.TOP_LEFT);
         header.setPadding(new javafx.geometry.Insets(2, 4, 0, 4));
@@ -248,17 +242,14 @@ public class ScheduleController implements Initializable {
             header.getChildren().addAll(spacer, dayNumber);
         }
 
-        // Chips
         VBox employeesBox = new VBox(2);
         employeesBox.setPadding(new javafx.geometry.Insets(2));
         if (dailySchedules != null) {
             for (Schedule s : dailySchedules) {
-                String name = s.getEmployee().getLastName();
-                employeesBox.getChildren().add(employeeChip(name, s.getStartTime(), s.getEndTime()));
+                employeesBox.getChildren().add(employeeChip(s.getEmployee().getLastName(), s.getStartTime(), s.getEndTime()));
             }
         }
 
-        // ScrollPane Fix
         ScrollPane scrollPane = new ScrollPane(employeesBox);
         scrollPane.setFitToWidth(true);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
@@ -271,11 +262,10 @@ public class ScheduleController implements Initializable {
         if (!inMonth && "MONTH".equals(currentViewMode)) root.getStyleClass().add("out-month");
         if (date.equals(selectedDate)) root.getStyleClass().add("selected-day");
 
-        // Click Event -> Καλεί το Local Refresh (όχι DB)
         root.setOnMouseClicked(e -> {
             selectedDate = date;
             updateRightPanel(date);
-            refreshLocalView(); // Απλά ξαναζωγραφίζει το grid για να δείξει το selection border
+            refreshLocalView();
         });
 
         return root;
@@ -290,15 +280,14 @@ public class ScheduleController implements Initializable {
 
     private void updateRightPanel(LocalDate date) {
         if (selectedDayLabel != null) selectedDayLabel.setText(date.toString());
+
         if (workingEmployeesList != null) {
-            // Φιλτράρισμα από τη μνήμη
             List<Schedule> daily = allSchedulesInMemory.stream()
                     .filter(s -> s.getDate().equals(date))
                     .collect(Collectors.toList());
 
-            if (daily.isEmpty()) {
-                workingEmployeesList.getItems().setAll("No schedules");
-            } else {
+            if (daily.isEmpty()) workingEmployeesList.getItems().setAll("No schedules");
+            else {
                 List<String> info = daily.stream()
                         .map(s -> s.getEmployee().getFirstName() + " " + s.getEmployee().getLastName() +
                                 "\n" + s.getStartTime() + " - " + s.getEndTime())
@@ -308,8 +297,7 @@ public class ScheduleController implements Initializable {
         }
     }
 
-    // --- SAVE LOGIC (DB Call + Overlay + Refresh Cache) ---
-
+    // ===================== SAVE / DELETE =====================
     private void onNewScheduleSaved(ScheduleController2.WeekSchedulePayload payload) {
         if (payload == null) return;
 
@@ -320,12 +308,10 @@ public class ScheduleController implements Initializable {
 
         PauseTransition uiRenderDelay = new PauseTransition(Duration.millis(50));
         uiRenderDelay.setOnFinished(ev -> {
-
             Task<Void> saveTask = new Task<>() {
                 @Override
                 protected Void call() throws Exception {
-                    String empName = payload.employee;
-                    Employee employee = findEmployeeByString(empName);
+                    Employee employee = findEmployeeByString(payload.employee);
                     if (employee == null) throw new Exception("Employee not found");
 
                     LocalDate from = payload.validFrom;
@@ -337,7 +323,7 @@ public class ScheduleController implements Initializable {
                         List<Schedule> existing = scheduleService.getAllSchedules().stream()
                                 .filter(s -> s.getDate().equals(currentDate) && s.getEmployee().getId().equals(employee.getId()))
                                 .collect(Collectors.toList());
-                        for(Schedule s : existing) scheduleService.deleteSchedule(s);
+                        for (Schedule s : existing) scheduleService.deleteSchedule(s);
 
                         DayOfWeek dow = currentDate.getDayOfWeek();
                         LocalTime[] range = payload.ranges.get(dow);
@@ -354,12 +340,7 @@ public class ScheduleController implements Initializable {
                 }
             };
 
-            saveTask.setOnSucceeded(e -> {
-                // Μόλις σώσουμε, πρέπει να ξανατραβήξουμε τα data για να ενημερωθεί η μνήμη
-                // Εδώ καλούμε το loadDataFromDB() αλλά χωρίς το delay γιατί ήδη βλέπουμε το overlay
-                reloadCacheInBackground();
-            });
-
+            saveTask.setOnSucceeded(e -> reloadCacheInBackground());
             saveTask.setOnFailed(e -> {
                 if (loadingOverlay != null) loadingOverlay.setVisible(false);
                 Alert alert = new Alert(Alert.AlertType.ERROR, "Failed to save: " + saveTask.getException().getMessage());
@@ -371,7 +352,6 @@ public class ScheduleController implements Initializable {
         uiRenderDelay.play();
     }
 
-    // Βοηθητική μέθοδος για Refresh μετά από Save (χωρίς να αναβοσβήσει το overlay)
     private void reloadCacheInBackground() {
         Task<List<Schedule>> reloadTask = new Task<>() {
             @Override protected List<Schedule> call() {
@@ -382,7 +362,7 @@ public class ScheduleController implements Initializable {
         reloadTask.setOnSucceeded(evt -> {
             allSchedulesInMemory = reloadTask.getValue();
             refreshLocalView();
-            scheduleTabs.getSelectionModel().select(0);
+            if(scheduleTabs != null) scheduleTabs.getSelectionModel().select(0);
             fadeOutOverlay();
         });
 
@@ -402,16 +382,13 @@ public class ScheduleController implements Initializable {
         Employee employee = findEmployeeByString(empName);
         if (employee == null) return;
 
-        // Γρήγορο delete (μπορεί να μπει σε task αν αργεί)
         List<Schedule> toDelete = scheduleService.getAllSchedules().stream()
                 .filter(s -> s.getEmployee().getId().equals(employee.getId()))
                 .filter(s -> !s.getDate().isBefore(LocalDate.now()))
                 .collect(Collectors.toList());
         for(Schedule s : toDelete) scheduleService.deleteSchedule(s);
 
-        // Μετά το delete, πρέπει να ξαναφορτώσουμε τη βάση
         loadDataFromDB();
-
         Alert a = new Alert(Alert.AlertType.INFORMATION, "Future schedules cleared for " + empName);
         a.show();
     }
