@@ -43,7 +43,9 @@
                     </StackPane>
                     <Region HBox.hgrow="ALWAYS"/>
                     <Button onAction="#handleAddDepartment" styleClass="btn-primary" text="+ Add New"/>
-                    <Button onAction="#handleRefresh" styleClass="btn-secondary" text="Refresh"/>
+                    <Button onAction="#handleRefresh" styleClass="btn-secondary" text="Refresh" prefHeight="35.0">
+                        <graphic><FontIcon iconLiteral="mdi2r-refresh" iconSize="16"/></graphic>
+                    </Button>
                 </HBox>
 
                 <TableView fx:id="departmentTable" styleClass="styled-table" VBox.vgrow="ALWAYS">

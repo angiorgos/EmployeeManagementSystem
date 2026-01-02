@@ -55,4 +55,38 @@ public class EmployeeService {
         }
         employeeRepository.deleteById(id);
     }
+
+    public void softDeleteEmployee(Long id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+
+        // Αν έχει ήδη φύγει, πετάμε μήνυμα ή απλά επιστρέφουμε
+        if (employee.getExitDate() != null) {
+            throw new IllegalStateException("Employee is already inactive since " + employee.getExitDate());
+        }
+
+        // Θέτουμε ημερομηνία αποχώρησης τη σημερινή
+        employee.setExitDate(java.time.LocalDate.now());
+
+        // Αποθηκεύουμε την αλλαγή
+        employeeRepository.save(employee);
+    }
+
+
+    public void rehireEmployee(Long id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+
+        if (employee.getExitDate() == null) {
+            throw new IllegalStateException("Employee is already active!");
+        }
+
+        // Καθαρίζουμε την ημερομηνία εξόδου -> Ο υπάλληλος γίνεται ξανά ενεργός
+        employee.setExitDate(null);
+
+        // Προαιρετικά: Μπορείς να αλλάξεις και το HireDate στη σημερινή μέρα
+        // employee.setHireDate(java.time.LocalDate.now());
+
+        employeeRepository.save(employee);
+    }
 }
