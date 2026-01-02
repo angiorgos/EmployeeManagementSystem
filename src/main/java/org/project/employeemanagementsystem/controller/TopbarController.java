@@ -24,8 +24,8 @@ public class TopbarController implements Initializable {
     // FXML Elements
     @FXML private Label userNameLabel;
     @FXML private Label userRoleLabel;
-    @FXML private Circle userAvatar;       // Η φωτογραφία
-    @FXML private FontIcon defaultUserIcon; // Το default εικονίδιο
+    @FXML private Circle userAvatar;
+    @FXML private FontIcon defaultUserIcon;
 
     @Autowired
     public TopbarController(UserSession userSession) {
@@ -34,14 +34,22 @@ public class TopbarController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // 1. Εμφάνισε τα δεδομένα την πρώτη φορά που φορτώνει
         updateUserDisplay();
+
+        // 2. ΠΡΟΣΘΗΚΗ LISTENER: Αν αλλάξει ο χρήστης (από το UserService), τρέξε ξανά το update!
+        userSession.currentUserProperty().addListener((observable, oldUser, newUser) -> {
+            if (newUser != null) {
+                updateUserDisplay(); // <--- Μαγεία!
+            }
+        });
     }
 
     private void updateUserDisplay() {
         User currentUser = userSession.getCurrentUser();
 
         if (currentUser != null) {
-            // 1. Ρύθμιση Ονόματος
+            // Όνομα
             if (currentUser.getEmployee() != null) {
                 String fullName = currentUser.getEmployee().getFirstName() + " " +
                         currentUser.getEmployee().getLastName();
@@ -50,23 +58,18 @@ public class TopbarController implements Initializable {
                 userNameLabel.setText(currentUser.getUsername());
             }
 
-            // 2. Ρύθμιση Ρόλου
+            // Ρόλος
             if (currentUser.getRole() != null) {
                 userRoleLabel.setText(currentUser.getRole().getName());
             } else {
                 userRoleLabel.setText("-");
             }
 
-            // 3. Ρύθμιση Φωτογραφίας
+            // Φωτογραφία
             if (currentUser.getProfilePicture() != null && currentUser.getProfilePicture().length > 0) {
                 try {
-                    // Μετατροπή bytes σε εικόνα
                     Image img = new Image(new ByteArrayInputStream(currentUser.getProfilePicture()));
-
-                    // Γέμισμα του κύκλου με την εικόνα
                     userAvatar.setFill(new ImagePattern(img));
-
-                    // Εμφάνιση Avatar, Απόκρυψη Icon
                     userAvatar.setVisible(true);
                     defaultUserIcon.setVisible(false);
                 } catch (Exception e) {
@@ -74,7 +77,6 @@ public class TopbarController implements Initializable {
                     showDefaultIcon();
                 }
             } else {
-                // Δεν υπάρχει φωτογραφία -> Δείξε το default icon
                 showDefaultIcon();
             }
         }

@@ -6,6 +6,7 @@ import org.project.employeemanagementsystem.model.User;
 import org.project.employeemanagementsystem.repository.EmployeeRepository;
 import org.project.employeemanagementsystem.repository.SystemLogRepository;
 import org.project.employeemanagementsystem.repository.UserRepository;
+import org.project.employeemanagementsystem.util.UserSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,21 +19,24 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final EmployeeRepository employeeRepository;
-    private final SystemLogRepository systemLogRepository; // Χρειάζεται για καθαρισμό logs πριν το delete
+    private final SystemLogRepository systemLogRepository;
     private final PasswordEncoder passwordEncoder;
-    private final SystemLogService systemLogService; // <--- Προσθήκη για καταγραφή ενεργειών (Audit)
+    private final SystemLogService systemLogService;
+    private final UserSession userSession; // <--- Προσθήκη
 
     @Autowired
     public UserService(UserRepository userRepository,
                        EmployeeRepository employeeRepository,
                        SystemLogRepository systemLogRepository,
                        PasswordEncoder passwordEncoder,
-                       SystemLogService systemLogService) {
+                       SystemLogService systemLogService,
+                       UserSession userSession) { // <--- Προσθήκη στον Constructor
         this.userRepository = userRepository;
         this.employeeRepository = employeeRepository;
         this.systemLogRepository = systemLogRepository;
         this.passwordEncoder = passwordEncoder;
         this.systemLogService = systemLogService;
+        this.userSession = userSession;
     }
 
     public List<User> getAllUsers() {
@@ -46,14 +50,13 @@ public class UserService {
     public User saveUser(User user) {
         boolean isNew = (user.getId() == null);
 
+        // --- PASSWORD LOGIC ---
         if (isNew) {
             if (userRepository.findByUsername(user.getUsername()).isPresent()) {
                 throw new IllegalArgumentException("Username already exists!");
             }
             user.setPassword(passwordEncoder.encode(user.getPassword()));
-        }
-
-        else {
+        } else {
             User existingUser = userRepository.findById(user.getId())
                     .orElseThrow(() -> new RuntimeException("User not found during update!"));
 
@@ -64,7 +67,16 @@ public class UserService {
             }
         }
 
+        // --- SAVE ---
         User savedUser = userRepository.save(user);
+
+        // --- UPDATE SESSION (ΤΟ ΣΗΜΑΝΤΙΚΟ ΚΟΜΜΑΤΙ) ---
+        // Αν ο χρήστης που πειράξαμε είναι αυτός που είναι συνδεδεμένος, ενημερώνουμε το Session
+        if (userSession.getCurrentUser() != null &&
+                userSession.getCurrentUser().getId().equals(savedUser.getId())) {
+
+            userSession.setCurrentUser(savedUser); // Αυτό θα πυροδοτήσει το Topbar!
+        }
 
         // --- AUDIT LOG ---
         String action = isNew ? "CREATE_USER" : "UPDATE_USER";
