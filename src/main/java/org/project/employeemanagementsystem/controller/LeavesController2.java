@@ -33,34 +33,39 @@ public class LeavesController2 {
     @FXML private ComboBox<LeaveStatus> statusFilterCombo;
     @FXML private Button refreshBtn;
 
-    private List<LeaveRequest> allRequests;
-    private boolean isAdmin;
+    private List<LeaveRequest> allRequests = new ArrayList<>();
+    private boolean isPrivileged = false;
     private Employee currentEmployee;
 
     @FXML
     public void initialize() {
-        // --- Check current user
-        User currentUser = userSession.getCurrentUser();
-        isAdmin = currentUser != null
-                && currentUser.getRole() != null
-                && "ROLE_ADMIN".equals(currentUser.getRole().getName());
 
-        if (!isAdmin && currentUser != null) {
+        User currentUser = userSession.getCurrentUser();
+
+        // ✅ ADMIN OR HR HAVE SAME PRIVILEGES
+        if (currentUser != null && currentUser.getRole() != null) {
+            String roleName = currentUser.getRole().getName();
+            isPrivileged =
+                    "Admin".equalsIgnoreCase(roleName) ||
+                            "HR".equalsIgnoreCase(roleName);
+        }
+
+        if (!isPrivileged && currentUser != null) {
             currentEmployee = currentUser.getEmployee();
         }
 
         // --- Status filter setup
         List<LeaveStatus> statuses = new ArrayList<>();
-        statuses.add(null); // Represents "All"
+        statuses.add(null); // All
         statuses.addAll(List.of(LeaveStatus.values()));
         statusFilterCombo.setItems(FXCollections.observableArrayList(statuses));
         statusFilterCombo.setPromptText("All");
 
         // --- Filtering listeners
-        searchField.textProperty().addListener((obs, oldVal, newVal) -> refreshUIOnly());
-        statusFilterCombo.valueProperty().addListener((obs, oldVal, newVal) -> refreshUIOnly());
+        searchField.textProperty().addListener((obs, o, n) -> refreshUIOnly());
+        statusFilterCombo.valueProperty().addListener((obs, o, n) -> refreshUIOnly());
 
-        // --- FlowPane setup
+        // --- FlowPane layout
         requestsFlowPane.setHgap(15);
         requestsFlowPane.setVgap(15);
         requestsFlowPane.setPadding(new Insets(10));
@@ -75,31 +80,39 @@ public class LeavesController2 {
     }
 
     private void loadDataFromDB() {
-        allRequests = leaveRequestService.getAllRequests();
 
-        // --- Non-admins see only their requests
-        if (!isAdmin && currentEmployee != null) {
+        List<LeaveRequest> fetched = leaveRequestService.getAllRequests();
+
+        // ✅ NON-PRIVILEGED USERS SEE ONLY THEIR OWN REQUESTS
+        if (!isPrivileged && currentEmployee != null) {
             Long empId = currentEmployee.getId();
-            allRequests = allRequests.stream()
-                    .filter(r -> r.getEmployee() != null && r.getEmployee().getId().equals(empId))
+            fetched = fetched.stream()
+                    .filter(r -> r.getEmployee() != null
+                            && r.getEmployee().getId().equals(empId))
                     .collect(Collectors.toList());
         }
 
+        allRequests = fetched;
         refreshUIOnly();
     }
 
     private void refreshUIOnly() {
         requestsFlowPane.getChildren().clear();
-        if (allRequests == null) return;
+        if (allRequests == null || allRequests.isEmpty()) return;
 
-        String search = (searchField.getText() != null) ? searchField.getText().toLowerCase().trim() : "";
+        String search = searchField.getText() == null
+                ? ""
+                : searchField.getText().toLowerCase().trim();
+
         LeaveStatus selectedStatus = statusFilterCombo.getValue();
 
         List<LeaveRequest> filtered = allRequests.stream()
-                .filter(r -> (selectedStatus == null || r.getStatus() == selectedStatus))
+                .filter(r -> selectedStatus == null || r.getStatus() == selectedStatus)
                 .filter(r -> {
-                    String fullName = (r.getEmployee().getFirstName() + " " + r.getEmployee().getLastName()).toLowerCase();
-                    return fullName.contains(search);
+                    if (r.getEmployee() == null) return false;
+                    String name = (r.getEmployee().getFirstName() + " " +
+                            r.getEmployee().getLastName()).toLowerCase();
+                    return name.contains(search);
                 })
                 .collect(Collectors.toList());
 
@@ -107,43 +120,49 @@ public class LeavesController2 {
     }
 
     private void createRequestCard(LeaveRequest request) {
-        VBox card = new VBox(5);
+
+        VBox card = new VBox(8);
         card.setPadding(new Insets(10));
-        card.setSpacing(8);
         card.setMinWidth(220);
         card.setPrefWidth(220);
         card.setMaxWidth(220);
         card.setStyle(getStatusStyle(request.getStatus()));
 
-        // Labels
-        Label title = new Label("REQ #" + request.getId() + " - " + request.getLeaveType().getName());
+        Label title = new Label(
+                "REQ #" + request.getId() + " - " + request.getLeaveType().getName()
+        );
         title.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
 
-        Label name = new Label(request.getEmployee().getFirstName() + " " + request.getEmployee().getLastName());
+        Label name = new Label(
+                request.getEmployee().getFirstName() + " " +
+                        request.getEmployee().getLastName()
+        );
         name.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 
-        Label dates = new Label(request.getStartDate() + " to " + request.getEndDate());
+        Label dates = new Label(
+                request.getStartDate() + " to " + request.getEndDate()
+        );
         dates.setStyle("-fx-text-fill: #555; -fx-font-size: 11px;");
 
-        // Reason Button
         Button reasonBtn = new Button("View Reason");
         reasonBtn.setMaxWidth(Double.MAX_VALUE);
         reasonBtn.getStyleClass().add("btn-secondary");
         reasonBtn.setOnAction(e -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Leave Reason");
-            alert.setHeaderText("Reason for Request #" + request.getId());
+            alert.setHeaderText("Request #" + request.getId());
             alert.setContentText(request.getReason());
             alert.showAndWait();
         });
 
-        // Status ComboBox (admins only)
-        ComboBox<LeaveStatus> statusCombo = new ComboBox<>(FXCollections.observableArrayList(LeaveStatus.values()));
-        statusCombo.setValue(request.getStatus());
-        statusCombo.setMaxWidth(Double.MAX_VALUE);
-        statusCombo.setDisable(!isAdmin); // 🔐 disable for non-admins
+        ComboBox<LeaveStatus> statusCombo =
+                new ComboBox<>(FXCollections.observableArrayList(LeaveStatus.values()));
 
-        if (isAdmin) {
+        statusCombo.setValue(request.getStatus());
+        statusCombo.setDisable(!isPrivileged);
+        statusCombo.setMaxWidth(Double.MAX_VALUE);
+
+        if (isPrivileged) {
             statusCombo.setOnAction(e -> {
                 LeaveStatus newStatus = statusCombo.getValue();
                 request.setStatus(newStatus);
@@ -151,26 +170,41 @@ public class LeavesController2 {
                     leaveRequestService.updateRequestStatus(request);
                     card.setStyle(getStatusStyle(newStatus));
                 } catch (Exception ex) {
-                    ex.printStackTrace();
                     statusCombo.setValue(request.getStatus());
-                    Alert alert = new Alert(Alert.AlertType.ERROR, "Update failed: " + ex.getMessage());
-                    alert.show();
+                    new Alert(Alert.AlertType.ERROR,
+                            "Failed to update status").show();
                 }
             });
         }
 
-        card.getChildren().addAll(title, name, dates, reasonBtn, new Separator(), new Label("Set Status:"), statusCombo);
+        card.getChildren().addAll(
+                title,
+                name,
+                dates,
+                reasonBtn,
+                new Separator(),
+                new Label("Set Status:"),
+                statusCombo
+        );
+
         requestsFlowPane.getChildren().add(card);
     }
 
     private String getStatusStyle(LeaveStatus status) {
-        String base = "-fx-border-radius: 8; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1); -fx-padding: 10;";
-        if (status == null) return base + " -fx-background-color: #f9f9f9;";
-        switch (status) {
-            case PENDING:  return base + " -fx-background-color: #FFF3CD; -fx-border-color: #FFC107;";
-            case APPROVED: return base + " -fx-background-color: #DCFCE7; -fx-border-color: #22C55E;";
-            case REJECTED: return base + " -fx-background-color: #FEE2E2; -fx-border-color: #EF4444;";
-            default:       return base + " -fx-background-color: #f9f9f9;";
-        }
+        String base =
+                "-fx-border-radius: 8; " +
+                        "-fx-background-radius: 8; " +
+                        "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);";
+
+        if (status == null) return base + "-fx-background-color: #f9f9f9;";
+
+        return switch (status) {
+            case PENDING ->
+                    base + "-fx-background-color: #FFF3CD; -fx-border-color: #FFC107;";
+            case APPROVED ->
+                    base + "-fx-background-color: #DCFCE7; -fx-border-color: #22C55E;";
+            case REJECTED ->
+                    base + "-fx-background-color: #FEE2E2; -fx-border-color: #EF4444;";
+        };
     }
 }

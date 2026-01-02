@@ -2,8 +2,11 @@ package org.project.employeemanagementsystem.controller;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
+import org.project.employeemanagementsystem.model.User;
 import org.project.employeemanagementsystem.util.Navigator;
+import org.project.employeemanagementsystem.util.UserSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -11,59 +14,114 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 @Controller
-public class SidebarController implements Initializable { // Πρόσεξε το implements Initializable
+public class SidebarController implements Initializable {
 
     @Autowired
     private Navigator navigator;
 
-    // Inject τα κουμπιά από το FXML
+    @Autowired
+    private UserSession userSession;
+
+    // Buttons
     @FXML private ToggleButton dashboardBtn;
+
     @FXML private ToggleButton employeesBtn;
     @FXML private ToggleButton departmentsBtn;
     @FXML private ToggleButton usersBtn;
+
     @FXML private ToggleButton scheduleBtn;
     @FXML private ToggleButton attendanceBtn;
     @FXML private ToggleButton leavesBtn;
     @FXML private ToggleButton leaveTypeBtn;
     @FXML private ToggleButton holidaysBtn;
+
     @FXML private ToggleButton payrollBtn;
     @FXML private ToggleButton logsBtn;
 
+    // Section headers
+    @FXML private Label workforceHeader;
+    @FXML private Label financialsHeader;
+    @FXML private Label systemHeader; // stays visible always
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        applyRoleVisibility();
         highlightCurrentPage();
+    }
+
+    private void applyRoleVisibility() {
+        User user = userSession.getCurrentUser();
+        String role = user != null && user.getRole() != null
+                ? user.getRole().getName()
+                : "";
+
+        boolean isAdmin = "Admin".equalsIgnoreCase(role);
+        boolean isHR = "HR".equalsIgnoreCase(role);
+        boolean isAccountant = "Accountant".equalsIgnoreCase(role);
+
+        /* ================= WORKFORCE ================= */
+        boolean showWorkforce = isAdmin || isHR;
+
+        workforceHeader.setVisible(showWorkforce);
+        workforceHeader.setManaged(showWorkforce);
+
+        employeesBtn.setVisible(showWorkforce);
+        employeesBtn.setManaged(showWorkforce);
+
+        departmentsBtn.setVisible(showWorkforce);
+        departmentsBtn.setManaged(showWorkforce);
+
+        usersBtn.setVisible(showWorkforce);
+        usersBtn.setManaged(showWorkforce);
+
+        /* ================= FINANCIALS ================= */
+        boolean showFinancials = isAdmin || isAccountant;
+
+        financialsHeader.setVisible(showFinancials);
+        financialsHeader.setManaged(showFinancials);
+
+        payrollBtn.setVisible(showFinancials);
+        payrollBtn.setManaged(showFinancials);
+
+        /* ================= SYSTEM ================= */
+        // SYSTEM header ALWAYS visible
+        systemHeader.setVisible(true);
+        systemHeader.setManaged(true);
+
+        // Logs ONLY for Admin
+        logsBtn.setVisible(isAdmin);
+        logsBtn.setManaged(isAdmin);
     }
 
     private void highlightCurrentPage() {
         String current = Navigator.CURRENT_VIEW;
-
         if (current == null || current.isEmpty()) return;
 
         switch (current) {
-            case Navigator.DASHBOARD_VIEW:   dashboardBtn.setSelected(true); break;
+            case Navigator.DASHBOARD_VIEW -> dashboardBtn.setSelected(true);
 
-            case Navigator.EMPLOYEES_VIEW:   employeesBtn.setSelected(true); break;
-            case Navigator.DEPARTMENTS_VIEW: departmentsBtn.setSelected(true); break;
-            case Navigator.USERS_VIEW:       usersBtn.setSelected(true); break;
+            case Navigator.EMPLOYEES_VIEW -> employeesBtn.setSelected(true);
+            case Navigator.DEPARTMENTS_VIEW -> departmentsBtn.setSelected(true);
+            case Navigator.USERS_VIEW -> usersBtn.setSelected(true);
 
-            case Navigator.SCHEDULE_VIEW:    scheduleBtn.setSelected(true); break;
-            case Navigator.ATTENDANCE_VIEW:  attendanceBtn.setSelected(true); break;
-            case Navigator.LEAVES_VIEW:      leavesBtn.setSelected(true); break;
-            case Navigator.HOLIDAYS_VIEW:    holidaysBtn.setSelected(true); break;
-            case Navigator.LEAVESTYPES_VIEW:  leaveTypeBtn.setSelected(true); break;
+            case Navigator.SCHEDULE_VIEW -> scheduleBtn.setSelected(true);
+            case Navigator.ATTENDANCE_VIEW -> attendanceBtn.setSelected(true);
+            case Navigator.LEAVES_VIEW -> leavesBtn.setSelected(true);
+            case Navigator.LEAVESTYPES_VIEW -> leaveTypeBtn.setSelected(true);
+            case Navigator.HOLIDAYS_VIEW -> holidaysBtn.setSelected(true);
 
-            case Navigator.PAYROLL_VIEW:     payrollBtn.setSelected(true); break;
+            case Navigator.PAYROLL_VIEW -> payrollBtn.setSelected(true);
+            case Navigator.LOGS_VIEW -> logsBtn.setSelected(true);
 
-            case Navigator.LOGS_VIEW:        logsBtn.setSelected(true); break;
-
-            default:
-                if(dashboardBtn.getToggleGroup() != null)
+            default -> {
+                if (dashboardBtn.getToggleGroup() != null) {
                     dashboardBtn.getToggleGroup().selectToggle(null);
-                break;
+                }
+            }
         }
     }
 
-    //Navigation Methods
+    // Navigation
     @FXML public void goToDashboard() { navigator.goToDashboard(); }
     @FXML public void goToEmployees() { navigator.goToEmployees(); }
     @FXML public void goToDepartments() { navigator.goToDepartments(); }

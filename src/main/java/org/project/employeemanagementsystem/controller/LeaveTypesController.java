@@ -1,7 +1,6 @@
 package org.project.employeemanagementsystem.controller;
 
 import javafx.animation.FadeTransition;
-import javafx.animation.PauseTransition;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -27,8 +26,11 @@ import java.util.ResourceBundle;
 @Controller
 public class LeaveTypesController implements Initializable {
 
-    @Autowired private LeaveTypeService leaveTypeService;
-    @Autowired private UserSession userSession;
+    @Autowired
+    private LeaveTypeService leaveTypeService;
+
+    @Autowired
+    private UserSession userSession;
 
     @FXML private TableView<LeaveType> leaveTypesTable;
     @FXML private TableColumn<LeaveType, Long> leaveTypesID;
@@ -45,26 +47,31 @@ public class LeaveTypesController implements Initializable {
     private final ObservableList<LeaveType> masterData = FXCollections.observableArrayList();
     private FilteredList<LeaveType> filteredData;
     private LeaveType selectedLeaveType = null;
-    private boolean isAdmin;
+
+    // ✅ Admin OR HR
+    private boolean isPrivileged = false;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        setupUserRole();
+        setupSecurity();
         setupTable();
         setupSearch();
         loadLeaveTypes();
     }
 
-    private void setupUserRole() {
+    private void setupSecurity() {
         User currentUser = userSession.getCurrentUser();
-        isAdmin = currentUser != null
-                && currentUser.getRole() != null
-                && "ROLE_ADMIN".equals(currentUser.getRole().getName());
 
-        // UI Access Control
-        leaveTypesAddBtn.setDisable(!isAdmin);
-        leaveTypesNameField.setDisable(!isAdmin);
-        leaveTypesMaxDaysField.setDisable(!isAdmin);
+        if (currentUser != null && currentUser.getRole() != null) {
+            String roleName = currentUser.getRole().getName();
+            isPrivileged =
+                    "Admin".equalsIgnoreCase(roleName) ||
+                            "HR".equalsIgnoreCase(roleName);
+        }
+
+        leaveTypesAddBtn.setDisable(!isPrivileged);
+        leaveTypesNameField.setDisable(!isPrivileged);
+        leaveTypesMaxDaysField.setDisable(!isPrivileged);
     }
 
     private void setupTable() {
@@ -72,20 +79,22 @@ public class LeaveTypesController implements Initializable {
         leaveTypesName.setCellValueFactory(new PropertyValueFactory<>("name"));
         leaveTypesMaxDays.setCellValueFactory(new PropertyValueFactory<>("maxDays"));
 
-        leaveTypesTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
-            if (newSel != null) {
-                selectedLeaveType = newSel;
-                leaveTypesNameField.setText(newSel.getName());
-                leaveTypesMaxDaysField.setText(String.valueOf(newSel.getMaxDays()));
-                leaveTypesAddBtn.setText("Update Type");
-            } else {
-                clearForm();
-            }
-        });
+        leaveTypesTable.getSelectionModel()
+                .selectedItemProperty()
+                .addListener((obs, oldSel, newSel) -> {
+                    if (newSel != null && isPrivileged) {
+                        selectedLeaveType = newSel;
+                        leaveTypesNameField.setText(newSel.getName());
+                        leaveTypesMaxDaysField.setText(String.valueOf(newSel.getMaxDays()));
+                        leaveTypesAddBtn.setText("Update Type");
+                    } else {
+                        clearForm();
+                    }
+                });
 
         leaveTypesRemoveBtn.disableProperty().bind(
                 leaveTypesTable.getSelectionModel().selectedItemProperty().isNull()
-                        .or(new SimpleBooleanProperty(!isAdmin))
+                        .or(new SimpleBooleanProperty(!isPrivileged))
         );
     }
 
@@ -95,9 +104,9 @@ public class LeaveTypesController implements Initializable {
 
         searchField.textProperty().addListener((obs, oldVal, newVal) -> {
             filteredData.setPredicate(type -> {
-                if (newVal == null || newVal.isEmpty()) return true;
-                String lowerCaseFilter = newVal.toLowerCase();
-                return type.getName().toLowerCase().contains(lowerCaseFilter);
+                if (newVal == null || newVal.isBlank()) return true;
+                String lower = newVal.toLowerCase();
+                return type.getName().toLowerCase().contains(lower);
             });
         });
     }
@@ -122,36 +131,35 @@ public class LeaveTypesController implements Initializable {
             showLoading(false);
         });
 
+        task.setOnFailed(e -> showLoading(false));
+
         new Thread(task).start();
     }
 
     @FXML
     private void handleAddOrUpdateLeaveType() {
-        if (!isAdmin) return;
+        if (!isPrivileged) return;
 
         String name = leaveTypesNameField.getText();
         String maxDaysStr = leaveTypesMaxDaysField.getText();
 
-        if (name == null || name.isBlank() || maxDaysStr.isBlank()) {
-            showAlert("Validation Error", "All fields marked with * are required.");
+        if (name == null || name.isBlank() || maxDaysStr == null || maxDaysStr.isBlank()) {
+            showAlert("Validation Error", "All fields are required.");
             return;
         }
 
         try {
-            Integer maxDays = Integer.parseInt(maxDaysStr);
-            String actionMessage;
+            int maxDays = Integer.parseInt(maxDaysStr);
 
             if (selectedLeaveType != null) {
                 selectedLeaveType.setName(name);
                 selectedLeaveType.setMaxDays(maxDays);
                 leaveTypeService.saveLeaveType(selectedLeaveType);
-                actionMessage = "Updated Leave Type: " + name;
             } else {
                 LeaveType newType = new LeaveType();
                 newType.setName(name);
                 newType.setMaxDays(maxDays);
                 leaveTypeService.saveLeaveType(newType);
-                actionMessage = "Created New Leave Type: " + name;
             }
 
             loadLeaveTypes();
@@ -164,9 +172,13 @@ public class LeaveTypesController implements Initializable {
 
     @FXML
     private void handleRemoveLeaveType() {
-        if (!isAdmin || selectedLeaveType == null) return;
+        if (!isPrivileged || selectedLeaveType == null) return;
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Delete " + selectedLeaveType.getName() + "?");
+        Alert confirm = new Alert(
+                Alert.AlertType.CONFIRMATION,
+                "Delete leave type: " + selectedLeaveType.getName() + " ?"
+        );
+
         if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
             leaveTypeService.deleteLeaveType(selectedLeaveType.getId());
             loadLeaveTypes();
@@ -179,7 +191,7 @@ public class LeaveTypesController implements Initializable {
             loadingOverlay.setVisible(true);
             loadingOverlay.setOpacity(1.0);
         } else {
-            FadeTransition fade = new FadeTransition(Duration.seconds(0.5), loadingOverlay);
+            FadeTransition fade = new FadeTransition(Duration.seconds(0.4), loadingOverlay);
             fade.setFromValue(1.0);
             fade.setToValue(0.0);
             fade.setOnFinished(e -> loadingOverlay.setVisible(false));
