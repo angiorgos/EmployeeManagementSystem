@@ -5,11 +5,13 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import org.project.employeemanagementsystem.model.LeaveType;
+import org.project.employeemanagementsystem.service.SystemLogService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+
 
 @Component
 public class Navigator {
@@ -38,19 +40,35 @@ public class Navigator {
     public static final String LOGS_VIEW = "/fxml/logs.fxml";
 
 
+
     //DEPENDENCIES
     private final ApplicationContext context;
     private final UserSession userSession;
     private Stage mainStage;
+    @Autowired
+    private SystemLogService logService;
 
     // Constructor Injection
     public Navigator(ApplicationContext context, UserSession userSession) {
         this.context = context;
         this.userSession = userSession;
+
+
+
     }
 
     public void setMainStage(Stage stage) {
         this.mainStage = stage;
+
+        this.mainStage.setOnCloseRequest(event -> {
+            if (userSession.getCurrentUser() != null) {
+                // Καταγραφή στο Log πριν το κλείσιμο
+                logService.log("Application Closed (Auto-Logout)");
+
+                // Καθαρισμός του session
+                userSession.logout();
+            }
+        });
     }
 
     public Stage getMainStage() {
@@ -115,6 +133,7 @@ public class Navigator {
     // Logout Helper
     public void logout() {
         isFirstTimeDashboard = true;
+        logService.log("User Logout");
         userSession.logout();
         goToLogin();
     }

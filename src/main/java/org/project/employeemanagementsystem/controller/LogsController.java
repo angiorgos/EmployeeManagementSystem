@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -25,10 +26,13 @@ import java.util.ResourceBundle;
 @Controller
 public class LogsController implements Initializable {
 
-    @Autowired private SystemLogService logService;
+    @Autowired
+    private SystemLogService logService;
 
     @FXML private VBox loadingOverlay;
     @FXML private TextField searchField;
+    @FXML private DatePicker dateFilter;
+
     @FXML private TableView<SystemLog> logsTable;
     @FXML private TableColumn<SystemLog, String> colTime;
     @FXML private TableColumn<SystemLog, String> colUser;
@@ -41,19 +45,19 @@ public class LogsController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         setupTable();
-        setupSearch();
+        setupFilters();
         loadLogs();
     }
 
     private void setupTable() {
-        // Timestamp Column
+        // Στήλη Ώρας
         colTime.setCellValueFactory(c -> {
             if (c.getValue().getTimestamp() != null)
                 return new SimpleStringProperty(c.getValue().getTimestamp().format(FMT));
             return new SimpleStringProperty("-");
         });
 
-        // User Column (username string or from User object)
+        // Στήλη Χρήστη (username ή αντικείμενο User)
         colUser.setCellValueFactory(c -> {
             String displayUser = c.getValue().getUsername();
             if (displayUser == null && c.getValue().getUser() != null) {
@@ -62,10 +66,10 @@ public class LogsController implements Initializable {
             return new SimpleStringProperty(displayUser != null ? displayUser : "System");
         });
 
-        // Action Column
+        // Στήλη Ενέργειας
         colAction.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getAction()));
 
-        // Προαιρετικό: Highlight Errors
+        // Styling για σφάλματα (κόκκινο χρώμα αν περιέχει "Failed" ή "Error")
         colAction.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -75,7 +79,7 @@ public class LogsController implements Initializable {
                     setStyle("");
                 } else {
                     setText(item);
-                    if (item.toLowerCase().contains("error") || item.toLowerCase().contains("failed")) {
+                    if (item.toLowerCase().contains("failed") || item.toLowerCase().contains("error")) {
                         setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
                     } else {
                         setStyle("");
@@ -84,24 +88,42 @@ public class LogsController implements Initializable {
             }
         });
 
-        logsTable.setPlaceholder(new Label("No logs found."));
+        logsTable.setPlaceholder(new Label("No logs found matching your criteria."));
     }
 
-    private void setupSearch() {
+    private void setupFilters() {
         filteredData = new FilteredList<>(masterData, p -> true);
         logsTable.setItems(filteredData);
 
-        searchField.textProperty().addListener((obs, oldVal, newVal) -> {
-            String query = newVal == null ? "" : newVal.toLowerCase().trim();
-            filteredData.setPredicate(log -> {
-                if (query.isEmpty()) return true;
+        // Listener για το Search Field (Action ή User)
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> updatePredicate());
 
-                String action = log.getAction() != null ? log.getAction().toLowerCase() : "";
-                String user = log.getUsername() != null ? log.getUsername().toLowerCase() : "";
-                String time = log.getTimestamp() != null ? log.getTimestamp().format(FMT) : "";
+        // Listener για το Date Picker
+        dateFilter.valueProperty().addListener((obs, oldVal, newVal) -> updatePredicate());
+    }
 
-                return action.contains(query) || user.contains(query) || time.contains(query);
-            });
+    private void updatePredicate() {
+        String searchText = (searchField.getText() == null) ? "" : searchField.getText().toLowerCase().trim();
+        LocalDate filterDate = dateFilter.getValue();
+
+        filteredData.setPredicate(log -> {
+            // 1. Έλεγχος Ημερομηνίας
+            if (filterDate != null) {
+                if (log.getTimestamp() == null) return false;
+                if (!log.getTimestamp().toLocalDate().equals(filterDate)) {
+                    return false;
+                }
+            }
+
+            // 2. Έλεγχος Κειμένου (Action ή Username)
+            if (!searchText.isEmpty()) {
+                String action = (log.getAction() != null) ? log.getAction().toLowerCase() : "";
+                String user = (log.getUsername() != null) ? log.getUsername().toLowerCase() : "";
+
+                return action.contains(searchText) || user.contains(searchText);
+            }
+
+            return true;
         });
     }
 
@@ -111,10 +133,17 @@ public class LogsController implements Initializable {
     }
 
     @FXML
+    private void onResetFilters() {
+        searchField.clear();
+        dateFilter.setValue(null);
+    }
+
+    @FXML
     private void onClearLogs() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete all log history?");
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirm Deletion");
-        alert.setHeaderText(null);
+        alert.setHeaderText("Delete Audit Trail");
+        alert.setContentText("Are you sure you want to permanently delete all log history? This action cannot be undone.");
 
         if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
             logService.clearAllLogs();
@@ -123,16 +152,13 @@ public class LogsController implements Initializable {
     }
 
     private void loadLogs() {
-        // 1. Εμφάνιση Overlay
         if (loadingOverlay != null) {
             loadingOverlay.setVisible(true);
             loadingOverlay.setOpacity(1.0);
         }
 
-        // 2. Μικρή παύση για να προλάβει το UI να δείξει το loading
         PauseTransition delay = new PauseTransition(Duration.millis(50));
         delay.setOnFinished(ev -> {
-
             Task<List<SystemLog>> task = new Task<>() {
                 @Override
                 protected List<SystemLog> call() {
@@ -143,7 +169,6 @@ public class LogsController implements Initializable {
             task.setOnSucceeded(e -> {
                 masterData.setAll(task.getValue());
 
-                // 3. Ομαλό Fade Out ακριβώς όπως στις άλλες οθόνες
                 if (loadingOverlay != null) {
                     FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), loadingOverlay);
                     fadeOut.setFromValue(1.0);

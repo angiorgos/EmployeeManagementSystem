@@ -37,15 +37,24 @@ public class AuditListener {
     private void logAction(String operation, Object entity) {
         if (logService == null) return;
 
-        String description = operation + " " + entity.getClass().getSimpleName();
+        // Αν είναι SystemLog, σταματάμε για να μην έχουμε infinite loop
+        if (entity instanceof org.project.employeemanagementsystem.model.SystemLog) return;
 
-        if (entity instanceof Employee emp) {
-            description += ": " + emp.getFirstName() + " " + emp.getLastName();
-        } else if (entity instanceof User user) {
-            description += ": " + user.getUsername();
+        // ΕΙΔΙΚΟΣ ΕΛΕΓΧΟΣ ΓΙΑ USER
+        if (entity instanceof User user) {
+            // Αν είναι Update (δηλαδή Login), ΜΗΝ το καταγράφεις αυτόματα
+            if (operation.equals("Updated")) return;
+
+            // Αν είναι Created ή Deleted, κατέγραψέ το κανονικά
+            logService.log(operation + " User Account: " + user.getUsername());
+            return;
         }
 
-
+        // ΓΙΑ ΟΛΑ ΤΑ ΑΛΛΑ ENTITIES (Employee, Department κλπ)
+        String description = operation + " " + entity.getClass().getSimpleName();
+        if (entity instanceof Employee emp) {
+            description += ": " + emp.getFirstName() + " " + emp.getLastName();
+        }
         logService.log(description);
     }
 }
