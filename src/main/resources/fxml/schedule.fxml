@@ -13,6 +13,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
@@ -33,33 +34,39 @@
                     <content>
                         <BorderPane prefHeight="200.0" prefWidth="200.0">
                             <center>
-                                <VBox prefHeight="573.0" prefWidth="791.0" BorderPane.alignment="CENTER">
-                                    <children>
-                              <HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="10.0" prefWidth="791.0" />
-                                        <VBox prefHeight="618.0" prefWidth="828.0" VBox.vgrow="ALWAYS">
-                                 <children>
-                                    <GridPane fx:id="monthView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="632.0" prefWidth="857.0" styleClass="calendar-grid" VBox.vgrow="ALWAYS">
-                                      <columnConstraints>
-                                          <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
-                                          <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
-                                          <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
-                                          <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
-                                          <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
-                                        <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
-                                        <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
-                                      </columnConstraints>
-                                      <rowConstraints>
-                                        <RowConstraints minHeight="10.0" percentHeight="16.66" prefHeight="30.0" valignment="TOP" vgrow="ALWAYS" />
-                                        <RowConstraints minHeight="10.0" percentHeight="16.66" prefHeight="30.0" vgrow="ALWAYS" />
-                                        <RowConstraints minHeight="10.0" percentHeight="16.66" prefHeight="30.0" vgrow="ALWAYS" />
-                                          <RowConstraints minHeight="10.0" percentHeight="16.66" prefHeight="30.0" vgrow="ALWAYS" />
-                                          <RowConstraints minHeight="10.0" percentHeight="16.66" prefHeight="30.0" vgrow="ALWAYS" />
-                                          <RowConstraints minHeight="10.0" percentHeight="16.66" prefHeight="30.0" vgrow="ALWAYS" />
-                                      </rowConstraints>
-                                    </GridPane>
-                                 </children></VBox>
-                                    </children>
-                                </VBox>
+                        <StackPane fx:id="overviewStack" BorderPane.alignment="CENTER">
+                           <children>
+                                      <VBox fx:id="monthViewRoot" prefHeight="573.0" prefWidth="791.0">
+                                          <children>
+                                    <HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="10.0" prefWidth="791.0" />
+                                              <VBox prefHeight="618.0" prefWidth="828.0" VBox.vgrow="ALWAYS">
+                                       <children>
+                                          <GridPane fx:id="monthView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="632.0" prefWidth="857.0" styleClass="calendar-grid" VBox.vgrow="ALWAYS">
+                                            <columnConstraints>
+                                                <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
+                                                <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
+                                                <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
+                                                <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
+                                                <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
+                                              <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
+                                              <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" prefWidth="100.0" />
+                                            </columnConstraints>
+                                            <rowConstraints>
+                                              <RowConstraints minHeight="10.0" percentHeight="16.66" prefHeight="30.0" valignment="TOP" vgrow="ALWAYS" />
+                                              <RowConstraints minHeight="10.0" percentHeight="16.66" prefHeight="30.0" vgrow="ALWAYS" />
+                                              <RowConstraints minHeight="10.0" percentHeight="16.66" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="16.66" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="16.66" prefHeight="30.0" vgrow="ALWAYS" />
+                                                <RowConstraints minHeight="10.0" percentHeight="16.66" prefHeight="30.0" vgrow="ALWAYS" />
+                                            </rowConstraints>
+                                          </GridPane>
+                                       </children>
+                                    </VBox>
+                                          </children>
+                                      </VBox>
+                               <fx:include fx:id="weekViewRoot" source="schedule_week_overview.fxml"/>
+                           </children>
+                        </StackPane>
                             </center>
                             <top>
                                 <HBox prefHeight="35.0" prefWidth="1077.0" BorderPane.alignment="CENTER">
@@ -93,11 +100,11 @@
                                  <children>
                                     <ToggleButton fx:id="todayBtn" mnemonicParsing="false" onAction="#onToday" prefHeight="44.0" prefWidth="70.0" styleClass="view-btn" text="Today" />
                                  </children></HBox>
-                              <ToggleButton fx:id="weekBtn" mnemonicParsing="false" prefHeight="44.0" prefWidth="76.0" styleClass="view-btn" text="Week">
+                              <ToggleButton fx:id="weekBtn" mnemonicParsing="false" onAction="#onWeekView" prefHeight="44.0" prefWidth="76.0" styleClass="view-btn" text="Week">
                                  <toggleGroup>
                                     <ToggleGroup fx:id="viewGroup" />
                                  </toggleGroup></ToggleButton>
-                              <ToggleButton fx:id="monthBtn" mnemonicParsing="false" prefHeight="44.0" prefWidth="76.0" styleClass="view-btn" text="Month" toggleGroup="$viewGroup" />
+                              <ToggleButton fx:id="monthBtn" mnemonicParsing="false" onAction="#onMonthView" prefHeight="44.0" prefWidth="76.0" selected="true" styleClass="view-btn" text="Month" toggleGroup="$viewGroup" />
                               <HBox prefHeight="38.0" prefWidth="141.0" />
                                         
                                     </children>
