@@ -25,18 +25,18 @@
 
         <HBox prefHeight="100.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
 
-        <HBox alignment="CENTER_LEFT" prefHeight="80.0" prefWidth="200.0" spacing="10.0">
+        <HBox alignment="CENTER_LEFT" prefHeight="80.0" prefWidth="220.0" spacing="10.0" style="-fx-padding: 0 20 0 0;">
             <children>
 
                 <StackPane>
-                    <Circle fx:id="userAvatar" radius="20.0" fill="WHITE" stroke="#E5E7EB" strokeWidth="1" visible="false"/>
+                    <Circle fx:id="userAvatar" radius="22.0" fill="WHITE" stroke="#d1d5db" strokeWidth="1" visible="false"/>
 
-                    <FontIcon fx:id="defaultUserIcon" iconLiteral="mdi2a-account-circle" iconSize="40" styleClass="user-icon" />
+                    <FontIcon fx:id="defaultUserIcon" iconLiteral="mdi2a-account-circle" iconSize="48" styleClass="user-icon" />
                 </StackPane>
 
-                <VBox alignment="CENTER_LEFT" prefHeight="80.0" >
+                <VBox alignment="CENTER_LEFT" prefHeight="80.0">
                     <children>
-                        <Label fx:id="userNameLabel" styleClass="user-name" text="username" />
+                        <Label fx:id="userNameLabel" styleClass="user-name" text="Username" />
                         <Label fx:id="userRoleLabel" styleClass="user-role" text="Role" />
                     </children>
                 </VBox>

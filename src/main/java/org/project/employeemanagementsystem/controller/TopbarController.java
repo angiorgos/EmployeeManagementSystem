@@ -19,15 +19,18 @@ import java.util.ResourceBundle;
 @Controller
 public class TopbarController implements Initializable {
 
-    @Autowired
-    private UserSession userSession;
+    private final UserSession userSession;
 
+    // FXML Elements
     @FXML private Label userNameLabel;
     @FXML private Label userRoleLabel;
+    @FXML private Circle userAvatar;       // Η φωτογραφία
+    @FXML private FontIcon defaultUserIcon; // Το default εικονίδιο
 
-    // Νέα στοιχεία για τη φωτογραφία
-    @FXML private Circle userAvatar;
-    @FXML private FontIcon defaultUserIcon;
+    @Autowired
+    public TopbarController(UserSession userSession) {
+        this.userSession = userSession;
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -38,7 +41,7 @@ public class TopbarController implements Initializable {
         User currentUser = userSession.getCurrentUser();
 
         if (currentUser != null) {
-            // 1. Ενημέρωση Ονόματος
+            // 1. Ρύθμιση Ονόματος
             if (currentUser.getEmployee() != null) {
                 String fullName = currentUser.getEmployee().getFirstName() + " " +
                         currentUser.getEmployee().getLastName();
@@ -47,32 +50,31 @@ public class TopbarController implements Initializable {
                 userNameLabel.setText(currentUser.getUsername());
             }
 
-            // 2. Ενημέρωση Ρόλου
+            // 2. Ρύθμιση Ρόλου
             if (currentUser.getRole() != null) {
                 userRoleLabel.setText(currentUser.getRole().getName());
             } else {
                 userRoleLabel.setText("-");
             }
 
-            // 3. Ενημέρωση Φωτογραφίας
+            // 3. Ρύθμιση Φωτογραφίας
             if (currentUser.getProfilePicture() != null && currentUser.getProfilePicture().length > 0) {
                 try {
-                    // Μετατροπή bytes σε Image
+                    // Μετατροπή bytes σε εικόνα
                     Image img = new Image(new ByteArrayInputStream(currentUser.getProfilePicture()));
 
                     // Γέμισμα του κύκλου με την εικόνα
                     userAvatar.setFill(new ImagePattern(img));
 
-                    // Εμφάνιση κύκλου, απόκρυψη εικονιδίου
+                    // Εμφάνιση Avatar, Απόκρυψη Icon
                     userAvatar.setVisible(true);
                     defaultUserIcon.setVisible(false);
                 } catch (Exception e) {
-                    System.err.println("Failed to load topbar image: " + e.getMessage());
-                    // Σε περίπτωση λάθους, δείξε το default
+                    System.err.println("Error loading topbar image: " + e.getMessage());
                     showDefaultIcon();
                 }
             } else {
-                // Δεν υπάρχει φώτο -> Default Icon
+                // Δεν υπάρχει φωτογραφία -> Δείξε το default icon
                 showDefaultIcon();
             }
         }
