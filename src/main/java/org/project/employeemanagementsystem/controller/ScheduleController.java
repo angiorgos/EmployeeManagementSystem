@@ -226,6 +226,48 @@ public class ScheduleController implements Initializable {
         }
     }
 
+    private void onDeleteEmployeeSchedule(String employee) {
+        if (employee == null || employee.isBlank()) return;
+
+        // 1) Έλεγξε αν υπάρχει έστω ένα entry για αυτόν
+        boolean exists = memorySchedules.values().stream()
+                .anyMatch(lines -> lines.stream().anyMatch(l -> l.startsWith(employee + " (")));
+
+        if (!exists) {
+            Alert a = new Alert(Alert.AlertType.INFORMATION);
+            a.setHeaderText("No schedule found");
+            a.setContentText("There is no schedule saved for " + employee + ".");
+            a.showAndWait();
+            return;
+        }
+
+        // 2) Επιβεβαίωση (προαιρετικό αλλά ωραίο)
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setHeaderText("Delete schedule");
+        confirm.setContentText("Delete all saved schedule entries for " + employee + "?");
+        Optional<ButtonType> res = confirm.showAndWait();
+        if (res.isEmpty() || res.get() != ButtonType.OK) return;
+
+        // 3) Σβήσιμο από όλες τις μέρες
+        Iterator<Map.Entry<LocalDate, List<String>>> it = memorySchedules.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<LocalDate, List<String>> e = it.next();
+            List<String> lines = e.getValue();
+            lines.removeIf(l -> l.startsWith(employee + " ("));
+            if (lines.isEmpty()) it.remove();
+        }
+
+        // 4) Refresh UI
+        renderMonth(currentMonth);
+        updateRightPanel(selectedDate);
+        syncTodayToggle();
+
+        Alert done = new Alert(Alert.AlertType.INFORMATION);
+        done.setHeaderText("Schedule deleted");
+        done.setContentText("Schedule for " + employee + " has been deleted.");
+        done.showAndWait();
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
@@ -239,6 +281,7 @@ public class ScheduleController implements Initializable {
         if (newScheduleViewController != null) {
             if (newScheduleViewController != null) {
                 newScheduleViewController.setOnScheduleSaved(this::onNewScheduleSaved);
+                newScheduleViewController.setOnScheduleDeleted(this::onDeleteEmployeeSchedule);
             }
 
         }

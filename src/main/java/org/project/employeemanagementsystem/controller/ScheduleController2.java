@@ -31,6 +31,7 @@ public class ScheduleController2 implements Initializable {
     // @FXML private Button submitBtn; // προαιρετικό, δεν χρειάζεται να το κρατάς σαν field
     @FXML private GridPane timePickerGrid;
     @FXML private Button submitBtn;
+    @FXML private Button deleteFromScheduleBtn;
     @FXML private DatePicker validFromPicker;
     @FXML private DatePicker validToPicker;
 
@@ -55,6 +56,12 @@ public class ScheduleController2 implements Initializable {
 
     public void setOnScheduleSaved(Consumer<WeekSchedulePayload> onScheduleSaved) {
         this.onScheduleSaved = onScheduleSaved;
+    }
+
+    private Consumer<String> onScheduleDeleted;
+
+    public void setOnScheduleDeleted(Consumer<String> onScheduleDeleted) {
+        this.onScheduleDeleted = onScheduleDeleted;
     }
 
     private void putRange(Map<DayOfWeek, LocalTime[]> map, DayOfWeek day, ComboBox<String> s, ComboBox<String> e) {
@@ -109,7 +116,7 @@ public class ScheduleController2 implements Initializable {
     private void setInputsEnabled(boolean enabled) {
         boolean disable = !enabled;
 
-        // time pickers
+        // time pickers (ώρες)
         for (ComboBox<String> cb : new ComboBox[]{
                 monStart, monEnd, tueStart, tueEnd, wedStart, wedEnd, thuStart, thuEnd,
                 friStart, friEnd, satStart, satEnd, sunStart, sunEnd
@@ -117,12 +124,14 @@ public class ScheduleController2 implements Initializable {
             if (cb != null) cb.setDisable(disable);
         }
 
-        // πρόσθεσε ΑΥΤΑ:
+        // date pickers (from/to)
         if (validFromPicker != null) validFromPicker.setDisable(disable);
         if (validToPicker != null) validToPicker.setDisable(disable);
 
-        // submit button
-        if (submitBtn != null) submitBtn.setDisable(disable);
+        // submit: ΠΑΝΤΑ θα ελέγχεται από updateSubmitEnabled()
+        updateSubmitEnabled();
+        // delete: ΠΑΝΤΑ μόνο από employee
+        updateDeleteEnabled();
     }
 
     private void installEmployeePlaceholder() {
@@ -343,8 +352,20 @@ public class ScheduleController2 implements Initializable {
         selectedCell = null;
         selectedDay = null;
 
+        setInputsEnabled(false);     // κλειδώνει ξανά όλα (time pickers + datepickers)
+        updateSubmitEnabled();       // submit disabled (γιατί δεν υπάρχουν επιλογές)
+
     }
 
+    @FXML
+    private void onDeleteFromSchedule() {
+        String emp = (employeeComboBox == null) ? null : employeeComboBox.getValue();
+        if (emp == null || emp.isBlank()) return;
+
+        if (onScheduleDeleted != null) {
+            onScheduleDeleted.accept(emp);
+        }
+    }
 
     private void enforceEndAfterStart(ComboBox<String> startCb, ComboBox<String> endCb) {
         if (startCb == null || endCb == null) return;
@@ -371,8 +392,8 @@ public class ScheduleController2 implements Initializable {
         if (validFromPicker == null || validToPicker == null) return;
 
         // default (προαιρετικό)
-        validFromPicker.setValue(LocalDate.now());
-        validToPicker.setValue(LocalDate.now().plusMonths(1));
+       // validFromPicker.setValue(LocalDate.now());
+        //validToPicker.setValue(LocalDate.now().plusMonths(1));
 
         // αν αλλάξει το FROM και το TO είναι πριν -> φέρτο ίσο
         validFromPicker.valueProperty().addListener((obs, oldV, newV) -> {
@@ -381,6 +402,7 @@ public class ScheduleController2 implements Initializable {
             if (to != null && to.isBefore(newV)) {
                 validToPicker.setValue(newV);
             }
+            updateSubmitEnabled();
         });
 
         // disable ημερομηνίες στο TO που είναι πριν από FROM
@@ -399,6 +421,32 @@ public class ScheduleController2 implements Initializable {
         });
     }
 
+    private void updateSubmitEnabled() {
+        if (submitBtn == null) return;
+
+        String emp = (employeeComboBox == null) ? null : employeeComboBox.getValue();
+        LocalDate from = (validFromPicker == null) ? null : validFromPicker.getValue();
+        LocalDate to   = (validToPicker == null) ? null : validToPicker.getValue();
+
+        boolean okEmployee = emp != null && !emp.isBlank();
+        boolean okDates = from != null && to != null && !to.isBefore(from);
+
+        // Αν θες να απαιτείται και τουλάχιστον 1 day-range, βάλε και αυτό:
+        // boolean okRanges = buildPayload() != null;  // ΠΡΟΣΟΧΗ: buildPayload απαιτεί dates/employee ήδη
+        // submitBtn.setDisable(!(okEmployee && okDates && okRanges));
+
+        submitBtn.setDisable(!(okEmployee && okDates));
+    }
+
+    private void updateDeleteEnabled() {
+        if (deleteFromScheduleBtn == null) return;
+
+        String emp = (employeeComboBox == null) ? null : employeeComboBox.getValue();
+        boolean okEmployee = emp != null && !emp.isBlank();
+
+        deleteFromScheduleBtn.setDisable(!okEmployee);
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         if (weekGrid == null) return;
@@ -412,12 +460,16 @@ public class ScheduleController2 implements Initializable {
 
         // Αρχικά ΚΛΕΙΔΩΜΕΝΑ
         setInputsEnabled(false);
+        updateSubmitEnabled();
+        updateDeleteEnabled();
 
         // Μόλις επιλεγεί υπάλληλος => ΞΕΚΛΕΙΔΩΝΟΥΜΕ
         employeeComboBox.valueProperty().addListener((obs, oldV, newV) -> {
             boolean ok = newV != null && !newV.isBlank();
             setInputsEnabled(ok);
 
+            updateSubmitEnabled();
+            updateDeleteEnabled();
             if (!ok) {
                 clearPreview(); // προαιρετικά: καθάρισε preview όταν ξε-επιλεγεί
             }
@@ -426,7 +478,7 @@ public class ScheduleController2 implements Initializable {
         //Γεμισμα ComboBox
         ObservableList<String> times = buildTimes();
 
-        for (ComboBox<String> cb : new ComboBox[]{ monStart, monEnd, tueStart, tueEnd, wedStart, wedEnd, thuStart, thuEnd, friStart, friEnd }) {
+        for (ComboBox<String> cb : new ComboBox[]{ monStart, monEnd, tueStart, tueEnd, wedStart, wedEnd, thuStart, thuEnd, friStart, friEnd , satStart, satEnd, sunStart, sunEnd}) {
             if (cb == null) continue;
             cb.setItems(times);
             makeBlankSelectable(cb); // κενή επιλογή + σωστό rendering
@@ -454,6 +506,19 @@ public class ScheduleController2 implements Initializable {
         }
         installEmployeePlaceholder();
         setupValidityDatePickers();
+
+        // αρχικά: submit κλειστό
+        updateSubmitEnabled();
+
+        // όταν αλλάζει employee/from/to => ξαναυπολόγισε enable
+        if (validFromPicker != null) {
+            validFromPicker.setShowWeekNumbers(false);
+            validFromPicker.valueProperty().addListener((obs, o, n) -> updateSubmitEnabled());
+        }
+        if (validToPicker != null) {
+            validToPicker.setShowWeekNumbers(false);
+            validToPicker.valueProperty().addListener((obs, o, n) -> updateSubmitEnabled());
+        }
     }
 
 

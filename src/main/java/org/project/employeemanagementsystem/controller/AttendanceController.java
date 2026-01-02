@@ -38,10 +38,9 @@ public class AttendanceController implements Initializable {
 
     @FXML private TableView<Employee> employeesTable;
     @FXML private TableColumn<Employee, Long> colId;
-    @FXML private TableColumn<Employee, String> colName;
+    @FXML private TableColumn<Employee, String> colFirstName;
+    @FXML private TableColumn<Employee, String> colLastName;
     @FXML private TableColumn<Employee, String> colDepartment;
-    @FXML private TableColumn<Employee, String> colRole;
-    @FXML private TableColumn<Employee, String> colStatus;
     @FXML private TableColumn<Employee, String> colLastIn;
     @FXML private TableColumn<Employee, String> colLastOut;
 
@@ -68,13 +67,13 @@ public class AttendanceController implements Initializable {
 
     private void setupTable() {
         colId.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().getId()));
-
-        // 🔧 ΑΛΛΑΞΕ ΑΥΤΟ ΑΝ ΔΕΝ ΕΧΕΙΣ getFullName()
-        colName.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(getEmployeeDisplayName(c.getValue())));
-
-        // 🔧 Αν δεν έχεις Department/Role, άστα "—" ή άλλαξέ τα.
+        colFirstName.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().getFirstName()));
+        colLastName.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().getLastName()));
         colDepartment.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(getEmployeeDepartmentName(c.getValue())));
-        colRole.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(getEmployeeRoleName(c.getValue())));
+
+        // ΠΡΟΣΩΡΙΝΑ (μέχρι να αποφασίσουμε από πού θα τα τραβάς)
+        colLastIn.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>("—"));
+        colLastOut.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>("—"));
 
         employeesTable.setPlaceholder(new Label("No employees found"));
     }
@@ -90,11 +89,12 @@ public class AttendanceController implements Initializable {
                 if (q.isEmpty()) return true;
 
                 String id = String.valueOf(emp.getId());
-                String name = getEmployeeDisplayName(emp).toLowerCase(Locale.ROOT);
-                String dept = getEmployeeDepartmentName(emp).toLowerCase(Locale.ROOT);
-                String role = getEmployeeRoleName(emp).toLowerCase(Locale.ROOT);
+                String first = safe(emp.getFirstName()).toLowerCase(Locale.ROOT);
+                String last  = safe(emp.getLastName()).toLowerCase(Locale.ROOT);
+                String dept  = getEmployeeDepartmentName(emp).toLowerCase(Locale.ROOT);
 
-                return id.contains(q) || name.contains(q) || dept.contains(q) || role.contains(q);
+                return id.contains(q) || first.contains(q) || last.contains(q) || dept.contains(q);
+
             });
         });
     }
