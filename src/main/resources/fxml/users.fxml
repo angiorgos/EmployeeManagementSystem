@@ -108,6 +108,7 @@
                     <Button text="Upload Photo" onAction="#handleUploadPhoto" styleClass="btn-secondary">
                         <graphic><FontIcon iconLiteral="mdi2c-camera" iconSize="16" /></graphic>
                     </Button>
+                    <Button text="Clear" onAction="#handleClearPhoto" styleClass="btn-danger"/>
                 </VBox>
 
                 <Separator/>

@@ -13,8 +13,8 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.ImagePattern; // <--- ΣΗΜΑΝΤΙΚΟ IMPORT
-import javafx.scene.shape.Circle;       // <--- ΣΗΜΑΝΤΙΚΟ IMPORT
+import javafx.scene.paint.ImagePattern;
+import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
@@ -62,7 +62,6 @@ public class UsersController implements Initializable {
     @FXML private ComboBox<Employee> employeeComboBox;
 
     // --- PROFILE PICTURE FIELDS ---
-    // ΑΛΛΑΓΗ: Χρησιμοποιούμε Circle αντί για ImageView για τέλειο στρογγυλό σχήμα
     @FXML private Circle avatarCircle;
     @FXML private FontIcon defaultIcon;
 
@@ -99,10 +98,10 @@ public class UsersController implements Initializable {
 
         if (selectedFile != null) {
             try {
-                // 1. Διάβασε το αρχείο σε bytes (για αποθήκευση στη βάση)
+                // 1. Διάβασε το αρχείο σε bytes
                 currentImageBytes = Files.readAllBytes(selectedFile.toPath());
 
-                // 2. Εμφάνισε το στο UI χρησιμοποιώντας ImagePattern στο Circle
+                // 2. Εμφάνισε το στο UI
                 Image image = new Image(new ByteArrayInputStream(currentImageBytes));
                 avatarCircle.setFill(new ImagePattern(image));
 
@@ -114,6 +113,46 @@ public class UsersController implements Initializable {
                 showAlert(Alert.AlertType.ERROR, "Failed to load image: " + e.getMessage());
             }
         }
+    }
+
+    // ΝΕΟ: Clear Photo Button Logic
+    @FXML
+    public void handleClearPhoto() {
+        if (selectedUser == null && currentImageBytes == null) {
+            // Αν δεν έχουμε επιλεγμένο user και δεν έχουμε ανεβάσει κάτι, απλά καθαρίζουμε το UI
+            clearPhotoUI();
+            return;
+        }
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Clear Photo");
+        alert.setHeaderText("Remove profile picture?");
+        alert.setContentText("Are you sure you want to remove the profile picture?");
+        styleDialog(alert);
+
+        if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+            try {
+                // Αν υπάρχει user στη βάση, καλούμε το service για σωστή αφαίρεση (και session update)
+                if (selectedUser != null && selectedUser.getId() != null) {
+                    userService.removeProfilePicture(selectedUser);
+                }
+
+                // Καθαρίζουμε το UI και τα bytes
+                clearPhotoUI();
+                currentImageBytes = null;
+
+                showAlert(Alert.AlertType.INFORMATION, "Photo removed.");
+
+            } catch (Exception e) {
+                showAlert(Alert.AlertType.ERROR, "Error removing photo: " + e.getMessage());
+            }
+        }
+    }
+
+    private void clearPhotoUI() {
+        avatarCircle.setFill(null);
+        avatarCircle.setVisible(false);
+        defaultIcon.setVisible(true);
     }
 
     // -------------------- LOAD USERS --------------------
@@ -217,7 +256,6 @@ public class UsersController implements Initializable {
         selectedUser.setRole(roleComboBox.getValue());
 
         // *** SAVE PROFILE PICTURE ***
-        // Αν έχουμε επιλέξει νέα εικόνα, την περνάμε στο αντικείμενο
         if (currentImageBytes != null) {
             selectedUser.setProfilePicture(currentImageBytes);
         }
@@ -278,11 +316,7 @@ public class UsersController implements Initializable {
         passwordField.clear();
         roleComboBox.setValue(null);
         employeeComboBox.setValue(null);
-
-        // Reset Image
-        avatarCircle.setFill(null);
-        avatarCircle.setVisible(false);
-        defaultIcon.setVisible(true);
+        clearPhotoUI();
         currentImageBytes = null;
     }
 
@@ -290,24 +324,25 @@ public class UsersController implements Initializable {
         formViewContainer.setVisible(show);
         tableViewContainer.setVisible(!show);
 
-        // Αν μπαίνουμε στη φόρμα για EDIT
+        // EDIT MODE
         if (show && selectedUser != null) {
             if (selectedUser.getProfilePicture() != null && selectedUser.getProfilePicture().length > 0) {
-                // Φόρτωση από τη βάση -> Circle
+                // Φόρτωση από τη βάση
                 Image img = new Image(new ByteArrayInputStream(selectedUser.getProfilePicture()));
                 avatarCircle.setFill(new ImagePattern(img));
 
                 avatarCircle.setVisible(true);
                 defaultIcon.setVisible(false);
             } else {
+                // Δεν έχει φωτό
                 avatarCircle.setVisible(false);
                 defaultIcon.setVisible(true);
             }
-            // Καθαρίζουμε τα bytes ώστε να μην κάνουμε overwrite αν ο χρήστης δεν αλλάξει εικόνα
+            // Reset temp bytes
             currentImageBytes = null;
         }
+        // NEW USER MODE
         else if (show) {
-            // New User Mode
             avatarCircle.setVisible(false);
             defaultIcon.setVisible(true);
             currentImageBytes = null;
@@ -361,8 +396,23 @@ public class UsersController implements Initializable {
         });
     }
 
+    // --- HELPER METHODS ---
+
+    // Η μέθοδος showAlert που έλειπε για το AlertType
     private void showAlert(Alert.AlertType type, String msg) {
-        Alert alert = new Alert(type, msg);
+        Alert alert = new Alert(type);
+        alert.setContentText(msg);
+        alert.setHeaderText(null);
+        styleDialog(alert);
+        alert.showAndWait();
+    }
+
+    // Overload για Title + Content (αν χρειαστεί)
+    private void showAlert(Alert.AlertType type, String title, String msg) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setContentText(msg);
+        alert.setHeaderText(null);
         styleDialog(alert);
         alert.showAndWait();
     }

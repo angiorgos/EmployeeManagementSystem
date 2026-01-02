@@ -67,6 +67,8 @@ public class UserService {
             }
         }
 
+
+
         // --- SAVE ---
         User savedUser = userRepository.save(user);
 
@@ -108,4 +110,24 @@ public class UserService {
         // Καταγράφουμε ότι ΕΓΙΝΕ η διαγραφή (αυτό το log θα έχει user=null ή τον admin που το έκανε)
         systemLogService.log("DELETE_USER", "Deleted User account: " + usernameToDelete);
     }
+
+
+    public void removeProfilePicture(User user) {
+        // 1. Αφαίρεση φωτογραφίας
+        user.setProfilePicture(null);
+
+        // 2. Αποθήκευση στη βάση
+        User savedUser = userRepository.save(user);
+
+        // 3. Ενημέρωση Session (Αν ο χρήστης που επεξεργαζόμαστε είναι ο συνδεδεμένος)
+        if (userSession.getCurrentUser() != null &&
+                userSession.getCurrentUser().getId().equals(savedUser.getId())) {
+
+            userSession.setCurrentUser(savedUser); // <--- Αυτό ενημερώνει το Topbar!
+        }
+
+        // 4. Audit Log
+        systemLogService.log("REMOVE_PROFILE_PICTURE", "Removed picture for user: " + user.getUsername());
+    }
+
 }
