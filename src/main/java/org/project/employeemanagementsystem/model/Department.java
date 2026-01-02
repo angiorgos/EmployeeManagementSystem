@@ -4,10 +4,13 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import org.project.employeemanagementsystem.util.AuditListener;
+
 import java.util.List;
 
 @Entity
 @Table(name = "departments")
+@EntityListeners(AuditListener.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

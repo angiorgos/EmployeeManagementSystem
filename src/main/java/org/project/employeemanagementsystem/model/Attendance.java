@@ -4,11 +4,14 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import org.project.employeemanagementsystem.util.AuditListener;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
 @Table(name = "attendances")
+@EntityListeners(AuditListener.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -4,9 +4,11 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import org.project.employeemanagementsystem.util.AuditListener;
 
 @Entity
 @Table(name = "leave_types")
+@EntityListeners(AuditListener.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

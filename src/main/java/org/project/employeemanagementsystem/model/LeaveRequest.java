@@ -4,10 +4,13 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import org.project.employeemanagementsystem.util.AuditListener;
+
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "leave_requests")
+@EntityListeners(AuditListener.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

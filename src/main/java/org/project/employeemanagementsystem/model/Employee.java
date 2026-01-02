@@ -2,12 +2,14 @@ package org.project.employeemanagementsystem.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.project.employeemanagementsystem.util.AuditListener;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Entity
 @Table(name = "employees")
+@EntityListeners(AuditListener.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

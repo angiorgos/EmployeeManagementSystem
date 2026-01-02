@@ -2,9 +2,11 @@ package org.project.employeemanagementsystem.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.project.employeemanagementsystem.util.AuditListener;
 
 @Entity
 @Table(name = "users")
+@EntityListeners(AuditListener.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

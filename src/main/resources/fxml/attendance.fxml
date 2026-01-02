@@ -52,7 +52,16 @@
 
                         <VBox spacing="10.0" HBox.hgrow="ALWAYS" styleClass="card" style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);">
                             <HBox alignment="CENTER_LEFT" spacing="10.0">
-                                <TextField fx:id="searchField" promptText="Search employee..." prefWidth="250.0" styleClass="text-field"/>
+                                <StackPane alignment="CENTER_LEFT">
+                                    <TextField fx:id="searchField" promptText="Search Employee..."
+                                               prefHeight="35.0" prefWidth="250.0"
+                                               styleClass="text-field"
+                                               style="-fx-padding: 0 10 0 35;" /> <FontIcon iconLiteral="mdi2m-magnify" iconColor="#9CA3AF" iconSize="18">
+                                    <StackPane.margin>
+                                        <Insets left="12.0" />
+                                    </StackPane.margin>
+                                </FontIcon>
+                                </StackPane>
                                 <Region HBox.hgrow="ALWAYS" />
                             </HBox>
 

@@ -39,7 +39,16 @@
                     <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);">
                         <Label style="-fx-font-weight: bold; -fx-text-fill: #374151;" text="Filter:" />
                         <DatePicker fx:id="monthPicker" prefWidth="140.0" promptText="Select Period" />
-                        <TextField fx:id="searchField" prefWidth="200.0" promptText="Search Employee..." />
+                        <StackPane alignment="CENTER_LEFT">
+                            <TextField fx:id="searchField" promptText="Search Employee..."
+                                       prefHeight="35.0" prefWidth="250.0"
+                                       styleClass="text-field"
+                                       style="-fx-padding: 0 10 0 35;" /> <FontIcon iconLiteral="mdi2m-magnify" iconColor="#9CA3AF" iconSize="18">
+                            <StackPane.margin>
+                                <Insets left="12.0" />
+                            </StackPane.margin>
+                        </FontIcon>
+                        </StackPane>
                         <Region HBox.hgrow="ALWAYS" />
                         <Button fx:id="btnFinalize" onAction="#finalizePayments" styleClass="btn-success" text="Confirm &amp; Pay">
                             <graphic> <FontIcon iconColor="white" iconLiteral="mdi2c-check-circle" /> </graphic>
