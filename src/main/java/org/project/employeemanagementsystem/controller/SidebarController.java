@@ -25,23 +25,28 @@ public class SidebarController implements Initializable {
     // Buttons
     @FXML private ToggleButton dashboardBtn;
 
+    // WORKFORCE
     @FXML private ToggleButton employeesBtn;
     @FXML private ToggleButton departmentsBtn;
     @FXML private ToggleButton usersBtn;
 
+    // TIME & ATTENDANCE
     @FXML private ToggleButton scheduleBtn;
     @FXML private ToggleButton attendanceBtn;
     @FXML private ToggleButton leavesBtn;
     @FXML private ToggleButton leaveTypeBtn;
     @FXML private ToggleButton holidaysBtn;
 
+    // FINANCIALS
     @FXML private ToggleButton payrollBtn;
+
+    // SYSTEM
     @FXML private ToggleButton logsBtn;
 
     // Section headers
     @FXML private Label workforceHeader;
     @FXML private Label financialsHeader;
-    @FXML private Label systemHeader; // stays visible always
+    @FXML private Label systemHeader; // always visible
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -74,6 +79,25 @@ public class SidebarController implements Initializable {
         usersBtn.setVisible(showWorkforce);
         usersBtn.setManaged(showWorkforce);
 
+        /* ================= TIME & ATTENDANCE ================= */
+        // Header always visible
+        // Only attendance button restricted to Admin & HR
+        attendanceBtn.setVisible(isAdmin || isHR);
+        attendanceBtn.setManaged(isAdmin || isHR);
+
+        // Other buttons in this section always visible
+        scheduleBtn.setVisible(true);
+        scheduleBtn.setManaged(true);
+
+        leavesBtn.setVisible(true);
+        leavesBtn.setManaged(true);
+
+        leaveTypeBtn.setVisible(true);
+        leaveTypeBtn.setManaged(true);
+
+        holidaysBtn.setVisible(true);
+        holidaysBtn.setManaged(true);
+
         /* ================= FINANCIALS ================= */
         boolean showFinancials = isAdmin || isAccountant;
 
@@ -84,11 +108,11 @@ public class SidebarController implements Initializable {
         payrollBtn.setManaged(showFinancials);
 
         /* ================= SYSTEM ================= */
-        // SYSTEM header ALWAYS visible
+        // SYSTEM header always visible
         systemHeader.setVisible(true);
         systemHeader.setManaged(true);
 
-        // Logs ONLY for Admin
+        // Logs button only visible to Admin
         logsBtn.setVisible(isAdmin);
         logsBtn.setManaged(isAdmin);
     }
