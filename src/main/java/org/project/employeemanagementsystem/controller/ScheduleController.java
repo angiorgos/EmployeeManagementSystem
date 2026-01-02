@@ -267,42 +267,6 @@ public class ScheduleController implements Initializable {
         done.setContentText("Schedule for " + employee + " has been deleted.");
         done.showAndWait();
     }
-//==================================================================================================================================
-    @FXML private VBox monthViewRoot;
-    @FXML private javafx.scene.Parent weekViewRoot;
-    @FXML private ToggleButton weekBtn;
-    @FXML private ToggleButton monthBtn;
-
-    private void showMonth() {
-        monthViewRoot.setVisible(true);
-        monthViewRoot.setManaged(true);
-
-        weekViewRoot.setVisible(false);
-        weekViewRoot.setManaged(false);
-
-        monthBtn.setSelected(true);
-    }
-
-    private void showWeek() {
-        monthViewRoot.setVisible(false);
-        monthViewRoot.setManaged(false);
-
-        weekViewRoot.setVisible(true);
-        weekViewRoot.setManaged(true);
-
-        weekBtn.setSelected(true);
-    }
-
-
-    @FXML
-    private void onWeekView() {
-        showWeek();
-    }
-
-    @FXML
-    private void onMonthView() {
-        showMonth();
-    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -317,10 +281,9 @@ public class ScheduleController implements Initializable {
         if (newScheduleViewController != null) {
             if (newScheduleViewController != null) {
                 newScheduleViewController.setOnScheduleSaved(this::onNewScheduleSaved);
-                newScheduleViewController.setOnScheduleDeleted(this::onDeleteEmployeeSchedule);
             }
 
         }
-        showMonth();
+
     }
 }
