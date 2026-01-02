@@ -87,18 +87,18 @@ public class DataSeeder implements CommandLineRunner {
         // 3. ADMIN USER (The "a" / "1" account)
         // ==========================================
         User adminUser = new User();
-        adminUser.setUsername("a");
+        adminUser.setUsername("b");
         adminUser.setPassword(passwordEncoder.encode("1"));
         adminUser.setRole(adminRole);
         // Save handled via cascading in Employee, but we need object ref
 
         Employee adminEmployee = new Employee();
-        adminEmployee.setFirstName("System");
+        adminEmployee.setFirstName("Sys");
         adminEmployee.setLastName("Admin");
-        adminEmployee.setEmail("admin@ems.com");
-        adminEmployee.setPhone("6900000000");
+        adminEmployee.setEmail("admn@ems.com");
+        adminEmployee.setPhone("6900000001");
         adminEmployee.setAddress("Headquarters");
-        adminEmployee.setSsn("SSN-ADMIN-001");
+        adminEmployee.setSsn("SSN-ADMIN-002");
         adminEmployee.setHireDate(LocalDate.now().minusYears(5));
         adminEmployee.setSalary(5000.0);
         adminEmployee.setDepartment(depts.get(0)); // IT Dept
@@ -195,8 +195,8 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private List<Role> seedRoles() {
-        Role admin = new Role(null, "ROLE_ADMIN", "Full access to the system");
-        Role user = new Role(null, "ROLE_USER", "Standard employee access");
+        Role admin = new Role(null, "Admin", "Full access to the system");
+        Role user = new Role(null, "User", "Standard employee access");
         roleRepository.saveAll(Arrays.asList(admin, user));
         return Arrays.asList(admin, user);
     }
