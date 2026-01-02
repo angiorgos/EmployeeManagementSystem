@@ -34,7 +34,6 @@ public class UsersController implements Initializable {
     @Autowired private RoleService roleService;
     @Autowired private EmployeeService employeeService;
 
-    // --- UI ELEMENTS ---
     @FXML private VBox tableViewContainer;
     @FXML private VBox formViewContainer;
     @FXML private VBox loadingOverlay;
@@ -71,7 +70,7 @@ public class UsersController implements Initializable {
         searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilter(newVal));
     }
 
-    // ------------------- LOAD USERS -------------------
+    // -------------------- LOAD USERS --------------------
     private void loadUsers() {
         loadingOverlay.setVisible(true);
         Task<List<User>> task = new Task<>() {
@@ -108,7 +107,7 @@ public class UsersController implements Initializable {
         delay.play();
     }
 
-    // ------------------- TABLE -------------------
+    // -------------------- TABLE --------------------
     private void setupTableColumns() {
         idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         usernameCol.setCellValueFactory(new PropertyValueFactory<>("username"));
@@ -118,7 +117,9 @@ public class UsersController implements Initializable {
         });
         employeeCol.setCellValueFactory(cell -> {
             Employee emp = cell.getValue().getEmployee();
-            return new javafx.beans.property.SimpleStringProperty(emp != null ? emp.getFirstName() + " " + emp.getLastName() : "");
+            return new javafx.beans.property.SimpleStringProperty(
+                    emp != null ? emp.getFirstName() + " " + emp.getLastName() + " (ID: " + emp.getId() + ")" : ""
+            );
         });
     }
 
@@ -130,7 +131,7 @@ public class UsersController implements Initializable {
         }
     }
 
-    // ------------------- COMBOBOX -------------------
+    // -------------------- COMBOBOX --------------------
     private void loadRoles() {
         List<Role> roles = roleService.getAllRoles();
         roleComboBox.getItems().setAll(roles);
@@ -144,12 +145,14 @@ public class UsersController implements Initializable {
         List<Employee> employees = employeeService.getActiveEmployees();
         employeeComboBox.getItems().setAll(employees);
         employeeComboBox.setConverter(new StringConverter<>() {
-            @Override public String toString(Employee e) { return e != null ? e.getFirstName() + " " + e.getLastName() : ""; }
+            @Override public String toString(Employee e) {
+                return e != null ? e.getFirstName() + " " + e.getLastName() + " (ID: " + e.getId() + ")" : "";
+            }
             @Override public Employee fromString(String s) { return null; }
         });
     }
 
-    // ------------------- FORM -------------------
+    // -------------------- FORM --------------------
     @FXML
     public void onCreateUser() {
         selectedUser = null;
@@ -166,14 +169,43 @@ public class UsersController implements Initializable {
 
         selectedUser.setUsername(usernameField.getText().trim());
         selectedUser.setRole(roleComboBox.getValue());
-        selectedUser.setEmployee(employeeComboBox.getValue());
+
+        Employee selectedEmp = employeeComboBox.getValue();
+        if (selectedEmp == null || selectedEmp.getId() == null) {
+            showAlert(Alert.AlertType.ERROR, "Selected employee is invalid!");
+            return;
+        }
+
+        Employee empFromDb = employeeService.getEmployeeById(selectedEmp.getId())
+                .orElse(null);
+
+        if (empFromDb == null) {
+            showAlert(Alert.AlertType.ERROR, "Employee not found in database!");
+            return;
+        }
+
+        // --- Unlink old employee if exists and is different ---
+        if (selectedUser.getEmployee() != null && !selectedUser.getEmployee().getId().equals(empFromDb.getId())) {
+            Employee oldEmp = selectedUser.getEmployee();
+            oldEmp.setUser(null);
+            employeeService.saveEmployee(oldEmp);
+        }
+
+        // --- Link new employee (owning side) ---
+        empFromDb.setUser(selectedUser);
+        selectedUser.setEmployee(empFromDb);
 
         if (!passwordField.getText().isBlank()) {
             selectedUser.setPassword(passwordField.getText());
         }
 
         try {
+            // Save employee first (owning side)
+            employeeService.saveEmployee(empFromDb);
+
+            // Then save user
             userService.saveUser(selectedUser);
+
             showAlert(Alert.AlertType.INFORMATION, "User saved successfully!");
             handleRefresh();
             handleBackToTable();
@@ -183,7 +215,9 @@ public class UsersController implements Initializable {
     }
 
     private boolean validateForm() {
-        if (usernameField.getText().trim().isEmpty() || roleComboBox.getValue() == null || employeeComboBox.getValue() == null) {
+        if (usernameField.getText().trim().isEmpty()
+                || roleComboBox.getValue() == null
+                || employeeComboBox.getValue() == null) {
             showAlert(Alert.AlertType.WARNING, "All fields except password are required.");
             return false;
         }
@@ -202,12 +236,10 @@ public class UsersController implements Initializable {
         tableViewContainer.setVisible(!show);
     }
 
-    @FXML
-    public void handleBackToTable() { showForm(false); }
-    @FXML
-    public void handleRefresh() { loadUsers(); }
+    @FXML public void handleBackToTable() { showForm(false); }
+    @FXML public void handleRefresh() { loadUsers(); }
 
-    // ------------------- ACTION BUTTONS -------------------
+    // -------------------- ACTION BUTTONS --------------------
     private void addActionButtonsToTable() {
         actionCol.setCellFactory(param -> new TableCell<>() {
             private final Button btnEdit = new Button("Edit");
@@ -215,29 +247,28 @@ public class UsersController implements Initializable {
             private final HBox pane = new HBox(5, btnEdit, btnDelete);
 
             {
-                // MATCH DEPARTMENT CONTROLLER STYLE
                 pane.getStyleClass().add("action-box");
                 btnEdit.getStyleClass().addAll("table-btn", "table-btn-edit");
                 btnDelete.getStyleClass().addAll("table-btn", "table-btn-delete");
 
                 btnEdit.setOnAction(event -> {
                     selectedUser = getTableView().getItems().get(getIndex());
+                    formTitle.setText("Edit User");
                     usernameField.setText(selectedUser.getUsername());
                     roleComboBox.setValue(selectedUser.getRole());
                     employeeComboBox.setValue(selectedUser.getEmployee());
                     passwordField.clear();
-                    formTitle.setText("Edit User");
                     showForm(true);
                 });
 
                 btnDelete.setOnAction(event -> {
                     User user = getTableView().getItems().get(getIndex());
                     Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                            "Are you sure you want to delete " + user.getUsername() + "?");
+                            "Are you sure you want to delete user: " + user.getUsername() + "?");
                     styleDialog(confirm);
                     if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
                         userService.deleteUser(user);
-                        filteredData.getSource().remove(user);
+                        loadUsers();
                         showAlert(Alert.AlertType.INFORMATION, "User deleted.");
                     }
                 });
@@ -252,7 +283,7 @@ public class UsersController implements Initializable {
         });
     }
 
-    // ------------------- UTIL -------------------
+    // -------------------- UTILS --------------------
     private void showAlert(Alert.AlertType type, String msg) {
         Alert alert = new Alert(type, msg);
         styleDialog(alert);
@@ -260,8 +291,7 @@ public class UsersController implements Initializable {
     }
 
     private void styleDialog(Dialog<?> dialog) {
-        try {
-            dialog.getDialogPane().getStylesheets().add(getClass().getResource("/theme.css").toExternalForm());
-        } catch (Exception ignored) {}
+        try { dialog.getDialogPane().getStylesheets().add(getClass().getResource("/theme.css").toExternalForm()); }
+        catch (Exception ignored) {}
     }
 }
