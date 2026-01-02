@@ -210,3 +210,23 @@
     -fx-border-color: #2563EB;
     -fx-border-radius: 6;
 }
+
+/* Αφαιρεί το εσωτερικό περίγραμμα του editable ComboBox */
+.combo-box-base:editable > .text-field {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0.2em 0.4em 0.2em 0.6em; /* προαιρετικό: για να "κάθεται" ωραία */
+}
+
+/* Προαιρετικά: να μην φαίνεται δεύτερο background layer */
+.combo-box-base:editable {
+    -fx-background-insets: 0;
+}
+
+/* Προαιρετικά: όταν έχει focus να μην "ζωγραφίζει" extra inner ring */
+.combo-box-base:editable:focused > .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}

@@ -27,7 +27,7 @@
         <fx:include source="sidebar.fxml" />
     </left>
     <center>
-        <TabPane prefHeight="200.0" prefWidth="200.0" stylesheets="@../Schedule.css" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+        <TabPane fx:id="scheduleTabs" prefHeight="200.0" prefWidth="200.0" stylesheets="@../Schedule.css" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
             <tabs>
                 <Tab text="Overview">
                     <content>
@@ -93,11 +93,11 @@
                                  <children>
                                     <ToggleButton fx:id="todayBtn" mnemonicParsing="false" onAction="#onToday" prefHeight="44.0" prefWidth="70.0" styleClass="view-btn" text="Today" />
                                  </children></HBox>
-                              <ToggleButton mnemonicParsing="false" onAction="#onToday" prefHeight="44.0" prefWidth="76.0" styleClass="view-btn" text="Week">
+                              <ToggleButton fx:id="weekBtn" mnemonicParsing="false" prefHeight="44.0" prefWidth="76.0" styleClass="view-btn" text="Week">
                                  <toggleGroup>
                                     <ToggleGroup fx:id="viewGroup" />
                                  </toggleGroup></ToggleButton>
-                              <ToggleButton mnemonicParsing="false" onAction="#onToday" prefHeight="44.0" prefWidth="76.0" styleClass="view-btn" text="Month" toggleGroup="$viewGroup" />
+                              <ToggleButton fx:id="monthBtn" mnemonicParsing="false" prefHeight="44.0" prefWidth="76.0" styleClass="view-btn" text="Month" toggleGroup="$viewGroup" />
                               <HBox prefHeight="38.0" prefWidth="141.0" />
                                         
                                     </children>

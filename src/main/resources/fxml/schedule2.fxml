@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
@@ -20,12 +21,12 @@
                         <children>
                             <VBox prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
                                 <children>
-                                    <HBox prefHeight="18.0" prefWidth="53.0" VBox.vgrow="NEVER" />
-                                    <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="579.0" prefWidth="53.0" VBox.vgrow="ALWAYS">
+                                    <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="586.0" prefWidth="53.0" VBox.vgrow="ALWAYS">
                                         <columnConstraints>
-                                            <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="10.0" prefWidth="100.0" />
+                                            <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
                                         </columnConstraints>
                                         <rowConstraints>
+                              <RowConstraints maxHeight="47.0" minHeight="8.0" prefHeight="19.0" vgrow="ALWAYS" />
                                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
                                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
                                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
@@ -41,27 +42,26 @@
                                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
                                         </rowConstraints>
                                         <children>
-                                            <Label text="9 am " />
-                                            <Label text="10 am " GridPane.rowIndex="1" />
-                                            <Label text="11 am " GridPane.rowIndex="2" />
-                                            <Label text="12 am " GridPane.rowIndex="3" />
-                                            <Label text="1 pm " GridPane.rowIndex="4" />
-                                            <Label text="2 pm " GridPane.rowIndex="5" />
-                                            <Label text="3 pm " GridPane.rowIndex="6" />
-                                            <Label text="5 pm " GridPane.rowIndex="8" />
-                                            <Label text="4 pm " GridPane.rowIndex="7" />
-                                            <Label text="6 pm " GridPane.rowIndex="9" />
-                                            <Label text="7 pm " GridPane.rowIndex="10" />
-                                            <Label text="9 pm " GridPane.rowIndex="12" />
-                                            <Label text="8 pm " GridPane.rowIndex="11" />
+                                            <Label prefHeight="17.0" prefWidth="34.0" text="9 am" GridPane.rowIndex="1" GridPane.valignment="TOP" />
+                                            <Label text="10 am " GridPane.rowIndex="2" GridPane.valignment="TOP" />
+                                            <Label text="11 am " GridPane.rowIndex="3" GridPane.valignment="TOP" />
+                                            <Label text="12 am " GridPane.rowIndex="4" GridPane.valignment="TOP" />
+                                            <Label text="1 pm " GridPane.rowIndex="5" GridPane.valignment="TOP" />
+                                            <Label text="2 pm " GridPane.rowIndex="6" GridPane.valignment="TOP" />
+                                            <Label text="3 pm " GridPane.rowIndex="7" GridPane.valignment="TOP" />
+                                            <Label text="5 pm " GridPane.rowIndex="9" GridPane.valignment="TOP" />
+                                            <Label text="4 pm " GridPane.rowIndex="8" GridPane.valignment="TOP" />
+                                            <Label text="6 pm " GridPane.rowIndex="10" GridPane.valignment="TOP" />
+                                            <Label text="7 pm " GridPane.rowIndex="11" GridPane.valignment="TOP" />
+                                            <Label text="9 pm " GridPane.rowIndex="13" GridPane.valignment="TOP" />
+                                            <Label text="8 pm " GridPane.rowIndex="12" GridPane.valignment="TOP" />
                                         </children>
                                     </GridPane>
-                        <HBox prefHeight="7.0" prefWidth="53.0" VBox.vgrow="NEVER" />
                                 </children>
                             </VBox>
                             <VBox prefHeight="550.0" prefWidth="845.0" HBox.hgrow="ALWAYS">
                                 <children>
-                                    <HBox prefHeight="50.0" prefWidth="838.0" VBox.vgrow="NEVER">
+                                    <HBox prefHeight="35.0" prefWidth="811.0" VBox.vgrow="NEVER">
                                         <children>
                                             <VBox alignment="CENTER" prefHeight="35.0" prefWidth="120.0" HBox.hgrow="ALWAYS">
                                                 <children>
@@ -128,7 +128,7 @@
                                             </VBox>
                                         </children>
                                     </HBox>
-                                    <GridPane fx:id="weekGrid" alignment="CENTER" gridLinesVisible="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="612.0" prefWidth="835.0" styleClass="calendar-grid" VBox.vgrow="ALWAYS">
+                                    <GridPane fx:id="weekGrid" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="612.0" prefWidth="835.0" styleClass="calendar-grid" VBox.vgrow="ALWAYS">
                                         <columnConstraints>
                                             <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" />
                                             <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" />
@@ -162,18 +162,18 @@
             </VBox>
         </center>
         <left>
-            <VBox maxWidth="-Infinity" prefHeight="593.0" prefWidth="255.0" BorderPane.alignment="CENTER">
+            <VBox maxWidth="1.7976931348623157E308" prefHeight="593.0" prefWidth="255.0" BorderPane.alignment="CENTER">
                 <children>
-                    <ComboBox fx:id="employeeComboBox" prefHeight="40.0" prefWidth="252.0" promptText="Choose Employee" />
+                    <ComboBox fx:id="employeeComboBox" prefHeight="40.0" prefWidth="252.0" promptText="Choose Employee" styleClass="combo-box-base" />
                     <VBox prefHeight="35.0" prefWidth="255.0" />
-                    <VBox prefHeight="419.0" prefWidth="255.0">
+                    <VBox prefHeight="452.0" prefWidth="255.0">
                         <children>
-                            <GridPane fx:id="timePickerGrid" prefHeight="420.0" prefWidth="255.0">
+                            <GridPane fx:id="timePickerGrid" maxWidth="420.0" prefHeight="440.0" prefWidth="320.0">
                                 <columnConstraints>
-                                    <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="80.0" minWidth="10.0" prefWidth="37.0" />
-                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="134.0" minWidth="10.0" prefWidth="91.0" />
-                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="105.0" minWidth="10.0" prefWidth="18.0" />
-                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="112.0" minWidth="10.0" prefWidth="110.0" />
+                                    <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="80.0" minWidth="10.0" prefWidth="32.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="134.0" minWidth="10.0" prefWidth="101.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="105.0" minWidth="10.0" prefWidth="24.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="112.0" minWidth="10.0" prefWidth="98.0" />
                                 </columnConstraints>
                                 <rowConstraints>
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -183,6 +183,7 @@
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="50.0" valignment="BOTTOM" vgrow="SOMETIMES" />
                                 </rowConstraints>
                                 <children>
                                     <Label text="Mon" />
@@ -241,15 +242,20 @@
                                     <ComboBox id="employeeComboBox" fx:id="satEnd" disable="true" prefHeight="35.0" prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" GridPane.rowIndex="5" />
                                     <ComboBox id="employeeComboBox" fx:id="sunStart" disable="true" prefHeight="35.0" prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="1" GridPane.rowIndex="6" />
                                     <ComboBox id="employeeComboBox" fx:id="sunEnd" disable="true" prefHeight="35.0" prefWidth="90.0" styleClass="time-picker" GridPane.columnIndex="3" GridPane.rowIndex="6" />
+                        <Label text="From" GridPane.rowIndex="7" />
+                        <Label prefHeight="17.0" prefWidth="26.0" text=" To" GridPane.columnIndex="2" GridPane.rowIndex="7" />
+                                    <DatePicker fx:id="validFromPicker" disable="true" prefHeight="35.0" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+
+                                    <DatePicker fx:id="validToPicker" disable="true" prefHeight="35.0" prefWidth="100.0" GridPane.columnIndex="3" GridPane.rowIndex="7" />
                                 </children>
                             </GridPane>
                         </children>
                     </VBox>
-                    <HBox alignment="CENTER_RIGHT" prefHeight="42.0" prefWidth="255.0">
+                    <HBox alignment="CENTER_RIGHT" prefHeight="47.0" prefWidth="255.0">
                         <children>
-                  <VBox prefHeight="33.0" prefWidth="20.0" />
                   <Button fx:id="submitBtn" mnemonicParsing="false" onAction="#onSubmit" prefHeight="34.0" prefWidth="87.0" styleClass="btn-primary" text="Sumbit" />
-                            <VBox prefHeight="42.0" prefWidth="18.0" />
+                            <VBox prefHeight="47.0" prefWidth="12.0" />
+                  <Button fx:id="deleteFromScheduleBtn" mnemonicParsing="false" onAction="#onDeleteFromSchedule" prefHeight="34.0" prefWidth="175.0" styleClass="btn-primary" text="Delete From Schedule" />
                         </children>
                     </HBox>
                 </children>
