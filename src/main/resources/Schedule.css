@@ -1,232 +1,135 @@
 /* ============================================================
-   SCHEDULE STYLING
+   SCHEDULE SPECIFIC LAYOUT (NO THEME STYLES)
    ============================================================ */
-.button, .toggle-button {
-    -fx-background-radius: 10;
-    -fx-border-radius: 10;
+
+/* 1. COMBOBOX FIX (Διορθώνει το "κουτί μέσα σε κουτί") */
+/* Αυτό είναι απαραίτητο εδώ για να "σπάσει" το default look */
+.combo-box-base:editable > .text-field,
+.combo-box:editable > .text-field {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-width: 0;
+    -fx-padding: 1px 0 1px 0;
 }
 
+/* 2. GRID BORDERS (Πιο σκούρο γκρι #BDBDBD) */
 .calendar-grid {
-    -fx-background-color: transparent;
-    -fx-padding: 0;
-    -fx-hgap: 0;
-    -fx-vgap: 0;
+    -fx-background-color: #BDBDBD; /* Το χρώμα των γραμμών */
+    -fx-padding: 1;                /* Εξωτερικό περίγραμμα */
+    -fx-hgap: 1;                   /* Κενό 1px = Γραμμή */
+    -fx-vgap: 1;
 }
 
 .day-cell {
-    -fx-background-color: white;
-    -fx-border-color: #bdbdbd;
-    -fx-border-width: 1;
-    -fx-padding: 8;
+    -fx-background-color: white;   /* Λευκό κελί */
+    -fx-background-radius: 0;
+    -fx-border-width: 0;
 }
 
 .day-cell:hover {
-    -fx-background-color: #EFF6FF;
-    -fx-border-color: #2563EB;
-}
-
-.day-number {
-    -fx-font-size: 12px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #2b2b2b;
+    -fx-background-color: #F8FAFC;
 }
 
 .selected-day {
     -fx-background-color: #EFF6FF;
     -fx-border-color: #2563EB;
     -fx-border-width: 2;
+    -fx-border-type: inside;
 }
 
-.selected-day .day-number {
-    -fx-text-fill: #2563EB;
-}
-
-.employee-chip {
-    -fx-background-color: #e9eef5;
-    -fx-background-radius: 6;
-    -fx-padding: 2 6 2 6;
-    -fx-font-size: 11px;
-    -fx-text-fill: #1f2d3d;
-}
-
-/* Μέρες επόμενου / προηγούμενου μήνα */
 .out-month {
-    -fx-background-color: #ededed;
-    -fx-border-color: #cfcfcf;
-}
-
-.out-month .day-number {
-    -fx-text-fill: #7a7a7a;
-}
-
-.out-month .employee-chip {
-    -fx-background-color: #dcdcdc;
-    -fx-text-fill: #555;
-}
-
-/* hover να μην γίνεται μπλε σε out-month */
-.out-month:hover {
-    -fx-background-color: #ededed;
-    -fx-border-color: #cfcfcf;
-}
-
-/* ===== Right ListView as Card ===== */
-.schedule-list {
-    -fx-background-color: #FFFFFF;
-    -fx-background-radius: 10;
-    -fx-border-radius: 10;
-    -fx-border-color: #E5E7EB;
-    -fx-border-width: 1;
-    -fx-padding: 0;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 2);
-}
-
-/* Το viewport του ListView να μην έχει άλλο χρώμα */
-.schedule-list .viewport {
-    -fx-background-color: transparent;
-}
-
-/* Cells */
-.schedule-list .list-cell {
-    -fx-background-color: transparent;
-    -fx-padding: 10 12;
-    -fx-border-color: transparent transparent #F3F4F6 transparent;
-    -fx-text-fill: #374151;
-}
-
-/* Hover */
-.schedule-list .list-cell:filled:hover {
-    -fx-background-color: #F9FAFB;
-}
-
-/* Selected */
-.schedule-list .list-cell:filled:selected {
-    -fx-background-color: #EFF6FF;
-    -fx-text-fill: #2563EB;
-}
-
-/* ===== Calendar buttons ===== */
-.cal-today:selected {
-    -fx-background-color: #EFF6FF;
-    -fx-text-fill: #2563EB;
-    -fx-border-color: #2563EB;
-}
-
-.cal-btn {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-border-width: 0;
-    -fx-padding: 6;
-    -fx-background-radius: 999;
-    -fx-border-radius: 999;
-    -fx-cursor: hand;
-}
-
-.cal-btn:focused {
-    -fx-focus-color: transparent;
-    -fx-faint-focus-color: transparent;
-}
-
-/* Icon color (ikonli) */
-.cal-btn .ikonli-font-icon {
-    -fx-icon-color: #9CA3AF;
-}
-
-/* Icon hover */
-.cal-btn:hover .ikonli-font-icon {
-    -fx-icon-color: #4B5563;
-}
-
-/* pressed */
-.cal-btn:pressed .ikonli-font-icon {
-    -fx-focus-color: transparent;
-    -fx-faint-focus-color: transparent;
-}
-
-/* View mode buttons (Day/Week/Month) – σαν segmented */
-.view-btn {
     -fx-background-color: #F3F4F6;
-    -fx-text-fill: #374151;
-    -fx-border-color: #E5E7EB;
-    -fx-border-width: 1;
-    -fx-padding: 6 14;
-    -fx-cursor: hand;
+    -fx-opacity: 1.0;
 }
 
-.view-btn:hover { -fx-background-color: #E5E7EB; }
-
-.view-btn:selected {
-    -fx-background-color: #EFF6FF;
-    -fx-text-fill: #2563EB;
-    -fx-border-color: #2563EB;
-}
-
-.right-panel {
-    -fx-background-color: #FFFFFF;
-    -fx-border-color: #E5E7EB;
-    -fx-border-width: 1;
-    -fx-background-radius: 10;
-    -fx-border-radius: 10;
-    -fx-padding: 10;
-}
-/* ============================================================
-   ============================================================ */
-/* κάνει το control να μοιάζει με “καθαρό” πεδίο */
+/* 3. TIME PICKERS (Ειδικό μέγεθος για το Grid) */
 .time-picker {
-    -fx-background-color: #E5E7EB;       /* σαν το παράδειγμα */
+    -fx-background-color: #F3F4F6;
     -fx-background-radius: 6;
     -fx-border-color: transparent;
-    -fx-padding: 2 6 2 6;
-}
-
-/* ορατό κείμενο */
-.time-picker .list-cell {
-    -fx-padding: 2 4 2 4;
-    -fx-background-color: transparent;
-    -fx-text-fill: #111827;
-    -fx-font-weight: 500;
+    -fx-pref-height: 38px;
     -fx-font-size: 12px;
 }
-
-/* κρύβει το arrow button */
-.time-picker .arrow-button {
-    -fx-padding: 0;
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-opacity: 0;          /* “εξαφάνιση” */
-    -fx-max-width: 0;
-    -fx-pref-width: 0;
-    -fx-min-width: 0;
-}
-
-/* και το ίδιο το βελάκι */
-.time-picker .arrow {
-    -fx-opacity: 0;
-}
-
-/* focus state (προαιρετικό) */
 .time-picker:focused {
-    -fx-background-color: #EFF6FF;
-    -fx-border-color: #2563EB;
-    -fx-border-radius: 6;
+    -fx-background-color: white;
+    -fx-border-color: #3B82F6;
+    -fx-border-width: 1;
+}
+/* Κρύβουμε τα βελάκια για πιο καθαρό look */
+.time-picker .arrow-button { -fx-padding: 0; }
+.time-picker .arrow { -fx-background-color: #6B7280; }
+
+/* 4. SIDEBAR CONTAINER */
+.sidebar-container {
+    -fx-padding: 20;
+    -fx-background-color: white;
+    -fx-border-color: #E5E7EB;
+    -fx-border-width: 0 1 0 0;
 }
 
-/* Αφαιρεί το εσωτερικό περίγραμμα του editable ComboBox */
-.combo-box-base:editable > .text-field {
+.week-selection-box {
+    -fx-background-color: #F9FAFB;
+    -fx-background-radius: 8;
+    -fx-border-color: #E5E7EB;
+    -fx-border-radius: 8;
+    -fx-padding: 15;
+}
+
+/* 5. SCROLL PANE ΜΕΣΑ ΣΤΟ ΚΕΛΙ (Διαφανές) */
+.cell-scroll-pane {
     -fx-background-color: transparent;
     -fx-background-insets: 0;
-    -fx-border-color: transparent;
-    -fx-border-width: 0;
-    -fx-padding: 0.2em 0.4em 0.2em 0.6em; /* προαιρετικό: για να "κάθεται" ωραία */
+    -fx-padding: 0;
 }
-
-/* Προαιρετικά: να μην φαίνεται δεύτερο background layer */
-.combo-box-base:editable {
-    -fx-background-insets: 0;
-}
-
-/* Προαιρετικά: όταν έχει focus να μην "ζωγραφίζει" extra inner ring */
-.combo-box-base:editable:focused > .text-field {
+.cell-scroll-pane > .viewport {
     -fx-background-color: transparent;
-    -fx-border-color: transparent;
+}
+.cell-scroll-pane .scroll-bar {
+    -fx-background-color: transparent;
+    -fx-pref-width: 4px;
+    -fx-opacity: 0.6;
+}
+.cell-scroll-pane .scroll-bar .thumb {
+    -fx-background-color: #9CA3AF;
+    -fx-background-radius: 2;
+}
+
+/* 6. CHIPS */
+.employee-chip {
+    -fx-background-color: #DBEAFE;
+    -fx-text-fill: #1E40AF;
+    -fx-background-radius: 4;
+    -fx-padding: 1 4;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+/* ============================================================
+   VIEW BUTTONS (Week / Month / Today)
+   ============================================================ */
+
+.view-btn {
+    -fx-background-color: #FFFFFF;  /* Λευκό φόντο */
+    -fx-text-fill: #374151;         /* Σκούρο γκρι κείμενο */
+    -fx-border-color: #D1D5DB;      /* Απαλό γκρι περίγραμμα */
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+    -fx-padding: 6 14;              /* Padding για άνεση */
+    -fx-font-size: 13px;
+    -fx-font-weight: normal;
+}
+
+/* Όταν περνάει το ποντίκι από πάνω (Hover) */
+.view-btn:hover {
+    -fx-background-color: #F9FAFB;
+    -fx-border-color: #9CA3AF;
+}
+
+/* Όταν το κουμπί είναι επιλεγμένο (Selected/Pressed) */
+.view-btn:selected,
+.view-btn:pressed {
+    -fx-background-color: #EFF6FF;  /* Απαλό μπλε φόντο */
+    -fx-text-fill: #2563EB;         /* Μπλε γράμματα */
+    -fx-border-color: #2563EB;      /* Μπλε περίγραμμα */
 }

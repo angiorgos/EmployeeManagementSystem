@@ -86,6 +86,10 @@ public class ScheduleService {
         return result;
     }
 
+    public List<Schedule> getSchedulesForRange(LocalDate startDate, LocalDate endDate) {
+        return scheduleRepository.findByDateBetween(startDate, endDate);
+    }
+
     public void deleteSchedule(Schedule schedule) {
         scheduleRepository.delete(schedule);
     }
