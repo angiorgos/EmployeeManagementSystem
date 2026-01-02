@@ -22,7 +22,6 @@
         <StackPane>
 
             <!-- ================= TABLE VIEW ================= -->
-
             <VBox fx:id="tableViewContainer" spacing="20"
                   style="-fx-padding: 20; -fx-background-color: #F3F4F6;">
 
@@ -40,7 +39,6 @@
                                prefWidth="250"
                                promptText="Search..."
                                styleClass="search-field"/>
-
                     <Region HBox.hgrow="ALWAYS"/>
 
                     <Button text="+ Add User"
@@ -66,10 +64,8 @@
                     <columns>
                         <TableColumn fx:id="idCol" text="ID" prefWidth="60"/>
                         <TableColumn fx:id="usernameCol" text="Username" prefWidth="200"/>
-
-                        <!-- ✅ ROLE COLUMN KEPT -->
-                        <TableColumn fx:id="roleCol" text="Role" prefWidth="200"/>
-
+                        <TableColumn fx:id="roleCol" text="Role" prefWidth="150"/>
+                        <TableColumn fx:id="employeeCol" text="Employee" prefWidth="200"/> <!-- ✅ FIXED -->
                         <TableColumn fx:id="actionCol" text="Actions" prefWidth="180"/>
                     </columns>
 
@@ -81,7 +77,6 @@
             </VBox>
 
             <!-- ================= USER FORM ================= -->
-
             <VBox fx:id="formViewContainer"
                   visible="false"
                   spacing="20"
@@ -119,20 +114,16 @@
                         <PasswordField fx:id="passwordField" styleClass="search-field"/>
                     </VBox>
 
-                    <!-- ✅ ROLE COMBOBOX KEPT -->
+                    <!-- ROLE -->
                     <VBox GridPane.rowIndex="1" GridPane.columnIndex="0">
                         <Label text="Role *" style="-fx-font-weight: bold;"/>
-                        <ComboBox fx:id="roleComboBox"
-                                  maxWidth="Infinity"
-                                  styleClass="search-field"/>
+                        <ComboBox fx:id="roleComboBox" maxWidth="Infinity" styleClass="search-field"/>
                     </VBox>
 
-                    <!-- ✅ EMPLOYEE COMBOBOX -->
+                    <!-- EMPLOYEE -->
                     <VBox GridPane.rowIndex="1" GridPane.columnIndex="1">
                         <Label text="Employee *" style="-fx-font-weight: bold;"/>
-                        <ComboBox fx:id="employeeComboBox"
-                                  maxWidth="Infinity"
-                                  styleClass="search-field"/>
+                        <ComboBox fx:id="employeeComboBox" maxWidth="Infinity" styleClass="search-field"/>
                     </VBox>
                 </GridPane>
 
@@ -147,18 +138,15 @@
                             prefWidth="150"
                             styleClass="btn-primary"/>
                 </HBox>
-
             </VBox>
 
             <!-- ================= LOADING OVERLAY ================= -->
-
             <VBox fx:id="loadingOverlay"
                   alignment="CENTER"
                   spacing="20"
                   style="-fx-background-color: #F3F4F6;">
 
                 <ProgressIndicator prefWidth="60" prefHeight="60"/>
-
                 <VBox alignment="CENTER" spacing="5">
                     <Label text="Loading Users">
                         <font>
