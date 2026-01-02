@@ -27,7 +27,7 @@
         <fx:include source="sidebar.fxml" />
     </left>
     <center>
-        <TabPane prefHeight="200.0" prefWidth="200.0" stylesheets="@../Schedule.css" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+        <TabPane fx:id="scheduleTabs" prefHeight="200.0" prefWidth="200.0" stylesheets="@../Schedule.css" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
             <tabs>
                 <Tab text="Overview">
                     <content>

@@ -12,11 +12,14 @@ import org.springframework.stereotype.Controller;
 import java.net.URL;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.control.TabPane;
+import java.time.temporal.TemporalAdjusters;
+import java.util.*;
 
 @Controller
 public class ScheduleController implements Initializable {
@@ -34,6 +37,7 @@ public class ScheduleController implements Initializable {
     @FXML private GridPane monthView;
     @FXML private Label selectedDayLabel;
     @FXML private ListView<String> workingEmployeesList;
+    private final Map<LocalDate, List<String>> memorySchedules = new HashMap<>();
 
     private YearMonth currentMonth = YearMonth.now();
     private LocalDate selectedDate = LocalDate.now();
@@ -43,6 +47,10 @@ public class ScheduleController implements Initializable {
     private void syncTodayToggle() {
         if (todayBtn == null) return;
         todayBtn.setSelected(selectedDate.equals(LocalDate.now()));
+    }
+
+    private LocalDate weekStart(LocalDate any) {
+        return any.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
     }
 
     // ===== Buttons =====
@@ -125,12 +133,10 @@ public class ScheduleController implements Initializable {
 // τα chips κάτω από το header
         VBox employeesBox = new VBox(2);
 
-        // προσωρινό mock (μέχρι να το δέσεις με scheduleService)
-        boolean weekday = date.getDayOfWeek() != DayOfWeek.SATURDAY && date.getDayOfWeek() != DayOfWeek.SUNDAY;
-        if (inMonth && weekday) {
-            employeesBox.getChildren().add(employeeChip("Maria P."));
-            employeesBox.getChildren().add(employeeChip("Giorgos K."));
-            employeesBox.getChildren().add(employeeChip("Dimitris A."));
+        List<String> lines = memorySchedules.getOrDefault(date, List.of());
+        for (String s : lines) {
+            String name = s.contains(" (") ? s.substring(0, s.indexOf(" (")) : s;
+            employeesBox.getChildren().add(employeeChip(name));
         }
 
         root.getChildren().addAll(header, employeesBox);
@@ -157,22 +163,67 @@ public class ScheduleController implements Initializable {
     }
 
     private void updateRightPanel(LocalDate date) {
-        if (selectedDayLabel != null) {
-            selectedDayLabel.setText(date.toString());
-        }
+        if (selectedDayLabel != null) selectedDayLabel.setText(date.toString());
+
         if (workingEmployeesList != null) {
-            // προσωρινό mock
-            workingEmployeesList.getItems().setAll(
-                    "Maria P. (09:00 - 17:00)",
-                    "Giorgos K. (09:00 - 17:00)",
-                    "Dimitris A. (12:00 - 20:00)"
-            );
+            List<String> lines = memorySchedules.getOrDefault(date, List.of());
+            if (lines.isEmpty()) {
+                workingEmployeesList.getItems().setAll("No schedules for this day yet");
+            } else {
+                workingEmployeesList.getItems().setAll(lines);
+            }
         }
     }
 
     private String capitalize(String s) {
         s = s.toLowerCase();
         return Character.toUpperCase(s.charAt(0)) + s.substring(1);
+    }
+
+    private void onNewScheduleSaved(ScheduleController2.WeekSchedulePayload payload) {
+        if (payload == null) return;
+
+        String emp = payload.employee;
+        LocalDate from = payload.validFrom;
+        LocalDate to = payload.validTo;
+
+        // 1) CLEAR: σβήσε τον employee από ΟΛΟ το διάστημα (ώστε να μην διπλομπαίνει)
+        for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1)) { // inclusive
+            removeEmployeeFromDate(d, emp);
+        }
+
+        // 2) APPLY: γράψε το νέο πρόγραμμα (μόνο στις μέρες που υπάρχουν ranges)
+        for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1)) { // inclusive
+            DayOfWeek dow = d.getDayOfWeek();
+            LocalTime[] range = payload.ranges.get(dow);
+            if (range == null) continue;
+
+            LocalTime st = range[0];
+            LocalTime en = range[1];
+
+            String line = emp + " (" + st + " - " + en + ")";
+            memorySchedules.computeIfAbsent(d, x -> new ArrayList<>()).add(line);
+        }
+
+        // refresh UI
+        renderMonth(currentMonth);
+        updateRightPanel(selectedDate);
+        syncTodayToggle();
+
+        if (scheduleTabs != null) scheduleTabs.getSelectionModel().select(0);
+    }
+
+
+    private void removeEmployeeFromDate(LocalDate date, String employee) {
+        List<String> lines = memorySchedules.get(date);
+        if (lines == null) return;
+
+        // Σβήσε όλες τις γραμμές που ξεκινάνε με "employee ("
+        lines.removeIf(s -> s != null && s.startsWith(employee + " ("));
+
+        if (lines.isEmpty()) {
+            memorySchedules.remove(date);
+        }
     }
 
     @Override
@@ -184,18 +235,12 @@ public class ScheduleController implements Initializable {
             updateRightPanel(selectedDate);
             syncTodayToggle();
         }
-        // ✅ ΠΑΙΡΝΟΥΜΕ ΤΟΝ CONTROLLER ΤΟΥ schedule2.fxml
+        // ΠΑΙΡΝΟΥΜΕ ΤΟΝ CONTROLLER ΤΟΥ schedule2.fxml
         if (newScheduleViewController != null) {
-            newScheduleViewController.setOnScheduleSaved(() -> {
-                renderMonth(currentMonth);
-                updateRightPanel(selectedDate);
-                syncTodayToggle();
+            if (newScheduleViewController != null) {
+                newScheduleViewController.setOnScheduleSaved(this::onNewScheduleSaved);
+            }
 
-                // γύρνα στο Overview tab
-                if (scheduleTabs != null) {
-                    scheduleTabs.getSelectionModel().select(0);
-                }
-            });
         }
 
     }
