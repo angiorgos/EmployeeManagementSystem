@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
-
 <?import org.kordamp.ikonli.javafx.FontIcon?>
-<?import javafx.geometry.Insets?>
+
 <BorderPane prefHeight="768.0" prefWidth="1366.0"
             stylesheets="@../theme.css"
             xmlns="http://javafx.com/javafx/24.0.1"
@@ -23,7 +24,6 @@
     <center>
         <StackPane>
 
-            <!-- ================= TABLE VIEW ================= -->
             <VBox fx:id="tableViewContainer" spacing="20"
                   style="-fx-padding: 20; -fx-background-color: #F3F4F6;">
 
@@ -41,11 +41,12 @@
                         <TextField fx:id="searchField" promptText="Search Employee..."
                                    prefHeight="35.0" prefWidth="250.0"
                                    styleClass="text-field"
-                                   style="-fx-padding: 0 10 0 35;" /> <FontIcon iconLiteral="mdi2m-magnify" iconColor="#9CA3AF" iconSize="18">
-                        <StackPane.margin>
-                            <Insets left="12.0" />
-                        </StackPane.margin>
-                    </FontIcon>
+                                   style="-fx-padding: 0 10 0 35;" />
+                        <FontIcon iconLiteral="mdi2m-magnify" iconColor="#9CA3AF" iconSize="18">
+                            <StackPane.margin>
+                                <Insets left="12.0" />
+                            </StackPane.margin>
+                        </FontIcon>
                     </StackPane>
                     <Region HBox.hgrow="ALWAYS"/>
 
@@ -77,7 +78,6 @@
                 </TableView>
             </VBox>
 
-            <!-- ================= USER FORM ================= -->
             <VBox fx:id="formViewContainer"
                   visible="false"
                   spacing="20"
@@ -97,31 +97,40 @@
 
                 <Separator/>
 
+                <VBox alignment="CENTER" spacing="15.0">
+                    <StackPane>
+                        <ImageView fx:id="avatarView" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" visible="false"/>
+
+                        <FontIcon fx:id="defaultIcon" iconLiteral="mdi2a-account-circle" iconSize="120" iconColor="#E5E7EB"/>
+                    </StackPane>
+
+                    <Button text="Upload Photo" onAction="#handleUploadPhoto" styleClass="btn-secondary">
+                        <graphic><FontIcon iconLiteral="mdi2c-camera" iconSize="16" /></graphic>
+                    </Button>
+                </VBox>
+
+                <Separator/>
                 <GridPane hgap="20" vgap="15">
                     <columnConstraints>
                         <ColumnConstraints percentWidth="50"/>
                         <ColumnConstraints percentWidth="50"/>
                     </columnConstraints>
 
-                    <!-- USERNAME -->
                     <VBox GridPane.rowIndex="0" GridPane.columnIndex="0">
                         <Label text="Username *" style="-fx-font-weight: bold;"/>
                         <TextField fx:id="usernameField" styleClass="search-field"/>
                     </VBox>
 
-                    <!-- PASSWORD -->
                     <VBox GridPane.rowIndex="0" GridPane.columnIndex="1">
                         <Label text="Password" style="-fx-font-weight: bold;"/>
                         <PasswordField fx:id="passwordField" styleClass="search-field"/>
                     </VBox>
 
-                    <!-- ROLE -->
                     <VBox GridPane.rowIndex="1" GridPane.columnIndex="0">
                         <Label text="Role *" style="-fx-font-weight: bold;"/>
                         <ComboBox fx:id="roleComboBox" maxWidth="Infinity" styleClass="search-field"/>
                     </VBox>
 
-                    <!-- EMPLOYEE -->
                     <VBox GridPane.rowIndex="1" GridPane.columnIndex="1">
                         <Label text="Employee *" style="-fx-font-weight: bold;"/>
                         <ComboBox fx:id="employeeComboBox" maxWidth="Infinity" styleClass="search-field"/>
@@ -141,11 +150,10 @@
                 </HBox>
             </VBox>
 
-            <!-- ================= LOADING OVERLAY ================= -->
             <VBox fx:id="loadingOverlay" alignment="CENTER" spacing="20.0" style="-fx-background-color: white;" visible="false">
                 <ProgressIndicator styleClass="loading-spinner" prefWidth="60.0" prefHeight="60.0" />
                 <VBox alignment="CENTER" spacing="5.0">
-                    <Label text="Loading System Logs" textFill="#111827">
+                    <Label text="Loading Users" textFill="#111827">
                         <font><Font name="System Bold" size="20.0"/></font>
                     </Label>
                     <Label text="Please wait..." textFill="#6B7280">

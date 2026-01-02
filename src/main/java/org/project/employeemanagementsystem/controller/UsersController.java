@@ -10,10 +10,15 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
+import javafx.stage.FileChooser;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
+import org.kordamp.ikonli.javafx.FontIcon;
 import org.project.employeemanagementsystem.model.Employee;
 import org.project.employeemanagementsystem.model.Role;
 import org.project.employeemanagementsystem.model.User;
@@ -23,7 +28,11 @@ import org.project.employeemanagementsystem.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -52,6 +61,12 @@ public class UsersController implements Initializable {
     @FXML private ComboBox<Role> roleComboBox;
     @FXML private ComboBox<Employee> employeeComboBox;
 
+    // --- NEW: PROFILE PICTURE FIELDS ---
+    @FXML private ImageView avatarView;
+    @FXML private FontIcon defaultIcon;
+
+    private byte[] currentImageBytes = null; // Προσωρινή αποθήκευση της νέας εικόνας
+
     private FilteredList<User> filteredData;
     private User selectedUser;
 
@@ -61,6 +76,11 @@ public class UsersController implements Initializable {
         formViewContainer.setVisible(false);
         loadingOverlay.setVisible(true);
 
+        // --- CIRCULAR IMAGE SETUP ---
+        // Κόβουμε την εικόνα σε κύκλο (Ακτίνα 60 = Διάμετρος 120)
+        Circle clip = new Circle(60, 60, 60);
+        avatarView.setClip(clip);
+
         setupTableColumns();
         loadRoles();
         loadEmployees();
@@ -68,6 +88,37 @@ public class UsersController implements Initializable {
         Platform.runLater(this::loadUsers);
 
         searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilter(newVal));
+    }
+
+    // -------------------- IMAGE UPLOAD LOGIC --------------------
+    @FXML
+    public void handleUploadPhoto() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select Profile Picture");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
+        );
+
+        // Χρήση του Scene για να βρούμε το παράθυρο
+        File selectedFile = fileChooser.showOpenDialog(avatarView.getScene().getWindow());
+
+        if (selectedFile != null) {
+            try {
+                // 1. Διάβασε το αρχείο σε bytes (για τη βάση)
+                currentImageBytes = Files.readAllBytes(selectedFile.toPath());
+
+                // 2. Εμφάνισε το αμέσως στο ImageView (για το UI)
+                Image image = new Image(new ByteArrayInputStream(currentImageBytes));
+                avatarView.setImage(image);
+
+                // 3. Εμφάνισε την εικόνα, κρύψε το εικονίδιο
+                avatarView.setVisible(true);
+                defaultIcon.setVisible(false);
+
+            } catch (IOException e) {
+                showAlert(Alert.AlertType.ERROR, "Failed to load image: " + e.getMessage());
+            }
+        }
     }
 
     // -------------------- LOAD USERS --------------------
@@ -170,6 +221,13 @@ public class UsersController implements Initializable {
         selectedUser.setUsername(usernameField.getText().trim());
         selectedUser.setRole(roleComboBox.getValue());
 
+        // *** SAVE PROFILE PICTURE ***
+        // Αν έχουμε επιλέξει νέα εικόνα, την αποθηκεύουμε.
+        // Αν είναι null (δεν αλλάξαμε τίποτα), κρατάει την παλιά αν υπήρχε.
+        if (currentImageBytes != null) {
+            selectedUser.setProfilePicture(currentImageBytes);
+        }
+
         Employee selectedEmp = employeeComboBox.getValue();
         if (selectedEmp == null || selectedEmp.getId() == null) {
             showAlert(Alert.AlertType.ERROR, "Selected employee is invalid!");
@@ -229,11 +287,35 @@ public class UsersController implements Initializable {
         passwordField.clear();
         roleComboBox.setValue(null);
         employeeComboBox.setValue(null);
+
+        // Reset Image
+        avatarView.setImage(null);
+        avatarView.setVisible(false);
+        defaultIcon.setVisible(true);
+        currentImageBytes = null;
     }
 
     private void showForm(boolean show) {
         formViewContainer.setVisible(show);
         tableViewContainer.setVisible(!show);
+
+        // Αν μπαίνουμε στη φόρμα για EDIT, φορτώνουμε την εικόνα
+        if (show && selectedUser != null) {
+            if (selectedUser.getProfilePicture() != null && selectedUser.getProfilePicture().length > 0) {
+                // Μετατροπή από Byte Array (Database) σε Image (JavaFX)
+                Image img = new Image(new ByteArrayInputStream(selectedUser.getProfilePicture()));
+                avatarView.setImage(img);
+
+                avatarView.setVisible(true);
+                defaultIcon.setVisible(false);
+            } else {
+                // Δεν υπάρχει εικόνα
+                avatarView.setVisible(false);
+                defaultIcon.setVisible(true);
+            }
+            // Σημαντικό: Καθαρίζουμε το currentImageBytes για να μην κρατήσει σκουπίδια
+            currentImageBytes = null;
+        }
     }
 
     @FXML public void handleBackToTable() { showForm(false); }

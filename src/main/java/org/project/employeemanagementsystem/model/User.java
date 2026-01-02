@@ -30,6 +30,10 @@ public class User {
     @EqualsAndHashCode.Exclude
     private Employee employee;
 
+    @Lob
+    @Column(columnDefinition = "bytea")
+    private byte[] profilePicture;
+
     public boolean isActive(){
         // Για admin λογαριασμό που δεν αντιστοιχεί απαραίτητα σε υπάλληλο
         if(this.employee == null){
