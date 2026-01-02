@@ -35,6 +35,9 @@ public class ScheduleController2 implements Initializable {
     @FXML private DatePicker validFromPicker;
     @FXML private DatePicker validToPicker;
 
+
+    private ObservableList<String> allEmployees;
+
     public static class WeekSchedulePayload {
         public final String employee;
         public final Map<DayOfWeek, LocalTime[]> ranges; // start/end
@@ -137,17 +140,19 @@ public class ScheduleController2 implements Initializable {
     private void installEmployeePlaceholder() {
         if (employeeComboBox == null) return;
 
-        employeeComboBox.setEditable(false);
-
-        employeeComboBox.setButtonCell(new javafx.scene.control.ListCell<>() {
+        employeeComboBox.setButtonCell(new ListCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText("Choose Employee");
-                } else {
-                    setText(item);
-                }
+                setText(empty || item == null ? "Choose Employee" : item);
+            }
+        });
+
+        employeeComboBox.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? "" : item);
             }
         });
     }
@@ -447,14 +452,60 @@ public class ScheduleController2 implements Initializable {
         deleteFromScheduleBtn.setDisable(!okEmployee);
     }
 
+    private void enableEmployeeSearch() {
+        if (employeeComboBox == null) return;
+
+        TextField editor = employeeComboBox.getEditor();
+
+        editor.textProperty().addListener((obs, oldText, newText) -> {
+            if (newText == null) return;
+
+            String search = newText.toLowerCase(Locale.ENGLISH);
+
+            // Αν ο χρήστης ΔΕΝ έχει επιλέξει item από dropdown
+            if (!employeeComboBox.isShowing()) {
+                employeeComboBox.show();
+            }
+
+            if (search.isBlank()) {
+                employeeComboBox.setItems(FXCollections.observableArrayList(allEmployees));
+            } else {
+                List<String> filtered = allEmployees.stream()
+                        .filter(e -> e.toLowerCase(Locale.ENGLISH).contains(search))
+                        .toList();
+
+                employeeComboBox.setItems(FXCollections.observableArrayList(filtered));
+            }
+        });
+
+        // Όταν επιλέξει item από dropdown
+        employeeComboBox.valueProperty().addListener((obs, oldV, newV) -> {
+            if (newV != null) {
+                employeeComboBox.getEditor().setText(newV);
+            }
+        });
+    }
+
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+
         if (weekGrid == null) return;
 
-        // Mock employees για UI
         if (employeeComboBox != null) {
-            employeeComboBox.getItems().setAll("Maria Pap.", "Giorgos Kon.", "Dimitris Ar.");
+            allEmployees = FXCollections.observableArrayList(
+                    "Maria Pap.",
+                    "Giorgos Kon.",
+                    "Dimitris Ar."
+            );
+
+            employeeComboBox.setItems(FXCollections.observableArrayList(allEmployees));
+            employeeComboBox.setEditable(true);
         }
+
+        installEmployeePlaceholder();
+
+        enableEmployeeSearch();
 
         renderWeekGrid();
 
@@ -500,11 +551,6 @@ public class ScheduleController2 implements Initializable {
         enforceEndAfterStart(satStart, satEnd);
         enforceEndAfterStart(sunStart, sunEnd);
 
-        // Mock employees για UI
-        if (employeeComboBox != null) {
-            employeeComboBox.getItems().setAll("Maria Pap.", "Giorgos Kon.", "Dimitris Ar.");
-        }
-        installEmployeePlaceholder();
         setupValidityDatePickers();
 
         // αρχικά: submit κλειστό

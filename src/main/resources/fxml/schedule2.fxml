@@ -165,7 +165,7 @@
         <left>
             <VBox maxWidth="1.7976931348623157E308" prefHeight="593.0" prefWidth="255.0" BorderPane.alignment="CENTER">
                 <children>
-                    <ComboBox fx:id="employeeComboBox" prefHeight="40.0" prefWidth="252.0" promptText="Choose Employee" />
+                    <ComboBox fx:id="employeeComboBox" prefHeight="40.0" prefWidth="252.0" promptText="Choose Employee" styleClass="combo-box-base" />
                     <VBox prefHeight="35.0" prefWidth="255.0" />
                     <VBox prefHeight="452.0" prefWidth="255.0">
                         <children>
