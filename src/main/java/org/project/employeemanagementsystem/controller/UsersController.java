@@ -14,8 +14,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
+import org.project.employeemanagementsystem.model.Employee;
 import org.project.employeemanagementsystem.model.Role;
 import org.project.employeemanagementsystem.model.User;
+import org.project.employeemanagementsystem.service.EmployeeService;
 import org.project.employeemanagementsystem.service.RoleService;
 import org.project.employeemanagementsystem.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,163 +26,217 @@ import org.springframework.stereotype.Controller;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
-//w
+
 @Controller
 public class UsersController implements Initializable {
 
     @Autowired private UserService userService;
     @Autowired private RoleService roleService;
+    @Autowired private EmployeeService employeeService;
 
+    // --- VIEWS & OVERLAYS ---
     @FXML private VBox tableViewContainer;
     @FXML private VBox formViewContainer;
-    @FXML private VBox roleFormContainer;
     @FXML private VBox loadingOverlay;
     @FXML private Label formTitle;
-    @FXML private Label roleFormTitle;
 
+    // --- TABLE ---
     @FXML private TableView<User> usersTable;
     @FXML private TableColumn<User, Long> idCol;
     @FXML private TableColumn<User, String> usernameCol;
     @FXML private TableColumn<User, String> roleCol;
     @FXML private TableColumn<User, Void> actionCol;
 
+    // // --- FORM ---
     @FXML private TextField searchField;
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
     @FXML private ComboBox<Role> roleComboBox;
-
-    @FXML private TextField roleNameField;
+    @FXML private ComboBox<Employee> employeeComboBox;
 
     private FilteredList<User> filteredData;
     private User selectedUser;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+
+        // Initial state (same as DepartmentController)
+        loadingOverlay.setVisible(true);
+        tableViewContainer.setVisible(false);
+        formViewContainer.setVisible(false);
+
         setupTableColumns();
         loadRoles();
+        loadEmployees();
+
         Platform.runLater(this::loadUsers);
 
-        searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilter(newVal));
+        searchField.textProperty().addListener(
+                (obs, oldVal, newVal) -> applyFilter(newVal)
+        );
     }
+
+    /* ===================== DATA LOADING ===================== */
 
     private void loadUsers() {
         loadingOverlay.setVisible(true);
-        tableViewContainer.setVisible(false);
+        loadingOverlay.setOpacity(1);
 
         Task<List<User>> task = new Task<>() {
             @Override
-            protected List<User> call() { return userService.getAllUsers(); }
+            protected List<User> call() {
+                return userService.getAllUsers();
+            }
         };
 
         task.setOnSucceeded(event -> {
-            filteredData = new FilteredList<>(FXCollections.observableArrayList(task.getValue()));
+            filteredData = new FilteredList<>(
+                    FXCollections.observableArrayList(task.getValue()),
+                    u -> true
+            );
             usersTable.setItems(filteredData);
-            applyFilter(searchField.getText());
-            addActionButtonsToTable();
 
-            // Fade out loading overlay
+            addActionButtonsToTable();
+            applyFilter(searchField.getText());
+
             PauseTransition delay = new PauseTransition(Duration.seconds(0.3));
             delay.setOnFinished(e -> {
-                FadeTransition fade = new FadeTransition(Duration.seconds(0.5), loadingOverlay);
-                fade.setFromValue(1.0);
-                fade.setToValue(0.0);
-                fade.setOnFinished(evt -> loadingOverlay.setVisible(false));
+                FadeTransition fade = new FadeTransition(
+                        Duration.seconds(0.5), loadingOverlay
+                );
+                fade.setFromValue(1);
+                fade.setToValue(0);
+                fade.setOnFinished(x -> loadingOverlay.setVisible(false));
                 fade.play();
                 tableViewContainer.setVisible(true);
             });
             delay.play();
         });
 
-        task.setOnFailed(event -> loadingOverlay.setVisible(false));
+        task.setOnFailed(event -> {
+            loadingOverlay.setVisible(false);
+            Alert alert = new Alert(Alert.AlertType.ERROR,
+                    "Failed to load users: " + task.getException().getMessage());
+            styleDialog(alert);
+            alert.show();
+        });
+
         new Thread(task).start();
     }
+
+    /* ===================== TABLE SETUP ===================== */
 
     private void setupTableColumns() {
         idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         usernameCol.setCellValueFactory(new PropertyValueFactory<>("username"));
         roleCol.setCellValueFactory(cell -> {
             Role role = cell.getValue().getRole();
-            return new javafx.beans.property.SimpleStringProperty(role != null ? role.getName() : "");
+            return new javafx.beans.property.SimpleStringProperty(
+                    role != null ? role.getName() : ""
+            );
         });
     }
 
     private void applyFilter(String query) {
-        if (query == null || query.isEmpty()) filteredData.setPredicate(u -> true);
-        else {
+        if (query == null || query.isEmpty()) {
+            filteredData.setPredicate(u -> true);
+        } else {
             String lower = query.toLowerCase();
-            filteredData.setPredicate(u -> u.getUsername().toLowerCase().contains(lower));
+            filteredData.setPredicate(
+                    u -> u.getUsername().toLowerCase().contains(lower)
+            );
         }
     }
+
+    /* ===================== COMBOBOX LOADERS ===================== */
 
     private void loadRoles() {
         roleComboBox.getItems().setAll(roleService.getAllRoles());
         roleComboBox.setConverter(new StringConverter<>() {
-            @Override
-            public String toString(Role role) { return role != null ? role.getName() : ""; }
-            @Override
-            public Role fromString(String s) { return null; }
+            @Override public String toString(Role r) {
+                return r == null ? "" : r.getName();
+            }
+            @Override public Role fromString(String s) { return null; }
         });
     }
 
-    @FXML
-    private void onCreateUser() { showUserForm(null); }
+    private void loadEmployees() {
+        employeeComboBox.getItems().setAll(employeeService.getActiveEmployees());
+        employeeComboBox.setConverter(new StringConverter<>() {
+            @Override public String toString(Employee e) {
+                return e == null ? "" : e.getFirstName() + " " + e.getLastName();
+            }
+            @Override public Employee fromString(String s) { return null; }
+        });
+    }
+
+    /* ===================== FORM ACTIONS ===================== */
 
     @FXML
-    private void onCreateRole() {
-        roleNameField.clear();
-        roleFormTitle.setText("New Role");
+    public void onCreateUser() {
+        selectedUser = null;
+        formTitle.setText("New User");
+        usernameField.clear();
+        passwordField.clear();
+        roleComboBox.setValue(null);
+        employeeComboBox.setValue(null);
 
         tableViewContainer.setVisible(false);
-        formViewContainer.setVisible(false);
-        roleFormContainer.setVisible(true);
+        formViewContainer.setVisible(true);
     }
 
     @FXML
-    private void onSaveUser() {
+    public void onSaveUser() {
         String username = usernameField.getText().trim();
-        Role role = roleComboBox.getValue();
-        String password = passwordField.getText();
 
-        if(username.isEmpty() || role == null) return;
+        if (username.isEmpty()
+                || roleComboBox.getValue() == null
+                || employeeComboBox.getValue() == null) {
 
-        if(selectedUser == null) selectedUser = new User();
+            Alert alert = new Alert(Alert.AlertType.WARNING,
+                    "All fields except password are required.");
+            styleDialog(alert);
+            alert.show();
+            return;
+        }
+
+        if (selectedUser == null) selectedUser = new User();
+
         selectedUser.setUsername(username);
-        selectedUser.setRole(role);
-        if(password != null && !password.isEmpty()) selectedUser.setPassword(password);
+        selectedUser.setRole(roleComboBox.getValue());
+        selectedUser.setEmployee(employeeComboBox.getValue());
+
+        if (!passwordField.getText().isBlank()) {
+            selectedUser.setPassword(passwordField.getText());
+        }
 
         userService.saveUser(selectedUser);
-        loadUsers();
+
+        Alert alert = new Alert(Alert.AlertType.INFORMATION,
+                "User saved successfully!");
+        styleDialog(alert);
+        alert.showAndWait();
+
+        handleRefresh();
         handleBackToTable();
     }
 
     @FXML
-    private void onSaveRole() {
-        String roleName = roleNameField.getText().trim();
-        if(roleName.isEmpty()) return;
-
-        Role role = new Role();
-        role.setName(roleName);
-        roleService.saveRole(role);
-
-        // Refresh user role ComboBox
-        loadRoles();
-
-        roleFormContainer.setVisible(false);
-        tableViewContainer.setVisible(true);
-    }
-
-    @FXML
-    private void handleBackToTable() {
+    public void handleBackToTable() {
         formViewContainer.setVisible(false);
-        roleFormContainer.setVisible(false);
         tableViewContainer.setVisible(true);
     }
 
     @FXML
-    private void handleRefresh() { loadUsers(); }
+    public void handleRefresh() {
+        loadUsers();
+    }
+
+    /* ===================== ACTION COLUMN ===================== */
 
     private void addActionButtonsToTable() {
         actionCol.setCellFactory(param -> new TableCell<>() {
+
             private final Button btnEdit = new Button("Edit");
             private final Button btnDelete = new Button("Delete");
             private final HBox pane = new HBox(5, btnEdit, btnDelete);
@@ -190,11 +246,33 @@ public class UsersController implements Initializable {
                 btnEdit.getStyleClass().addAll("table-btn", "table-btn-edit");
                 btnDelete.getStyleClass().addAll("table-btn", "table-btn-delete");
 
-                btnEdit.setOnAction(e -> showUserForm(getTableView().getItems().get(getIndex())));
+                btnEdit.setOnAction(e -> {
+                    selectedUser = getTableView().getItems().get(getIndex());
+                    formTitle.setText("Edit User");
+                    usernameField.setText(selectedUser.getUsername());
+                    roleComboBox.setValue(selectedUser.getRole());
+                    employeeComboBox.setValue(selectedUser.getEmployee());
+                    passwordField.clear();
+
+                    tableViewContainer.setVisible(false);
+                    formViewContainer.setVisible(true);
+                });
+
                 btnDelete.setOnAction(e -> {
                     User user = getTableView().getItems().get(getIndex());
-                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Delete user: " + user.getUsername() + "?");
-                    confirm.showAndWait().ifPresent(r -> { if(r==ButtonType.OK) { userService.deleteUser(user); loadUsers(); }});
+                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                            "Delete user: " + user.getUsername() + "?");
+                    styleDialog(confirm);
+
+                    if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+                        userService.deleteUser(user);
+                        loadUsers();
+
+                        Alert info = new Alert(Alert.AlertType.INFORMATION,
+                                "User deleted.");
+                        styleDialog(info);
+                        info.show();
+                    }
                 });
             }
 
@@ -202,23 +280,15 @@ public class UsersController implements Initializable {
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
                 setGraphic(empty ? null : pane);
+                setStyle("-fx-padding: 0;");
             }
         });
     }
 
-    private void showUserForm(User user) {
-        selectedUser = user;
-        if(user == null){
-            formTitle.setText("New User");
-            usernameField.clear();
-            passwordField.clear();
-            roleComboBox.setValue(null);
-        } else {
-            formTitle.setText("Edit User");
-            usernameField.setText(user.getUsername());
-            roleComboBox.setValue(user.getRole());
-        }
-        tableViewContainer.setVisible(false);
-        formViewContainer.setVisible(true);
+    private void styleDialog(Dialog<?> dialog) {
+        try {
+            dialog.getDialogPane().getStylesheets()
+                    .add(getClass().getResource("/theme.css").toExternalForm());
+        } catch (Exception ignored) {}
     }
 }
