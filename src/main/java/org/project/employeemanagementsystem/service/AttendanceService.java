@@ -5,10 +5,10 @@ import org.project.employeemanagementsystem.model.Employee;
 import org.project.employeemanagementsystem.repository.AttendanceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // Σημαντικό για checkOut
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
@@ -18,28 +18,21 @@ import java.util.Optional;
 @Service
 public class AttendanceService {
 
+    private final AttendanceRepository attendanceRepository;
+    private final SystemLogService systemLogService; // <--- Προσθήκη για Audit Log
+
+    // Constructor Injection (Best Practice)
     @Autowired
-    private AttendanceRepository attendanceRepository;
+    public AttendanceService(AttendanceRepository attendanceRepository, SystemLogService systemLogService) {
+        this.attendanceRepository = attendanceRepository;
+        this.systemLogService = systemLogService;
+    }
 
     public List<Attendance> getAllAttendanceRecords() {
         return attendanceRepository.findAll();
     }
 
     // --- Βασικές Μέθοδοι Λογικής ---
-
-    // Επιστρέφει την εγγραφή της ημέρας ή null (για το UI)
-    public Attendance getTodayOrNull(Long employeeId, LocalDate date) {
-        // Χρειάζεσαι ένα dummy employee object ή να φτιάξεις query με ID στο repo
-        // Εδώ υποθέτουμε ότι έχεις το employee object ή αλλάζουμε το repo query
-        // Για απλότητα, ας υποθέσουμε ότι το repository έχει findByEmployeeIdAndDate
-        // Αλλά επειδή φτιάξαμε το findByEmployeeAndDate, θα το κάνουμε έτσι:
-
-        // Προσοχή: Εδώ χρειάζεται να βρούμε τον Employee πρώτα, αλλά για να μην
-        // μπλέξουμε με EmployeeService dependency εδώ, ας αλλάξουμε λίγο το Repository query
-        // ή ας υποθέσουμε ότι το Controller μας δίνει το Employee object.
-        // Στο Controller έχεις το Employee object από το TableView, οπότε:
-        return null; // Θα φτιάξουμε overloaded μέθοδο παρακάτω
-    }
 
     public Attendance getTodayOrNull(Employee employee, LocalDate date) {
         return attendanceRepository.findByEmployeeAndDate(employee, date).orElse(null);
@@ -57,7 +50,13 @@ public class AttendanceService {
         attendance.setEmployee(employee);
         attendance.setDate(date);
         attendance.setCheckInTime(time);
+
         attendanceRepository.save(attendance);
+
+        // --- AUDIT LOG ---
+        systemLogService.log("CHECK_IN",
+                String.format("Employee: %s %s checked in at %s",
+                        employee.getFirstName(), employee.getLastName(), time));
     }
 
     @Transactional
@@ -71,6 +70,11 @@ public class AttendanceService {
 
         attendance.setCheckOutTime(time);
         attendanceRepository.save(attendance);
+
+        // --- AUDIT LOG ---
+        systemLogService.log("CHECK_OUT",
+                String.format("Employee: %s %s checked out at %s",
+                        employee.getFirstName(), employee.getLastName(), time));
     }
 
     // --- Μέθοδοι Υπολογισμού Μισθοδοσίας ---

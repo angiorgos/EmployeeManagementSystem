@@ -19,16 +19,19 @@ public class LeaveRequestService {
     private final HolidayRepository holidayRepository;
     private final LeaveTypeRepository leaveTypeRepository;
     private final UserSession userSession;
+    private final SystemLogService systemLogService; // <--- Προσθήκη για Audit Log
 
     @Autowired
     public LeaveRequestService(LeaveRequestRepository leaveRequestRepository,
                                HolidayRepository holidayRepository,
                                LeaveTypeRepository leaveTypeRepository,
-                               UserSession userSession) {
+                               UserSession userSession,
+                               SystemLogService systemLogService) {
         this.leaveRequestRepository = leaveRequestRepository;
         this.holidayRepository = holidayRepository;
         this.leaveTypeRepository = leaveTypeRepository;
         this.userSession = userSession;
+        this.systemLogService = systemLogService;
     }
 
     // --- 1. CURRENT USER HELPER ---
@@ -72,16 +75,28 @@ public class LeaveRequestService {
         // ΕΔΩ ΕΙΝΑΙ Η ΛΟΓΙΚΗ ΔΗΜΙΟΥΡΓΙΑΣ
         request.setStatus(LeaveStatus.PENDING);
         leaveRequestRepository.save(request);
+
+        // --- AUDIT LOG ---
+        String details = String.format("Employee: %s %s, Type: %s, Days: %d (%s to %s)",
+                request.getEmployee().getFirstName(), request.getEmployee().getLastName(),
+                request.getLeaveType().getName(), requestedDays,
+                request.getStartDate(), request.getEndDate());
+
+        systemLogService.log("CREATE_LEAVE_REQUEST", details);
     }
 
     // --- 4. UPDATE EXISTING REQUEST (Για το Tab 2 - Admin Actions) ---
-    // ΑΥΤΗ Η ΜΕΘΟΔΟΣ ΕΛΕΙΠΕ
     @Transactional
     public void updateRequestStatus(LeaveRequest request) {
         // Σώζουμε το request όπως μας ήρθε (π.χ. APPROVED ή REJECTED)
-        // Χωρίς να το γυρίσουμε σε PENDING
         leaveRequestRepository.save(request);
-        System.out.println("SERVICE: Request " + request.getId() + " updated to " + request.getStatus());
+
+        // --- AUDIT LOG ---
+        String details = String.format("Request ID: %d, New Status: %s, Employee: %s %s",
+                request.getId(), request.getStatus(),
+                request.getEmployee().getFirstName(), request.getEmployee().getLastName());
+
+        systemLogService.log("UPDATE_LEAVE_STATUS", details);
     }
 
     // --- 5. CALCULATIONS ---
