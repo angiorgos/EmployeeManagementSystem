@@ -3,6 +3,9 @@ package org.project.employeemanagementsystem.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.project.employeemanagementsystem.util.AuditListener;
+import org.hibernate.annotations.JdbcTypeCode;
+
+import java.sql.Types;
 
 @Entity
 @Table(name = "users")
@@ -31,7 +34,8 @@ public class User {
     private Employee employee;
 
     @Lob
-    @Column(columnDefinition = "bytea")
+    @JdbcTypeCode(Types.VARBINARY)
+    @Column(name = "profile_picture")
     private byte[] profilePicture;
 
     public boolean isActive(){

@@ -11,10 +11,10 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Circle;
+import javafx.scene.paint.ImagePattern; // <--- ΣΗΜΑΝΤΙΚΟ IMPORT
+import javafx.scene.shape.Circle;       // <--- ΣΗΜΑΝΤΙΚΟ IMPORT
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
@@ -61,11 +61,12 @@ public class UsersController implements Initializable {
     @FXML private ComboBox<Role> roleComboBox;
     @FXML private ComboBox<Employee> employeeComboBox;
 
-    // --- NEW: PROFILE PICTURE FIELDS ---
-    @FXML private ImageView avatarView;
+    // --- PROFILE PICTURE FIELDS ---
+    // ΑΛΛΑΓΗ: Χρησιμοποιούμε Circle αντί για ImageView για τέλειο στρογγυλό σχήμα
+    @FXML private Circle avatarCircle;
     @FXML private FontIcon defaultIcon;
 
-    private byte[] currentImageBytes = null; // Προσωρινή αποθήκευση της νέας εικόνας
+    private byte[] currentImageBytes = null; // Προσωρινή αποθήκευση bytes για τη βάση
 
     private FilteredList<User> filteredData;
     private User selectedUser;
@@ -75,11 +76,6 @@ public class UsersController implements Initializable {
         tableViewContainer.setVisible(false);
         formViewContainer.setVisible(false);
         loadingOverlay.setVisible(true);
-
-        // --- CIRCULAR IMAGE SETUP ---
-        // Κόβουμε την εικόνα σε κύκλο (Ακτίνα 60 = Διάμετρος 120)
-        Circle clip = new Circle(60, 60, 60);
-        avatarView.setClip(clip);
 
         setupTableColumns();
         loadRoles();
@@ -99,20 +95,19 @@ public class UsersController implements Initializable {
                 new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
         );
 
-        // Χρήση του Scene για να βρούμε το παράθυρο
-        File selectedFile = fileChooser.showOpenDialog(avatarView.getScene().getWindow());
+        File selectedFile = fileChooser.showOpenDialog(tableViewContainer.getScene().getWindow());
 
         if (selectedFile != null) {
             try {
-                // 1. Διάβασε το αρχείο σε bytes (για τη βάση)
+                // 1. Διάβασε το αρχείο σε bytes (για αποθήκευση στη βάση)
                 currentImageBytes = Files.readAllBytes(selectedFile.toPath());
 
-                // 2. Εμφάνισε το αμέσως στο ImageView (για το UI)
+                // 2. Εμφάνισε το στο UI χρησιμοποιώντας ImagePattern στο Circle
                 Image image = new Image(new ByteArrayInputStream(currentImageBytes));
-                avatarView.setImage(image);
+                avatarCircle.setFill(new ImagePattern(image));
 
-                // 3. Εμφάνισε την εικόνα, κρύψε το εικονίδιο
-                avatarView.setVisible(true);
+                // 3. Εμφάνισε τον κύκλο, κρύψε το εικονίδιο
+                avatarCircle.setVisible(true);
                 defaultIcon.setVisible(false);
 
             } catch (IOException e) {
@@ -222,8 +217,7 @@ public class UsersController implements Initializable {
         selectedUser.setRole(roleComboBox.getValue());
 
         // *** SAVE PROFILE PICTURE ***
-        // Αν έχουμε επιλέξει νέα εικόνα, την αποθηκεύουμε.
-        // Αν είναι null (δεν αλλάξαμε τίποτα), κρατάει την παλιά αν υπήρχε.
+        // Αν έχουμε επιλέξει νέα εικόνα, την περνάμε στο αντικείμενο
         if (currentImageBytes != null) {
             selectedUser.setProfilePicture(currentImageBytes);
         }
@@ -242,14 +236,14 @@ public class UsersController implements Initializable {
             return;
         }
 
-        // --- Unlink old employee if exists and is different ---
+        // Unlink old employee logic
         if (selectedUser.getEmployee() != null && !selectedUser.getEmployee().getId().equals(empFromDb.getId())) {
             Employee oldEmp = selectedUser.getEmployee();
             oldEmp.setUser(null);
             employeeService.saveEmployee(oldEmp);
         }
 
-        // --- Link new employee (owning side) ---
+        // Link new employee
         empFromDb.setUser(selectedUser);
         selectedUser.setEmployee(empFromDb);
 
@@ -258,10 +252,7 @@ public class UsersController implements Initializable {
         }
 
         try {
-            // Save employee first (owning side)
             employeeService.saveEmployee(empFromDb);
-
-            // Then save user
             userService.saveUser(selectedUser);
 
             showAlert(Alert.AlertType.INFORMATION, "User saved successfully!");
@@ -289,8 +280,8 @@ public class UsersController implements Initializable {
         employeeComboBox.setValue(null);
 
         // Reset Image
-        avatarView.setImage(null);
-        avatarView.setVisible(false);
+        avatarCircle.setFill(null);
+        avatarCircle.setVisible(false);
         defaultIcon.setVisible(true);
         currentImageBytes = null;
     }
@@ -299,21 +290,26 @@ public class UsersController implements Initializable {
         formViewContainer.setVisible(show);
         tableViewContainer.setVisible(!show);
 
-        // Αν μπαίνουμε στη φόρμα για EDIT, φορτώνουμε την εικόνα
+        // Αν μπαίνουμε στη φόρμα για EDIT
         if (show && selectedUser != null) {
             if (selectedUser.getProfilePicture() != null && selectedUser.getProfilePicture().length > 0) {
-                // Μετατροπή από Byte Array (Database) σε Image (JavaFX)
+                // Φόρτωση από τη βάση -> Circle
                 Image img = new Image(new ByteArrayInputStream(selectedUser.getProfilePicture()));
-                avatarView.setImage(img);
+                avatarCircle.setFill(new ImagePattern(img));
 
-                avatarView.setVisible(true);
+                avatarCircle.setVisible(true);
                 defaultIcon.setVisible(false);
             } else {
-                // Δεν υπάρχει εικόνα
-                avatarView.setVisible(false);
+                avatarCircle.setVisible(false);
                 defaultIcon.setVisible(true);
             }
-            // Σημαντικό: Καθαρίζουμε το currentImageBytes για να μην κρατήσει σκουπίδια
+            // Καθαρίζουμε τα bytes ώστε να μην κάνουμε overwrite αν ο χρήστης δεν αλλάξει εικόνα
+            currentImageBytes = null;
+        }
+        else if (show) {
+            // New User Mode
+            avatarCircle.setVisible(false);
+            defaultIcon.setVisible(true);
             currentImageBytes = null;
         }
     }
@@ -365,7 +361,6 @@ public class UsersController implements Initializable {
         });
     }
 
-    // -------------------- UTILS --------------------
     private void showAlert(Alert.AlertType type, String msg) {
         Alert alert = new Alert(type, msg);
         styleDialog(alert);
