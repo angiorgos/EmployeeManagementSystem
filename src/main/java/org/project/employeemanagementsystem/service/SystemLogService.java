@@ -30,13 +30,12 @@ public class SystemLogService {
         }
 
         logRepository.save(newLog);
-        logRepository.flush();
     }
 
     public List<SystemLog> getAllLogs() {
         return logRepository.findAllByOrderByTimestampDesc();
     }
-    
+
     @Transactional
     public void clearAllLogs() {
         logRepository.deleteAll();

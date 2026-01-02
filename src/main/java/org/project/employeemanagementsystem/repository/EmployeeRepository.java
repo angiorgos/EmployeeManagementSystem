@@ -4,6 +4,7 @@ import org.project.employeemanagementsystem.model.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
@@ -13,4 +14,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     boolean existsByEmail(String email);
     //Μετράει πόσοι υπάλληλοι ανήκουν σε ένα τμήμα
     long countByDepartmentId(Long departmentId);
+    Optional<Employee> findByEmail(String email);
+
 }

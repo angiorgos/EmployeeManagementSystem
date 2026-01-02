@@ -100,6 +100,12 @@
                         <Label style="-fx-font-weight: bold;" text="Salary (€)" />
                         <TextField fx:id="salaryField" promptText="0.00" styleClass="search-field" />
                     </VBox>
+
+                    <VBox GridPane.columnIndex="1" GridPane.rowIndex="3">
+                        <Label style="-fx-font-weight: bold;" text="Hire Date *" />
+                        <DatePicker fx:id="hireDateField" maxWidth="Infinity" styleClass="search-field" />
+                    </VBox>
+
                     <rowConstraints>
                         <RowConstraints />
                         <RowConstraints />

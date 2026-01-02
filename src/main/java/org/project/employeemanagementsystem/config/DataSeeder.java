@@ -129,6 +129,7 @@ public class DataSeeder implements CommandLineRunner {
         allEmployees.add(createEmployee("Kevin", "Thomas", "kevin@ems.com", "6999999999", "SSN-010", 2800.0, depts.get(0), userRole, "user8", "123")); // IT
         allEmployees.add(createEmployee("Laura", "Jackson", "laura@ems.com", "6900000001", "SSN-011", 2400.0, depts.get(1), userRole, "user9", "123")); // HR
 
+
         // ==========================================
         // 5. SCHEDULES (Last 30 days + Next 7 days)
         // ==========================================
