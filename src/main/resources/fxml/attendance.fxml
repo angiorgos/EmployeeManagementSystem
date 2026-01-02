@@ -15,6 +15,7 @@
 <?import javafx.scene.text.Font?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
+<?import javafx.scene.shape.Circle?>
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
             prefHeight="768.0" prefWidth="1366.0"
             stylesheets="@../theme.css"
@@ -84,7 +85,11 @@
                             <VBox styleClass="card" spacing="15.0" alignment="TOP_CENTER" style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);">
                                 <Label text="Selected Employee" style="-fx-font-size: 14px; -fx-text-fill: #9CA3AF; -fx-font-weight: bold;"/>
 
-                                <FontIcon iconLiteral="mdi2a-account-circle" iconSize="80" iconColor="#E5E7EB"/>
+                                <StackPane>
+                                    <Circle fx:id="employeeAvatar" radius="40.0" fill="WHITE" stroke="#d1d5db" strokeWidth="1" visible="false"/>
+
+                                    <FontIcon fx:id="defaultEmployeeIcon" iconLiteral="mdi2a-account-circle" iconSize="80" iconColor="#E5E7EB"/>
+                                </StackPane>
 
                                 <VBox alignment="CENTER" spacing="5.0">
                                     <Label fx:id="selectedNameLabel" text="Select an employee" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #111827;"/>

@@ -14,8 +14,12 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.ImagePattern;
+import javafx.scene.shape.Circle;
 import javafx.util.Duration;
+import org.kordamp.ikonli.javafx.FontIcon;
 import org.project.employeemanagementsystem.model.Attendance;
 import org.project.employeemanagementsystem.model.Employee;
 import org.project.employeemanagementsystem.service.AttendanceService;
@@ -23,6 +27,7 @@ import org.project.employeemanagementsystem.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
+import java.io.ByteArrayInputStream;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -40,8 +45,8 @@ public class AttendanceController implements Initializable {
     @Autowired private EmployeeService employeeService;
     @Autowired private AttendanceService attendanceService;
 
-    // FXML Elements
-    @FXML private VBox loadingOverlay; // <-- Σύνδεση με το Overlay
+    // --- FXML Elements ---
+    @FXML private VBox loadingOverlay;
     @FXML private TextField searchField;
     @FXML private Label pcTimeLabel;
     @FXML private TableView<Employee> employeesTable;
@@ -52,6 +57,7 @@ public class AttendanceController implements Initializable {
     @FXML private TableColumn<Employee, String> colLastIn;
     @FXML private TableColumn<Employee, String> colLastOut;
 
+    // Right Panel Elements
     @FXML private Label selectedNameLabel;
     @FXML private Label selectedDeptLabel;
     @FXML private Label selectedRoleLabel;
@@ -61,6 +67,11 @@ public class AttendanceController implements Initializable {
     @FXML private Label todayOutLabel;
     @FXML private Label messageLabel;
 
+    // --- Avatar Elements ---
+    @FXML private Circle employeeAvatar;
+    @FXML private FontIcon defaultEmployeeIcon;
+
+    // --- Data & Helpers ---
     private final ObservableList<Employee> employees = FXCollections.observableArrayList();
     private FilteredList<Employee> filteredEmployees;
     private final Map<Long, Attendance> todayAttendanceMap = new HashMap<>();
@@ -74,49 +85,36 @@ public class AttendanceController implements Initializable {
         setupSearch();
         setupSelection();
         startClock();
-        loadData(); // <-- Εδώ ξεκινάει το Loading
+        loadData();
     }
 
-    // --- LOADING LOGIC WITH OVERLAY ---
     private void loadData() {
-        // 1. Εμφάνιση Overlay
         if (loadingOverlay != null) {
             loadingOverlay.setVisible(true);
             loadingOverlay.setOpacity(1.0);
         }
 
-        // 2. Μικρή καθυστέρηση για να προλάβει να φανεί το Overlay
         PauseTransition delay = new PauseTransition(Duration.millis(50));
         delay.setOnFinished(ev -> {
-
-            // 3. Background Task (Βάση Δεδομένων)
             Task<AttendanceDataPayload> task = new Task<>() {
                 @Override
-                protected AttendanceDataPayload call() throws Exception {
-                    // Fetch Employees
+                protected AttendanceDataPayload call() {
                     List<Employee> empList = employeeService.getAllEmployees();
-                    // Fetch Attendance
                     List<Attendance> attList = attendanceService.getAttendanceByDate(LocalDate.now());
-
                     return new AttendanceDataPayload(empList, attList);
                 }
             };
 
-            // 4. Success -> Update UI & Fade Out
             task.setOnSucceeded(e -> {
                 AttendanceDataPayload data = task.getValue();
-
-                // Ενημέρωση λιστών (στο UI Thread)
                 employees.setAll(data.employees);
 
                 todayAttendanceMap.clear();
                 for (Attendance att : data.attendances) {
                     todayAttendanceMap.put(att.getEmployee().getId(), att);
                 }
-
                 employeesTable.refresh();
 
-                // Fade Out Animation
                 if (loadingOverlay != null) {
                     FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), loadingOverlay);
                     fadeOut.setFromValue(1.0);
@@ -134,11 +132,9 @@ public class AttendanceController implements Initializable {
 
             new Thread(task).start();
         });
-
         delay.play();
     }
 
-    // Βοηθητική κλάση για μεταφορά δεδομένων από το Task
     private static class AttendanceDataPayload {
         List<Employee> employees;
         List<Attendance> attendances;
@@ -194,18 +190,45 @@ public class AttendanceController implements Initializable {
         employeesTable.getSelectionModel().selectedItemProperty().addListener((obs, oldEmp, newEmp) -> {
             clearMessage();
             if (newEmp == null) {
-                selectedNameLabel.setText("—");
-                selectedDeptLabel.setText("—");
-                selectedRoleLabel.setText("—");
+                selectedNameLabel.setText("Select an employee");
+                selectedDeptLabel.setText("Department: -");
+                selectedRoleLabel.setText("Role: -");
                 todayInLabel.setText("Check In: —");
                 todayOutLabel.setText("Check Out: —");
+                showDefaultIcon(); // Reset εικόνας
             } else {
                 selectedNameLabel.setText(newEmp.getFirstName() + " " + newEmp.getLastName());
-                selectedDeptLabel.setText(newEmp.getDepartment() != null ? "Dept: " + newEmp.getDepartment().getName() : "-");
+                selectedDeptLabel.setText(newEmp.getDepartment() != null ? "Dept: " + newEmp.getDepartment().getName() : "Dept: -");
                 selectedRoleLabel.setText("Role: " + (newEmp.getUser() != null && newEmp.getUser().getRole() != null ? newEmp.getUser().getRole().getName() : "-"));
+
                 refreshTodayPanel(newEmp);
+                updateSelectedEmployeeAvatar(newEmp); // Φόρτωση εικόνας
             }
         });
+    }
+
+    // --- LOGIC ΓΙΑ ΤΗ ΦΩΤΟΓΡΑΦΙΑ ---
+    private void updateSelectedEmployeeAvatar(Employee employee) {
+        if (employee.getUser() != null &&
+                employee.getUser().getProfilePicture() != null &&
+                employee.getUser().getProfilePicture().length > 0) {
+
+            try {
+                Image img = new Image(new ByteArrayInputStream(employee.getUser().getProfilePicture()));
+                employeeAvatar.setFill(new ImagePattern(img));
+                employeeAvatar.setVisible(true);
+                defaultEmployeeIcon.setVisible(false);
+            } catch (Exception e) {
+                showDefaultIcon();
+            }
+        } else {
+            showDefaultIcon();
+        }
+    }
+
+    private void showDefaultIcon() {
+        employeeAvatar.setVisible(false);
+        defaultEmployeeIcon.setVisible(true);
     }
 
     private void refreshTodayPanel(Employee employee) {
@@ -245,8 +268,7 @@ public class AttendanceController implements Initializable {
         Timeline clock = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
             pcTimeLabel.setText(LocalDateTime.now().format(CLOCK_FMT));
         }));
-
-        clock.setCycleCount(Timeline.INDEFINITE); 
+        clock.setCycleCount(Timeline.INDEFINITE);
         clock.play();
     }
 
@@ -255,7 +277,7 @@ public class AttendanceController implements Initializable {
 
     private void setMessage(String msg) {
         messageLabel.setText(msg);
-        messageLabel.setStyle(""); // Χωρίς χρώματα όπως ζήτησες
+        messageLabel.setStyle("");
     }
 
     private void clearMessage() {
