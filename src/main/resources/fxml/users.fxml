@@ -4,6 +4,8 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import javafx.geometry.Insets?>
 <BorderPane prefHeight="768.0" prefWidth="1366.0"
             stylesheets="@../theme.css"
             xmlns="http://javafx.com/javafx/24.0.1"
@@ -35,26 +37,25 @@
                              -fx-background-radius: 8;
                              -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5,0,0,2);">
 
-                    <TextField fx:id="searchField"
-                               prefWidth="250"
-                               promptText="Search..."
-                               styleClass="search-field"/>
+                    <StackPane alignment="CENTER_LEFT">
+                        <TextField fx:id="searchField" promptText="Search Employee..."
+                                   prefHeight="35.0" prefWidth="250.0"
+                                   styleClass="text-field"
+                                   style="-fx-padding: 0 10 0 35;" /> <FontIcon iconLiteral="mdi2m-magnify" iconColor="#9CA3AF" iconSize="18">
+                        <StackPane.margin>
+                            <Insets left="12.0" />
+                        </StackPane.margin>
+                    </FontIcon>
+                    </StackPane>
                     <Region HBox.hgrow="ALWAYS"/>
 
                     <Button text="+ Add User"
                             onAction="#onCreateUser"
                             styleClass="btn-primary"/>
 
-                    <!-- ❌ ADD ROLE BUTTON DISABLED -->
-                    <!--
-                    <Button text="+ Add Role"
-                            onAction="#onCreateRole"
-                            styleClass="btn-primary"/>
-                    -->
-
-                    <Button text="Refresh"
-                            onAction="#handleRefresh"
-                            styleClass="btn-secondary"/>
+                    <Button onAction="#handleRefresh" styleClass="btn-secondary" text="Refresh" prefHeight="35.0">
+                        <graphic><FontIcon iconLiteral="mdi2r-refresh" iconSize="16"/></graphic>
+                    </Button>
                 </HBox>
 
                 <TableView fx:id="usersTable"
@@ -65,7 +66,7 @@
                         <TableColumn fx:id="idCol" text="ID" prefWidth="60"/>
                         <TableColumn fx:id="usernameCol" text="Username" prefWidth="200"/>
                         <TableColumn fx:id="roleCol" text="Role" prefWidth="150"/>
-                        <TableColumn fx:id="employeeCol" text="Employee" prefWidth="200"/> <!-- ✅ FIXED -->
+                        <TableColumn fx:id="employeeCol" text="Employee" prefWidth="200"/>
                         <TableColumn fx:id="actionCol" text="Actions" prefWidth="180"/>
                     </columns>
 
@@ -141,22 +142,14 @@
             </VBox>
 
             <!-- ================= LOADING OVERLAY ================= -->
-            <VBox fx:id="loadingOverlay"
-                  alignment="CENTER"
-                  spacing="20"
-                  style="-fx-background-color: #F3F4F6;">
-
-                <ProgressIndicator prefWidth="60" prefHeight="60"/>
-                <VBox alignment="CENTER" spacing="5">
-                    <Label text="Loading Users">
-                        <font>
-                            <Font name="System Bold" size="20"/>
-                        </font>
+            <VBox fx:id="loadingOverlay" alignment="CENTER" spacing="20.0" style="-fx-background-color: white;" visible="false">
+                <ProgressIndicator styleClass="loading-spinner" prefWidth="60.0" prefHeight="60.0" />
+                <VBox alignment="CENTER" spacing="5.0">
+                    <Label text="Loading System Logs" textFill="#111827">
+                        <font><Font name="System Bold" size="20.0"/></font>
                     </Label>
-                    <Label text="Please wait...">
-                        <font>
-                            <Font size="14"/>
-                        </font>
+                    <Label text="Please wait..." textFill="#6B7280">
+                        <font><Font size="14.0"/></font>
                     </Label>
                 </VBox>
             </VBox>

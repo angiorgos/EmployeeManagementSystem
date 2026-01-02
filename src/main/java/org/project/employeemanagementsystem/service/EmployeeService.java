@@ -20,12 +20,10 @@ public class EmployeeService {
 
     // ===================== READ =====================
 
-    // Για TableView (EmployeesController)
     public List<Employee> getAllEmployees() {
         return employeeRepository.findAll();
     }
 
-    // 🔴 ΧΡΗΣΙΜΟΠΟΙΕΙΤΑΙ ΑΠΟ UsersController
     public List<Employee> getActiveEmployees() {
         return employeeRepository.findByExitDateIsNull();
     }
