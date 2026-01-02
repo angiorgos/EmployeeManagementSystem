@@ -26,4 +26,6 @@ public class Attendance {
     @ManyToOne
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
+
+
 }
