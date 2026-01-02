@@ -1,9 +1,10 @@
 package org.project.employeemanagementsystem.service;
 
-import org.project.employeemanagementsystem.model.Employee;
 import org.project.employeemanagementsystem.model.Schedule;
 import org.project.employeemanagementsystem.repository.ScheduleRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -16,22 +17,33 @@ public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
     private final SystemSettingService settingService;
+    private final SystemLogService systemLogService; // <--- Προσθήκη Audit
 
     // Constructor Injection
-    public ScheduleService(ScheduleRepository scheduleRepository, SystemSettingService settingService) {
+    @Autowired
+    public ScheduleService(ScheduleRepository scheduleRepository,
+                           SystemSettingService settingService,
+                           SystemLogService systemLogService) {
         this.scheduleRepository = scheduleRepository;
         this.settingService = settingService;
+        this.systemLogService = systemLogService;
     }
 
     public List<Schedule> getAllSchedules() {
         return scheduleRepository.findAll();
     }
 
+    public List<Schedule> getSchedulesForRange(LocalDate startDate, LocalDate endDate) {
+        return scheduleRepository.findByDateBetween(startDate, endDate);
+    }
+
     /**
      * Κάνει Validation και Αποθήκευση.
      * Επιστρέφει "OK", ή μήνυμα λάθους (ERROR...), ή μήνυμα προειδοποίησης (WARNING...).
      */
+    @Transactional
     public String validateAndSave(Schedule newSchedule) {
+        boolean isNew = (newSchedule.getId() == null);
 
         // --- 1. ΕΛΕΓΧΟΣ OVERLAP (Δεν αλλάζει) ---
         List<Schedule> daysShifts = scheduleRepository.findByEmployeeAndDate(newSchedule.getEmployee(), newSchedule.getDate());
@@ -43,16 +55,9 @@ public class ScheduleService {
             }
         }
 
-        // --- 2. ΥΠΟΛΟΓΙΣΜΟΣ ΕΒΔΟΜΑΔΙΑΙΟΥ ΟΡΙΟΥ ΑΠΟ ΤΑ SETTINGS ---
-
-        // Τραβάμε το μηνιαίο όριο (π.χ. 173.33 ή 176)
+        // --- 2. ΥΠΟΛΟΓΙΣΜΟΣ ΕΒΔΟΜΑΔΙΑΙΟΥ ΟΡΙΟΥ ---
         double monthlySetting = settingService.getDouble("payroll.standard_hours", 173.33);
-
-        // ΜΕΤΑΤΡΟΠΗ ΣΕ ΕΒΔΟΜΑΔΙΑΙΟ: (Μήνας * 12) / 52
         double weeklyLimit = (monthlySetting * 12) / 52.0;
-
-        // Στρογγυλοποίηση (προαιρετικά, για να μην βλέπεις 39.9999)
-        // weeklyLimit = Math.round(weeklyLimit * 100.0) / 100.0;
 
         // --- 3. ΥΠΟΛΟΓΙΣΜΟΣ ΤΡΕΧΟΥΣΩΝ ΩΡΩΝ ---
         LocalDate date = newSchedule.getDate();
@@ -76,21 +81,36 @@ public class ScheduleService {
         // --- 4. ΣΥΓΚΡΙΣΗ ---
         String result = "OK";
 
-        // Αν ξεπεράσει το υπολογισμένο όριο
         if (totalHours > weeklyLimit) {
-            // Μορφοποίηση μηνύματος (π.χ. "Limit is 40.0h")
             result = String.format("WARNING: Weekly limit (%.1fh) exceeded! Total: %.1fh", weeklyLimit, totalHours);
         }
 
         scheduleRepository.save(newSchedule);
+
+        // --- AUDIT LOG ---
+        String action = isNew ? "CREATE_SCHEDULE" : "UPDATE_SCHEDULE";
+        String details = String.format("Employee: %s %s, Date: %s, Time: %s-%s",
+                newSchedule.getEmployee().getFirstName(), newSchedule.getEmployee().getLastName(),
+                newSchedule.getDate(), newSchedule.getStartTime(), newSchedule.getEndTime());
+
+        if (result.startsWith("WARNING")) {
+            details += " [OVERTIME WARNING]";
+        }
+
+        systemLogService.log(action, details);
+
         return result;
     }
 
-    public List<Schedule> getSchedulesForRange(LocalDate startDate, LocalDate endDate) {
-        return scheduleRepository.findByDateBetween(startDate, endDate);
-    }
-
+    @Transactional
     public void deleteSchedule(Schedule schedule) {
+        String details = String.format("Deleted Shift: %s %s on %s",
+                schedule.getEmployee().getFirstName(), schedule.getEmployee().getLastName(),
+                schedule.getDate());
+
         scheduleRepository.delete(schedule);
+
+        // --- AUDIT LOG ---
+        systemLogService.log("DELETE_SCHEDULE", details);
     }
 }

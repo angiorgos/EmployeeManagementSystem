@@ -2,15 +2,21 @@ package org.project.employeemanagementsystem.service;
 
 import org.project.employeemanagementsystem.model.SystemSetting;
 import org.project.employeemanagementsystem.repository.SystemSettingRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SystemSettingService {
 
     private final SystemSettingRepository repository;
+    private final SystemLogService systemLogService; // <--- Προσθήκη Audit
 
-    public SystemSettingService(SystemSettingRepository repository) {
+    // Constructor Injection
+    @Autowired
+    public SystemSettingService(SystemSettingRepository repository, SystemLogService systemLogService) {
         this.repository = repository;
+        this.systemLogService = systemLogService;
     }
 
     // ==========================================
@@ -19,7 +25,6 @@ public class SystemSettingService {
 
     /**
      * Επιστρέφει κείμενο (String).
-     * Αν δεν βρεθεί, επιστρέφει το defaultValue που δίνουμε εμείς.
      */
     public String getString(String key, String defaultValue) {
         return repository.findById(key)
@@ -29,8 +34,6 @@ public class SystemSettingService {
 
     /**
      * Επιστρέφει αριθμό (Double).
-     * Κάνει αυτόματα τη μετατροπή από String σε Double.
-     * Αν αποτύχει η μετατροπή ή δεν βρεθεί το κλειδί, επιστρέφει το defaultValue.
      */
     public Double getDouble(String key, Double defaultValue) {
         return repository.findById(key)
@@ -45,7 +48,7 @@ public class SystemSettingService {
     }
 
     /**
-     * Επιστρέφει ακέραιο (Integer) - Χρήσιμο π.χ. για μέρες άδειας
+     * Επιστρέφει ακέραιο (Integer).
      */
     public Integer getInt(String key, Integer defaultValue) {
         return repository.findById(key)
@@ -63,12 +66,21 @@ public class SystemSettingService {
     // SETTERS (Αποθήκευση)
     // ==========================================
 
-    // Ενιαία μέθοδος save που δέχεται String
+    /**
+     * Ενιαία μέθοδος save που δέχεται String.
+     * Εδώ γίνεται και το Logging.
+     */
+    @Transactional
     public void save(String key, String value) {
+        // Αποθήκευση
         repository.save(new SystemSetting(key, value));
+
+        // --- AUDIT LOG ---
+        // Καταγράφουμε ότι άλλαξε η συγκεκριμένη ρύθμιση
+        systemLogService.log("UPDATE_SETTING", String.format("Key: %s | New Value: %s", key, value));
     }
 
-    // Overload: Αν της δώσουμε Double, το μετατρέπει μόνη της σε String
+    // Overload: Αν της δώσουμε Double
     public void save(String key, Double value) {
         save(key, String.valueOf(value));
     }

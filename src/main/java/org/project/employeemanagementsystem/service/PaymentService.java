@@ -3,7 +3,9 @@ package org.project.employeemanagementsystem.service;
 import org.project.employeemanagementsystem.model.Employee;
 import org.project.employeemanagementsystem.model.Payment;
 import org.project.employeemanagementsystem.repository.PaymentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -13,9 +15,13 @@ import java.util.List;
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
+    private final SystemLogService systemLogService; // <--- Προσθήκη Audit
 
-    public PaymentService(PaymentRepository paymentRepository) {
+    // Constructor Injection
+    @Autowired
+    public PaymentService(PaymentRepository paymentRepository, SystemLogService systemLogService) {
         this.paymentRepository = paymentRepository;
+        this.systemLogService = systemLogService;
     }
 
     public List<Payment> getAllPayments() {
@@ -25,6 +31,7 @@ public class PaymentService {
     /**
      * Υπολογισμός Αρχικής Μισθοδοσίας
      */
+    @Transactional
     public void calculateAndSavePayroll(Employee emp, LocalDate payrollDate,
                                         Double standardMonthlyHours,
                                         Double overtimeHours, Double sundayHours,
@@ -33,6 +40,7 @@ public class PaymentService {
 
         String currentMonth = payrollDate.format(DateTimeFormatter.ofPattern("MM/yyyy"));
 
+        // 1. Υπολογισμοί
         double divisor = (standardMonthlyHours != null && standardMonthlyHours > 0) ? standardMonthlyHours : 173.33;
         double hourlyRate = emp.getSalary() / divisor;
 
@@ -46,6 +54,7 @@ public class PaymentService {
         double employerTaxAmount = totalTaxAmount * employerShare;
         double employeeTaxAmount = totalTaxAmount * (1 - employerShare);
 
+        // 2. Δημιουργία Αντικειμένου
         Payment payment = new Payment();
         payment.setEmployee(emp);
         payment.setMonthYear(currentMonth);
@@ -65,15 +74,21 @@ public class PaymentService {
         payment.setStatus("PENDING");
 
         paymentRepository.save(payment);
+
+        // --- AUDIT LOG ---
+        String details = String.format("Payroll Generated: %s %s | Month: %s | Net: %.2f €",
+                emp.getFirstName(), emp.getLastName(), currentMonth, payment.getAmount());
+
+        systemLogService.log("GENERATE_PAYROLL", details);
     }
 
     /**
      * Ενημέρωση Bonus (Προσθήκη στο Gross -> Επανυπολογισμός Φόρων -> Νέο Καθαρό)
-     * ΑΛΛΑΓΗ: Επιστρέφει πλέον Payment αντί για void.
      */
+    @Transactional
     public Payment updateBonus(Payment payment, double newBonus, double totalTaxRate, double employerShare) {
 
-        // 1. Βρίσκουμε τον μισθό εργασίας αφαιρώντας το παλιό bonus (αν υπήρχε)
+        // 1. Βρίσκουμε τον μισθό εργασίας αφαιρώντας το παλιό bonus
         double oldBonus = (payment.getBonus() != null) ? payment.getBonus() : 0.0;
         double payFromWork = payment.getGrossPay() - oldBonus;
 
@@ -94,12 +109,29 @@ public class PaymentService {
         // 5. Νέο Καθαρό Πληρωτέο
         payment.setAmount(newGross - employeeTaxAmount);
 
-        // ΑΛΛΑΓΗ ΕΔΩ: Επιστρέφουμε το αντικείμενο που μόλις σώσαμε
-        return paymentRepository.save(payment);
+        Payment savedPayment = paymentRepository.save(payment);
+
+        // --- AUDIT LOG ---
+        String details = String.format("Bonus Updated: %s %s | Old: %.2f -> New: %.2f | New Net: %.2f €",
+                payment.getEmployee().getFirstName(), payment.getEmployee().getLastName(),
+                oldBonus, newBonus, savedPayment.getAmount());
+
+        systemLogService.log("UPDATE_BONUS", details);
+
+        return savedPayment;
     }
 
+    @Transactional
     public void updatePaymentStatus(Payment payment, String status) {
+        String oldStatus = payment.getStatus();
         payment.setStatus(status);
         paymentRepository.save(payment);
+
+        // --- AUDIT LOG ---
+        String details = String.format("Status Changed: %s %s | Month: %s | %s -> %s",
+                payment.getEmployee().getFirstName(), payment.getEmployee().getLastName(),
+                payment.getMonthYear(), oldStatus, status);
+
+        systemLogService.log("UPDATE_PAYMENT_STATUS", details);
     }
 }
