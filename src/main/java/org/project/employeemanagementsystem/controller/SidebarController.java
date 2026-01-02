@@ -76,8 +76,8 @@ public class SidebarController implements Initializable {
         departmentsBtn.setVisible(showWorkforce);
         departmentsBtn.setManaged(showWorkforce);
 
-        usersBtn.setVisible(showWorkforce);
-        usersBtn.setManaged(showWorkforce);
+        usersBtn.setVisible(isAdmin);
+        usersBtn.setManaged(isAdmin);
 
         /* ================= TIME & ATTENDANCE ================= */
         // Header always visible
