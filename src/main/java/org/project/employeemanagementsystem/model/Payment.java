@@ -10,7 +10,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "payments")
-@EntityListeners(AuditListener.class)
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

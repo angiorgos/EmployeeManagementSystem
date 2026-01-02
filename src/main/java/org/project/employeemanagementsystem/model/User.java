@@ -9,7 +9,6 @@ import java.sql.Types;
 
 @Entity
 @Table(name = "users")
-@EntityListeners(AuditListener.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -8,7 +8,7 @@ import org.project.employeemanagementsystem.util.AuditListener;
 
 @Entity
 @Table(name = "leave_types")
-@EntityListeners(AuditListener.class)
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

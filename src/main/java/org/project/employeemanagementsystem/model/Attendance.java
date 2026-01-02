@@ -11,7 +11,7 @@ import java.time.LocalTime;
 
 @Entity
 @Table(name = "attendances")
-@EntityListeners(AuditListener.class)
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

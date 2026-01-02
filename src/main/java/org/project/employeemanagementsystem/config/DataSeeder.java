@@ -1,17 +1,15 @@
 package org.project.employeemanagementsystem.config;
 
-
 import org.project.employeemanagementsystem.model.*;
-import org.project.employeemanagementsystem.model.LeaveStatus; // Enum import
+import org.project.employeemanagementsystem.model.LeaveStatus;
 import org.project.employeemanagementsystem.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+// import org.springframework.transaction.annotation.Transactional; <--- ΑΦΑΙΡΕΣΗ ΑΥΤΟΥ
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,10 +30,8 @@ public class DataSeeder implements CommandLineRunner {
     private final HolidayRepository holidayRepository;
     private final SystemSettingRepository systemSettingRepository;
     private final PaymentRepository paymentRepository;
-    private final SystemLogRepository systemLogRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // Random generator for realistic variations
     private final Random random = new Random();
 
     public DataSeeder(UserRepository userRepository, RoleRepository roleRepository,
@@ -43,7 +39,7 @@ public class DataSeeder implements CommandLineRunner {
                       LeaveTypeRepository leaveTypeRepository, LeaveRequestRepository leaveRequestRepository,
                       AttendanceRepository attendanceRepository, ScheduleRepository scheduleRepository,
                       HolidayRepository holidayRepository, SystemSettingRepository systemSettingRepository,
-                      PaymentRepository paymentRepository, SystemLogRepository systemLogRepository,
+                      PaymentRepository paymentRepository,
                       PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -56,130 +52,111 @@ public class DataSeeder implements CommandLineRunner {
         this.holidayRepository = holidayRepository;
         this.systemSettingRepository = systemSettingRepository;
         this.paymentRepository = paymentRepository;
-        this.systemLogRepository = systemLogRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    @Transactional
+    // @Transactional  <--- ΣΗΜΑΝΤΙΚΟ: ΤΟ ΑΦΑΙΡΕΣΑΜΕ ΓΙΑ ΝΑ ΜΗΝ ΧΤΥΠΑΕΙ Ο AUDIT LISTENER
     public void run(String... args) throws Exception {
-        // Αν υπάρχουν χρήστες, σταματάμε για αποφυγή διπλοτύπων
+        // Safe check: If users exist, assume DB is seeded
         if (userRepository.count() > 0) return;
 
-        System.out.println(">>> SEEDING DATA START...");
+        System.out.println(">>> SEEDING DATA START (ROLES: Admin, HR, Accountant, User)...");
 
-        // ==========================================
-        // 1. SYSTEM SETTINGS & HOLIDAYS & ROLES
-        // ==========================================
+        // 1. SETTINGS & HOLIDAYS
         seedSettings();
         seedHolidays();
+
+        // 2. ROLES
         List<Role> roles = seedRoles();
         Role adminRole = roles.get(0);
-        Role userRole = roles.get(1);
+        Role hrRole = roles.get(1);
+        Role accountantRole = roles.get(2);
+        Role userRole = roles.get(3);
 
-        // ==========================================
-        // 2. DEPARTMENTS & LEAVE TYPES
-        // ==========================================
+        // 3. DEPARTMENTS & LEAVE TYPES
         List<Department> depts = seedDepartments();
         List<LeaveType> leaveTypes = seedLeaveTypes();
 
-        // ==========================================
-        // 3. ADMIN USER (The "a" / "1" account)
-        // ==========================================
-        User adminUser = new User();
-        adminUser.setUsername("b");
-        adminUser.setPassword(passwordEncoder.encode("1"));
-        adminUser.setRole(adminRole);
-        // Save handled via cascading in Employee, but we need object ref
+        // 4. MAIN ADMIN USER
+        if (userRepository.findByUsername("a").isEmpty()) {
+            User adminUser = new User();
+            adminUser.setUsername("a");
+            adminUser.setPassword(passwordEncoder.encode("1"));
+            adminUser.setRole(adminRole);
 
-        Employee adminEmployee = new Employee();
-        adminEmployee.setFirstName("Sys");
-        adminEmployee.setLastName("Admin");
-        adminEmployee.setEmail("admn@ems.com");
-        adminEmployee.setPhone("6900000001");
-        adminEmployee.setAddress("Headquarters");
-        adminEmployee.setSsn("SSN-ADMIN-002");
-        adminEmployee.setHireDate(LocalDate.now().minusYears(5));
-        adminEmployee.setSalary(5000.0);
-        adminEmployee.setDepartment(depts.get(0)); // IT Dept
-        adminEmployee.setUser(adminUser);
-        adminUser.setEmployee(adminEmployee);
+            Employee adminEmployee = new Employee();
+            adminEmployee.setFirstName("System");
+            adminEmployee.setLastName("Admin");
+            adminEmployee.setEmail("admin@ems.com");
+            adminEmployee.setPhone("6900000000");
+            adminEmployee.setAddress("HQ");
+            adminEmployee.setSsn("ADM-001");
+            adminEmployee.setHireDate(LocalDate.now().minusYears(5));
+            adminEmployee.setSalary(5000.0);
+            adminEmployee.setDepartment(depts.get(0)); // IT
+            adminEmployee.setUser(adminUser);
+            adminUser.setEmployee(adminEmployee);
 
-        employeeRepository.save(adminEmployee);
+            employeeRepository.save(adminEmployee);
+        }
 
-        // Log login for admin
-        logAction(adminUser, "LOGIN", LocalDateTime.now().minusMinutes(10));
+        // 5. BULK EMPLOYEES
+        // Επειδή βγάλαμε το @Transactional, πρέπει να ξαναβρούμε τον Admin αν χρειαστεί,
+        // αλλά εδώ φτιάχνουμε νέους, οπότε δεν πειράζει.
 
+        List<Employee> createdEmployees = new ArrayList<>();
+        // Δεν προσθέτουμε τον admin στη λίστα για generation για να μην μπλέξουμε τα transactions
 
-        // ==========================================
-        // 4. BULK EMPLOYEES & USERS
-        // ==========================================
-        List<Employee> allEmployees = new ArrayList<>();
-        allEmployees.add(adminEmployee);
+        // -- HR Employee --
+        createdEmployees.add(createEmployee("Helen", "Robinson", "helen@ems.com", "6911111111", "HR-001",
+                2800.0, depts.get(1), hrRole, "hr_user", "123"));
 
-        // Create 10 more employees
-        allEmployees.add(createEmployee("John", "Doe", "john@ems.com", "6911111111", "SSN-002", 2500.0, depts.get(0), userRole, "user1", "123")); // IT
-        allEmployees.add(createEmployee("Jane", "Smith", "jane@ems.com", "6922222222", "SSN-003", 2600.0, depts.get(1), userRole, "user2", "123")); // HR
-        allEmployees.add(createEmployee("Mike", "Brown", "mike@ems.com", "6933333333", "SSN-004", 1800.0, depts.get(2), userRole, "user3", "123")); // Sales
-        allEmployees.add(createEmployee("Emily", "Davis", "emily@ems.com", "6944444444", "SSN-005", 1900.0, depts.get(2), userRole, "user4", "123")); // Sales
-        allEmployees.add(createEmployee("Chris", "Wilson", "chris@ems.com", "6955555555", "SSN-006", 3200.0, depts.get(0), userRole, "user5", "123")); // IT
-        allEmployees.add(createEmployee("Anna", "Taylor", "anna@ems.com", "6966666666", "SSN-007", 2100.0, depts.get(1), userRole, "user6", "123")); // HR
-        allEmployees.add(createEmployee("David", "Moore", "david@ems.com", "6977777777", "SSN-008", 4000.0, depts.get(3), adminRole, "manager1", "123")); // Management
-        allEmployees.add(createEmployee("Sarah", "Anderson", "sarah@ems.com", "6988888888", "SSN-009", 1500.0, depts.get(2), userRole, "user7", "123")); // Sales
-        allEmployees.add(createEmployee("Kevin", "Thomas", "kevin@ems.com", "6999999999", "SSN-010", 2800.0, depts.get(0), userRole, "user8", "123")); // IT
-        allEmployees.add(createEmployee("Laura", "Jackson", "laura@ems.com", "6900000001", "SSN-011", 2400.0, depts.get(1), userRole, "user9", "123")); // HR
+        // -- Accountant Employee --
+        createdEmployees.add(createEmployee("Alice", "Finance", "alice@ems.com", "6922222222", "ACC-001",
+                3000.0, depts.get(3), accountantRole, "acc_user", "123"));
 
+        // -- Standard Users --
+        createdEmployees.add(createEmployee("John", "Doe", "john@ems.com", "6933333333", "USR-001",
+                2500.0, depts.get(0), userRole, "user1", "123"));
 
-        // ==========================================
-        // 5. SCHEDULES (Last 30 days + Next 7 days)
-        // ==========================================
-        seedSchedules(allEmployees);
+        createdEmployees.add(createEmployee("Mike", "Salesman", "mike@ems.com", "6944444444", "USR-002",
+                1800.0, depts.get(2), userRole, "user2", "123"));
 
-        // ==========================================
-        // 6. ATTENDANCES (Last 30 days)
-        // ==========================================
-        seedAttendances(allEmployees);
+        createdEmployees.add(createEmployee("Sarah", "Connor", "sarah@ems.com", "6955555555", "USR-003",
+                2200.0, depts.get(2), userRole, "user3", "123"));
 
-        // ==========================================
-        // 7. LEAVE REQUESTS
-        // ==========================================
-        seedLeaveRequests(allEmployees, leaveTypes);
+        createdEmployees.add(createEmployee("Chris", "Tech", "chris@ems.com", "6966666666", "USR-004",
+                3200.0, depts.get(0), userRole, "user4", "123"));
 
-        // ==========================================
-        // 8. PAYMENTS (Last Month)
-        // ==========================================
-        seedPayments(allEmployees);
+        createdEmployees.add(createEmployee("Peter", "Manager", "peter@ems.com", "6977777777", "MGR-001",
+                4500.0, depts.get(3), adminRole, "manager1", "123"));
 
-        System.out.println(">>> SEEDING COMPLETED SUCCESSFULLY.");
-        System.out.println(">>> Main Admin: a / 1");
+        // 6. DATA GENERATION
+        seedSchedules(createdEmployees);
+        seedAttendances(createdEmployees);
+        seedLeaveRequests(createdEmployees, leaveTypes);
+        seedPayments(createdEmployees);
+
+        System.out.println(">>> SEEDING COMPLETED.");
     }
 
     // --- HELPER METHODS ---
 
-// Μέσα στο DataSeeder.java
-
     private void seedSettings() {
-        System.out.println("Seeding System Settings...");
-
-        // 1. Βασικά Rates Μισθοδοσίας
-        saveSetting("payroll.standard_hours", "176.0"); // Monthly Hours
-        saveSetting("payroll.overtime_rate", "1.5");    // Overtime Rate
-        saveSetting("payroll.sunday_rate", "1.75");     // Sunday Rate
-        saveSetting("payroll.night_rate", "1.25");      // Night Rate (το προσθέσαμε ως extra)
-        saveSetting("payroll.holiday_rate", "2.00");    // Holiday Rate (το προσθέσαμε ως extra)
-
-        // 2. Φορολογικά (Βάσει της λογικής Total Rate + Split)
-        saveSetting("payroll.total_tax_rate", "0.40");  // Total Tax Rate (40%)
-        saveSetting("payroll.employer_share", "0.60");  // Employer Split (60% πληρώνει ο εργοδότης)
-
-        // 3. Στοιχεία Εταιρείας
-        saveSetting("company.name", "EMS Solutions Ltd");
-        saveSetting("company.currency", "€");
+        // Σώζουμε ένα-ένα για να μην σκάσει το batch insert με τον AuditListener
+        createSetting("payroll.standard_hours", "176.0");
+        createSetting("payroll.overtime_rate", "1.5");
+        createSetting("payroll.sunday_rate", "1.75");
+        createSetting("payroll.night_rate", "1.25");
+        createSetting("payroll.holiday_rate", "2.00");
+        createSetting("payroll.total_tax_rate", "0.40");
+        createSetting("payroll.employer_share", "0.60");
+        createSetting("company.name", "EMS Solutions Ltd");
+        createSetting("company.currency", "€");
     }
 
-    // Βοηθητική μέθοδος για να μην γράφουμε πολλές γραμμές
-    private void saveSetting(String key, String value) {
-        // Ελέγχουμε αν υπάρχει ήδη για να μην το χαλάσουμε αν κάνουμε restart
+    private void createSetting(String key, String value) {
         if (!systemSettingRepository.existsById(key)) {
             systemSettingRepository.save(new SystemSetting(key, value));
         }
@@ -187,39 +164,50 @@ public class DataSeeder implements CommandLineRunner {
 
     private void seedHolidays() {
         int year = LocalDate.now().getYear();
-        holidayRepository.save(new Holiday(null, "New Year's Day", LocalDate.of(year, 1, 1)));
-        holidayRepository.save(new Holiday(null, "Epiphany", LocalDate.of(year, 1, 6)));
-        holidayRepository.save(new Holiday(null, "Independence Day", LocalDate.of(year, 3, 25)));
-        holidayRepository.save(new Holiday(null, "Labor Day", LocalDate.of(year, 5, 1)));
-        holidayRepository.save(new Holiday(null, "Christmas", LocalDate.of(year, 12, 25)));
+        if (holidayRepository.count() == 0) {
+            holidayRepository.saveAll(Arrays.asList(
+                    new Holiday(null, "New Year", LocalDate.of(year, 1, 1)),
+                    new Holiday(null, "Labor Day", LocalDate.of(year, 5, 1)),
+                    new Holiday(null, "Christmas", LocalDate.of(year, 12, 25))
+            ));
+        }
     }
 
     private List<Role> seedRoles() {
-        Role admin = new Role(null, "Admin", "Full access to the system");
-        Role user = new Role(null, "User", "Standard employee access");
-        roleRepository.saveAll(Arrays.asList(admin, user));
-        return Arrays.asList(admin, user);
+        if (roleRepository.count() > 0) return roleRepository.findAll();
+
+        Role admin = new Role(null, "Admin", "Full Access");
+        Role hr = new Role(null, "HR", "Employee Management");
+        Role accountant = new Role(null, "Accountant", "Payroll & Finance");
+        Role user = new Role(null, "User", "Employee Self Service");
+        return roleRepository.saveAll(Arrays.asList(admin, hr, accountant, user));
     }
 
     private List<Department> seedDepartments() {
-        Department it = new Department(null, "IT", "Information Technology", null);
+        if (departmentRepository.count() > 0) return departmentRepository.findAll();
+
+        Department it = new Department(null, "IT", "Tech Dept", null);
         Department hr = new Department(null, "HR", "Human Resources", null);
-        Department sales = new Department(null, "Sales", "Sales and Marketing", null);
-        Department mgmt = new Department(null, "Management", "Executive Board", null);
-        departmentRepository.saveAll(Arrays.asList(it, hr, sales, mgmt));
-        return Arrays.asList(it, hr, sales, mgmt);
+        Department sales = new Department(null, "Sales", "Marketing", null);
+        Department finance = new Department(null, "Finance", "Accounting", null);
+        return departmentRepository.saveAll(Arrays.asList(it, hr, sales, finance));
     }
 
     private List<LeaveType> seedLeaveTypes() {
-        LeaveType annual = new LeaveType(null, "Annual Leave", 20);
-        LeaveType sick = new LeaveType(null, "Sick Leave", 15);
-        LeaveType unpaid = new LeaveType(null, "Unpaid Leave", 365);
-        LeaveType maternity = new LeaveType(null, "Maternity Leave", 120);
-        leaveTypeRepository.saveAll(Arrays.asList(annual, sick, unpaid, maternity));
-        return Arrays.asList(annual, sick, unpaid, maternity);
+        if (leaveTypeRepository.count() > 0) return leaveTypeRepository.findAll();
+
+        LeaveType annual = new LeaveType(null, "Annual", 20);
+        LeaveType sick = new LeaveType(null, "Sick", 15);
+        return leaveTypeRepository.saveAll(Arrays.asList(annual, sick));
     }
 
-    private Employee createEmployee(String first, String last, String email, String phone, String ssn, Double salary, Department dept, Role role, String username, String password) {
+    private Employee createEmployee(String first, String last, String email, String phone, String ssn,
+                                    Double salary, Department dept, Role role, String username, String password) {
+        // Ελέγχουμε αν υπάρχει ήδη ο χρήστης για αποφυγή duplicate entry
+        if (userRepository.findByUsername(username).isPresent()) {
+            return employeeRepository.findByEmail(email).orElse(null);
+        }
+
         User user = new User();
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
@@ -230,9 +218,9 @@ public class DataSeeder implements CommandLineRunner {
         emp.setLastName(last);
         emp.setEmail(email);
         emp.setPhone(phone);
-        emp.setAddress("Sample Address " + random.nextInt(100));
+        emp.setAddress("Street " + random.nextInt(100));
         emp.setSsn(ssn);
-        emp.setHireDate(LocalDate.now().minusMonths(random.nextInt(24) + 1)); // Hired 1-24 months ago
+        emp.setHireDate(LocalDate.now().minusMonths(random.nextInt(24) + 1));
         emp.setSalary(salary);
         emp.setDepartment(dept);
 
@@ -243,116 +231,93 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedSchedules(List<Employee> employees) {
+        if (scheduleRepository.count() > 0) return;
+
         LocalDate startDate = LocalDate.now().minusDays(30);
         LocalDate endDate = LocalDate.now().plusDays(7);
+        List<Schedule> schedules = new ArrayList<>();
 
         for (Employee emp : employees) {
+            if (emp == null) continue; // Safety check
             for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1)) {
-                // Skip weekends
                 if (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) continue;
-
-                Schedule schedule = new Schedule();
-                schedule.setEmployee(emp);
-                schedule.setDate(date);
-                schedule.setStartTime(LocalTime.of(9, 0));
-                schedule.setEndTime(LocalTime.of(17, 0));
-                schedule.setShiftName("Morning Standard");
-                scheduleRepository.save(schedule);
+                Schedule s = new Schedule();
+                s.setEmployee(emp);
+                s.setDate(date);
+                s.setStartTime(LocalTime.of(9, 0));
+                s.setEndTime(LocalTime.of(17, 0));
+                s.setShiftName("Standard");
+                schedules.add(s);
             }
         }
+        scheduleRepository.saveAll(schedules);
     }
 
     private void seedAttendances(List<Employee> employees) {
+        if (attendanceRepository.count() > 0) return;
+
         LocalDate startDate = LocalDate.now().minusDays(30);
         LocalDate yesterday = LocalDate.now().minusDays(1);
+        List<Attendance> attendances = new ArrayList<>();
 
         for (Employee emp : employees) {
+            if (emp == null) continue;
             for (LocalDate date = startDate; date.isBefore(yesterday); date = date.plusDays(1)) {
                 if (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) continue;
+                if (random.nextInt(10) == 0) continue; // 10% absent
 
-                // 10% chance employee was absent/on leave (no attendance record)
-                if (random.nextInt(10) == 0) continue;
-
-                Attendance att = new Attendance();
-                att.setEmployee(emp);
-                att.setDate(date);
-
-                // Add random variation to check-in (8:50 - 9:30)
-                int randomMinutes = random.nextInt(40) - 10;
-                att.setCheckInTime(LocalTime.of(9, 0).plusMinutes(randomMinutes));
-
-                // Add random variation to check-out (16:50 - 17:30)
-                int randomOut = random.nextInt(40) - 10;
-                att.setCheckOutTime(LocalTime.of(17, 0).plusMinutes(randomOut));
-
-                attendanceRepository.save(att);
+                Attendance a = new Attendance();
+                a.setEmployee(emp);
+                a.setDate(date);
+                a.setCheckInTime(LocalTime.of(9, 0).plusMinutes(random.nextInt(30) - 10));
+                a.setCheckOutTime(LocalTime.of(17, 0).plusMinutes(random.nextInt(30) - 10));
+                attendances.add(a);
             }
         }
+        attendanceRepository.saveAll(attendances);
     }
 
     private void seedLeaveRequests(List<Employee> employees, List<LeaveType> types) {
-        // Create random requests
+        if (leaveRequestRepository.count() > 0) return;
+
+        List<LeaveRequest> requests = new ArrayList<>();
         for (Employee emp : employees) {
-            if (emp.getId() % 2 == 0) { // Create requests for half the employees
+            if (emp == null) continue;
+            if (random.nextBoolean()) {
                 LeaveRequest req = new LeaveRequest();
                 req.setEmployee(emp);
                 req.setLeaveType(types.get(random.nextInt(types.size())));
-
-                LocalDate start = LocalDate.now().minusDays(random.nextInt(60));
-                req.setStartDate(start);
-                req.setEndDate(start.plusDays(random.nextInt(5) + 1));
-                req.setReason("Personal / Medical reasons");
-
-                // Random status
-                int statusRand = random.nextInt(3);
-                if (statusRand == 0) req.setStatus(LeaveStatus.APPROVED);
-                else if (statusRand == 1) req.setStatus(LeaveStatus.PENDING);
-                else req.setStatus(LeaveStatus.REJECTED);
-
-                leaveRequestRepository.save(req);
+                req.setStartDate(LocalDate.now().minusDays(random.nextInt(30)));
+                req.setEndDate(req.getStartDate().plusDays(2));
+                req.setReason("Test Leave");
+                req.setStatus(LeaveStatus.APPROVED);
+                requests.add(req);
             }
         }
+        leaveRequestRepository.saveAll(requests);
     }
 
     private void seedPayments(List<Employee> employees) {
-        LocalDate lastMonth = LocalDate.now().minusMonths(1);
-        String monthYear = lastMonth.getMonth().toString() + "-" + lastMonth.getYear();
+        if (paymentRepository.count() > 0) return;
+
+        String month = LocalDate.now().minusMonths(1).getMonth().toString();
+        List<Payment> payments = new ArrayList<>();
 
         for (Employee emp : employees) {
+            if (emp == null) continue;
             Payment p = new Payment();
             p.setEmployee(emp);
-            p.setPaymentDate(LocalDate.now().withDayOfMonth(1)); // Paid on 1st of current month
-            p.setMonthYear(monthYear);
-
-            double base = emp.getSalary();
-            p.setBaseSalary(base);
-            p.setHoursWorked(160.0); // Standard month
-            p.setOvertimeHours(random.nextDouble() * 10); // 0-10 hours OT
-            p.setSundayHours(0.0);
-
-            // Calculations (Simplified)
-            double otPay = p.getOvertimeHours() * (base / 160 * 1.5);
-            p.setGrossPay(base + otPay);
-
-            p.setDeductions(p.getGrossPay() * 0.15); // 15% Employee Share
-            p.setEmployerTax(p.getGrossPay() * 0.30); // 30% Employer Share
+            p.setMonthYear(month + "-" + LocalDate.now().getYear());
+            p.setPaymentDate(LocalDate.now().withDayOfMonth(1));
+            p.setBaseSalary(emp.getSalary());
+            p.setGrossPay(emp.getSalary());
+            p.setDeductions(emp.getSalary() * 0.15);
+            p.setEmployerTax(emp.getSalary() * 0.25);
             p.setTotalTax(p.getDeductions() + p.getEmployerTax());
-
-            p.setBonus(random.nextInt(5) == 0 ? 200.0 : 0.0); // Random bonus
-            p.setAmount(p.getGrossPay() - p.getDeductions() + p.getBonus()); // Net Pay
-
+            p.setAmount(p.getGrossPay() - p.getDeductions());
             p.setStatus("COMPLETED");
-
-            paymentRepository.save(p);
+            payments.add(p);
         }
-    }
-
-    private void logAction(User user, String action, LocalDateTime time) {
-        SystemLog log = new SystemLog();
-        log.setUser(user);
-        log.setUsername(user.getUsername());
-        log.setAction(action);
-        log.setTimestamp(time);
-        systemLogRepository.save(log);
+        paymentRepository.saveAll(payments);
     }
 }

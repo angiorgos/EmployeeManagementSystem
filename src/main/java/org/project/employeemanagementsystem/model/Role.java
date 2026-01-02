@@ -8,7 +8,7 @@ import org.project.employeemanagementsystem.util.AuditListener;
 
 @Entity
 @Table(name = "roles")
-@EntityListeners(AuditListener.class)
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

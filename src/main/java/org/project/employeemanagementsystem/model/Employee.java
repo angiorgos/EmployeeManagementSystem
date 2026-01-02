@@ -9,7 +9,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "employees")
-@EntityListeners(AuditListener.class)
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -11,7 +11,6 @@ import org.project.employeemanagementsystem.util.AuditListener;
 
 @Entity
 @Table(name = "system_settings")
-@EntityListeners(AuditListener.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
