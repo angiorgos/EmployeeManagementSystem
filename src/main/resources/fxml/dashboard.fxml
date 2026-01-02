@@ -43,7 +43,7 @@
                         </VBox>
 
                         <VBox styleClass="kpi-card, card-red" HBox.hgrow="ALWAYS">
-                            <Label styleClass="kpi-title" text="Pending Requests"/>
+                            <Label styleClass="kpi-title" text="Pending Leave Requests"/>
                             <Label fx:id="pendingRequestsLabel" styleClass="kpi-value" text="0"/>
                         </VBox>
 

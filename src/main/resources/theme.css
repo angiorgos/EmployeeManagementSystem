@@ -723,6 +723,7 @@
     -fx-min-width: 50px;
     -fx-alignment: CENTER;
     -fx-border-width: 0;
+
 }
 
 /* Edit Button (Μπλε - Όπως το btn-primary) */
@@ -747,6 +748,16 @@
 }
 .table-btn-delete:hover {
     -fx-background-color: #DC2626;
+}
+
+/* Στο τέλος του theme.css */
+
+/* Rehire Button (Πράσινο - Ίδιο μέγεθος με Edit/Delete) */
+.table-btn-rehire {
+    -fx-background-color: #10B981; /* Πράσινο */
+}
+.table-btn-rehire:hover {
+    -fx-background-color: #059669;
 }
 
 /* ================= STATUS BAR ================= */

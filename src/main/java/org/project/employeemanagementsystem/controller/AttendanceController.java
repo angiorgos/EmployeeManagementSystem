@@ -242,7 +242,12 @@ public class AttendanceController implements Initializable {
     }
 
     private void startClock() {
-        new Timeline(new KeyFrame(Duration.seconds(1), e -> pcTimeLabel.setText(LocalDateTime.now().format(CLOCK_FMT)))).play();
+        Timeline clock = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+            pcTimeLabel.setText(LocalDateTime.now().format(CLOCK_FMT));
+        }));
+
+        clock.setCycleCount(Timeline.INDEFINITE); 
+        clock.play();
     }
 
     private static String safe(String s) { return s == null ? "" : s; }

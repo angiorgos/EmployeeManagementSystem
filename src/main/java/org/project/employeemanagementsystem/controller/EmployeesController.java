@@ -59,7 +59,6 @@ public class EmployeesController implements Initializable {
     @FXML private TextField ssnField;
     @FXML private TextField salaryField;
     @FXML private ComboBox<Department> departmentCombo;
-
     @FXML private DatePicker hireDateField;
 
     private final ObservableList<Employee> masterData = FXCollections.observableArrayList();
@@ -72,6 +71,9 @@ public class EmployeesController implements Initializable {
         setupDepartmentCombo();
         setupValidationListeners();
 
+        // ΝΕΟ: Εφαρμογή στυλ για τους ανενεργούς υπαλλήλους (Soft Deleted)
+        setupRowStyling();
+
         filteredData = new FilteredList<>(masterData, p -> true);
         employeeTable.setItems(filteredData);
 
@@ -80,6 +82,8 @@ public class EmployeesController implements Initializable {
         Platform.runLater(this::loadData);
     }
 
+    // --- DATA LOADING ---
+
     private void loadData() {
         loadingOverlay.setVisible(true);
         loadingOverlay.setOpacity(1.0);
@@ -87,6 +91,7 @@ public class EmployeesController implements Initializable {
         Task<List<Employee>> task = new Task<>() {
             @Override
             protected List<Employee> call() throws Exception {
+                // Φέρνουμε ΟΛΟΥΣ (και τους ανενεργούς) για να φαίνεται το ιστορικό
                 return employeeService.getAllEmployees();
             }
         };
@@ -104,19 +109,22 @@ public class EmployeesController implements Initializable {
         new Thread(task).start();
     }
 
+    // --- SAVE ACTION ---
+
     @FXML
     public void handleSaveEmployee() {
-
         resetFieldStyles();
         if (!validateForm()) return;
 
         loadingOverlay.setVisible(true);
         loadingOverlay.setOpacity(1.0);
 
+        // Safe creation of object to avoid hibernate session issues
         Employee employeeToSave = new Employee();
-
         if (currentEditingEmployee != null) {
             employeeToSave.setId(currentEditingEmployee.getId());
+            // Κρατάμε το υπάρχον exitDate αν υπάρχει (για να μην ενεργοποιηθεί ξανά κατά λάθος)
+            employeeToSave.setExitDate(currentEditingEmployee.getExitDate());
         }
 
         employeeToSave.setFirstName(firstNameField.getText());
@@ -125,7 +133,13 @@ public class EmployeesController implements Initializable {
         employeeToSave.setPhone(phoneField.getText());
         employeeToSave.setSsn(ssnField.getText());
         employeeToSave.setDepartment(departmentCombo.getValue());
-        employeeToSave.setHireDate(hireDateField.getValue());
+
+        // Χειρισμός Hire Date
+        if (hireDateField.getValue() != null) {
+            employeeToSave.setHireDate(hireDateField.getValue());
+        } else {
+            employeeToSave.setHireDate(LocalDate.now());
+        }
 
         try {
             employeeToSave.setSalary(
@@ -157,14 +171,59 @@ public class EmployeesController implements Initializable {
             loadingOverlay.setVisible(false);
             currentEditingEmployee = null;
             Throwable ex = saveTask.getException();
-            ex.printStackTrace();
-            showErrorAlert("Save Failed",
-                    ex.getMessage() != null ? ex.getMessage() : "Unexpected error");
+            showErrorAlert("Save Failed", ex.getMessage() != null ? ex.getMessage() : "Unexpected error");
         });
 
         new Thread(saveTask).start();
     }
 
+    // --- DELETE / DEACTIVATE ACTION ---
+
+    private void handleDelete(Employee emp) {
+        // Έλεγχος αν είναι ήδη ανενεργός
+        if (emp.getExitDate() != null) {
+            showErrorAlert("Action Invalid", "This employee is already inactive (contract terminated).");
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirm Deactivation");
+        confirm.setHeaderText("Terminate contract for " + emp.getLastName() + "?");
+        confirm.setContentText("This will mark the employee as inactive. They will remain in history.");
+        styleDialog(confirm);
+
+        if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+            try {
+                // Κλήση της Soft Delete μεθόδου
+                employeeService.softDeleteEmployee(emp.getId());
+
+                loadData(); // Ανανέωση για να φανεί γκριζαρισμένο
+                showInfoAlert("Success", "Employee marked as inactive.");
+            } catch (Exception e) {
+                showErrorAlert("Error", e.getMessage());
+            }
+        }
+    }
+
+    // --- UI HELPERS ---
+
+    // Μέθοδος για να γκριζάρει τις γραμμές των απολυμένων
+    private void setupRowStyling() {
+        employeeTable.setRowFactory(tv -> new TableRow<Employee>() {
+            @Override
+            protected void updateItem(Employee item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item == null || empty) {
+                    setStyle("");
+                } else if (item.getExitDate() != null) {
+                    // Γκρι χρώμα και italic για τους ανενεργούς
+                    setStyle("-fx-background-color: #F3F4F6; -fx-text-fill: #9CA3AF; -fx-font-style: italic;");
+                } else {
+                    setStyle("");
+                }
+            }
+        });
+    }
 
     private void fadeOutLoading() {
         FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), loadingOverlay);
@@ -176,10 +235,7 @@ public class EmployeesController implements Initializable {
 
     private boolean validateForm() {
         boolean isValid = true;
-
-        TextField[] required = {
-                firstNameField, lastNameField, emailField, ssnField
-        };
+        TextField[] required = {firstNameField, lastNameField, emailField, ssnField};
 
         for (TextField f : required) {
             if (f.getText() == null || f.getText().trim().isEmpty()) {
@@ -192,10 +248,8 @@ public class EmployeesController implements Initializable {
             hireDateField.getStyleClass().add("text-field-error");
             isValid = false;
         }
-
         return isValid;
     }
-
 
     private void resetFieldStyles() {
         firstNameField.getStyleClass().remove("text-field-error");
@@ -204,7 +258,6 @@ public class EmployeesController implements Initializable {
         ssnField.getStyleClass().remove("text-field-error");
         hireDateField.getStyleClass().remove("text-field-error");
     }
-
 
     private void setupValidationListeners() {
         TextField[] fields = {firstNameField, lastNameField, emailField, ssnField};
@@ -216,6 +269,7 @@ public class EmployeesController implements Initializable {
     }
 
     private void setupTableColumns() {
+        // ... (οι υπόλοιπες στήλες ίδιες) ...
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colFirstName.setCellValueFactory(new PropertyValueFactory<>("firstName"));
         colLastName.setCellValueFactory(new PropertyValueFactory<>("lastName"));
@@ -225,30 +279,73 @@ public class EmployeesController implements Initializable {
         colDepartment.setCellValueFactory(cell -> new javafx.beans.property.SimpleStringProperty(
                 cell.getValue().getDepartment() != null ? cell.getValue().getDepartment().getName() : "-"));
 
+        // --- DYNAMIC ACTIONS COLUMN ---
         colActions.setCellFactory(param -> new TableCell<>() {
             private final Button btnEdit = new Button("Edit");
-            private final Button btnDelete = new Button("Delete");
-            private final HBox pane = new HBox(5, btnEdit, btnDelete);
+            // Αυτό το κουμπί θα αλλάζει ρόλο (Delete ή Rehire)
+            private final Button btnAction = new Button();
+            private final HBox pane = new HBox(5, btnEdit, btnAction);
+
             {
                 btnEdit.getStyleClass().addAll("table-btn", "table-btn-edit");
-                btnDelete.getStyleClass().addAll("table-btn", "table-btn-delete");
+
+                // Edit Logic (Ίδιο)
                 btnEdit.setOnAction(e -> showForm(getTableView().getItems().get(getIndex())));
-                btnDelete.setOnAction(e -> handleDelete(getTableView().getItems().get(getIndex())));
             }
+
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : pane);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    Employee emp = getTableView().getItems().get(getIndex());
+
+                    // Δυναμική αλλαγή κουμπιού
+                    if (emp.getExitDate() == null) {
+                        // --- ΕΝΕΡΓΟΣ ΥΠΑΛΛΗΛΟΣ: Δείξε DELETE ---
+                        btnAction.setText("Delete");
+                        btnAction.getStyleClass().clear();
+                        btnAction.getStyleClass().addAll("table-btn", "table-btn-delete");
+
+                        btnAction.setOnAction(e -> handleDelete(emp));
+
+                    } else {
+                        // --- ΑΝΕΝΕΡΓΟΣ ΥΠΑΛΛΗΛΟΣ: Δείξε REHIRE ---
+                        btnAction.setText("Rehire");
+                        btnAction.getStyleClass().clear();
+                        btnAction.getStyleClass().addAll("table-btn", "table-btn-rehire");
+
+
+                        btnAction.setOnAction(e -> handleRehire(emp));
+                    }
+
+                    setGraphic(pane);
+                }
             }
         });
     }
 
-    private void handleDelete(Employee emp) {
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Delete " + emp.getLastName() + "?", ButtonType.YES, ButtonType.NO);
+    // --- NEW REHIRE METHOD ---
+    private void handleRehire(Employee emp) {
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Rehire Employee");
+        confirm.setHeaderText("Re-activate contract for " + emp.getLastName() + "?");
+        confirm.setContentText("This will remove the exit date and make the employee active again.");
         styleDialog(confirm);
-        if (confirm.showAndWait().orElse(ButtonType.NO) == ButtonType.YES) {
-            employeeService.deleteEmployee(emp.getId());
-            loadData();
+
+        if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+            try {
+                // Καλούμε το service
+                employeeService.rehireEmployee(emp.getId());
+
+                // Ανανεώνουμε τον πίνακα
+                loadData();
+                showInfoAlert("Success", "Employee has been rehired successfully!");
+
+            } catch (Exception e) {
+                showErrorAlert("Error", e.getMessage());
+            }
         }
     }
 

@@ -194,6 +194,7 @@ public class DepartmentController implements Initializable {
                 btnEdit.getStyleClass().addAll("table-btn", "table-btn-edit");
                 btnDelete.getStyleClass().addAll("table-btn", "table-btn-delete");
 
+                // --- EDIT ACTION ---
                 btnEdit.setOnAction(event -> {
                     selectedDepartment = getTableView().getItems().get(getIndex());
                     departmentNameField.setText(selectedDepartment.getName());
@@ -203,18 +204,36 @@ public class DepartmentController implements Initializable {
                     formViewContainer.setVisible(true);
                 });
 
+                // --- DELETE ACTION (ΔΙΟΡΘΩΜΕΝΟ) ---
                 btnDelete.setOnAction(event -> {
                     Department dept = getTableView().getItems().get(getIndex());
+
                     Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
                             "Are you sure you want to delete " + dept.getName() + "?");
                     styleDialog(confirm);
-                    if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
-                        departmentService.deleteDepartment(dept);
-                        departmentList.remove(dept);
 
-                        Alert info = new Alert(Alert.AlertType.INFORMATION, "Department deleted.");
-                        styleDialog(info);
-                        info.showAndWait();
+                    if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+                        try {
+                            // Προσπάθεια διαγραφής
+                            departmentService.deleteDepartment(dept);
+
+                            // Αφαίρεση από τη λίστα ΜΟΝΟ αν πετύχει η διαγραφή στη βάση
+                            departmentList.remove(dept);
+
+                            Alert info = new Alert(Alert.AlertType.INFORMATION, "Department deleted.");
+                            styleDialog(info);
+                            info.showAndWait();
+
+                        } catch (RuntimeException e) {
+                            // ΕΔΩ ΠΙΑΝΟΥΜΕ ΤΟ ΣΦΑΛΜΑ ΑΠΟ ΤΟ SERVICE
+                            Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                            errorAlert.setTitle("Deletion Failed");
+                            errorAlert.setHeaderText("Cannot Delete Department");
+                            // Το e.getMessage() θα εμφανίσει: "Cannot delete Department. It has X employees!"
+                            errorAlert.setContentText(e.getMessage());
+                            styleDialog(errorAlert);
+                            errorAlert.showAndWait();
+                        }
                     }
                 });
             }
