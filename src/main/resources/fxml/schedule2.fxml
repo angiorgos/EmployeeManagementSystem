@@ -21,12 +21,12 @@
                         <children>
                             <VBox prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
                                 <children>
-                                    <HBox prefHeight="25.0" prefWidth="53.0" VBox.vgrow="NEVER" />
-                                    <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="579.0" prefWidth="53.0" VBox.vgrow="ALWAYS">
+                                    <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="586.0" prefWidth="53.0" VBox.vgrow="ALWAYS">
                                         <columnConstraints>
                                             <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
                                         </columnConstraints>
                                         <rowConstraints>
+                              <RowConstraints maxHeight="47.0" minHeight="8.0" prefHeight="19.0" vgrow="ALWAYS" />
                                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
                                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
                                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
@@ -42,27 +42,26 @@
                                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
                                         </rowConstraints>
                                         <children>
-                                            <Label text="9 am " />
-                                            <Label text="10 am " GridPane.rowIndex="1" />
-                                            <Label text="11 am " GridPane.rowIndex="2" />
-                                            <Label text="12 am " GridPane.rowIndex="3" />
-                                            <Label text="1 pm " GridPane.rowIndex="4" />
-                                            <Label text="2 pm " GridPane.rowIndex="5" />
-                                            <Label text="3 pm " GridPane.rowIndex="6" />
-                                            <Label text="5 pm " GridPane.rowIndex="8" />
-                                            <Label text="4 pm " GridPane.rowIndex="7" />
-                                            <Label text="6 pm " GridPane.rowIndex="9" />
-                                            <Label text="7 pm " GridPane.rowIndex="10" />
-                                            <Label text="9 pm " GridPane.rowIndex="12" />
-                                            <Label text="8 pm " GridPane.rowIndex="11" />
+                                            <Label prefHeight="17.0" prefWidth="34.0" text="9 am" GridPane.rowIndex="1" GridPane.valignment="TOP" />
+                                            <Label text="10 am " GridPane.rowIndex="2" GridPane.valignment="TOP" />
+                                            <Label text="11 am " GridPane.rowIndex="3" GridPane.valignment="TOP" />
+                                            <Label text="12 am " GridPane.rowIndex="4" GridPane.valignment="TOP" />
+                                            <Label text="1 pm " GridPane.rowIndex="5" GridPane.valignment="TOP" />
+                                            <Label text="2 pm " GridPane.rowIndex="6" GridPane.valignment="TOP" />
+                                            <Label text="3 pm " GridPane.rowIndex="7" GridPane.valignment="TOP" />
+                                            <Label text="5 pm " GridPane.rowIndex="9" GridPane.valignment="TOP" />
+                                            <Label text="4 pm " GridPane.rowIndex="8" GridPane.valignment="TOP" />
+                                            <Label text="6 pm " GridPane.rowIndex="10" GridPane.valignment="TOP" />
+                                            <Label text="7 pm " GridPane.rowIndex="11" GridPane.valignment="TOP" />
+                                            <Label text="9 pm " GridPane.rowIndex="13" GridPane.valignment="TOP" />
+                                            <Label text="8 pm " GridPane.rowIndex="12" GridPane.valignment="TOP" />
                                         </children>
                                     </GridPane>
-                        <HBox prefHeight="16.0" prefWidth="53.0" VBox.vgrow="NEVER" />
                                 </children>
                             </VBox>
                             <VBox prefHeight="550.0" prefWidth="845.0" HBox.hgrow="ALWAYS">
                                 <children>
-                                    <HBox prefHeight="50.0" prefWidth="838.0" VBox.vgrow="NEVER">
+                                    <HBox prefHeight="35.0" prefWidth="811.0" VBox.vgrow="NEVER">
                                         <children>
                                             <VBox alignment="CENTER" prefHeight="35.0" prefWidth="120.0" HBox.hgrow="ALWAYS">
                                                 <children>
@@ -129,7 +128,7 @@
                                             </VBox>
                                         </children>
                                     </HBox>
-                                    <GridPane fx:id="weekGrid" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="612.0" prefWidth="835.0" styleClass="calendar-grid" VBox.vgrow="ALWAYS">
+                                    <GridPane fx:id="weekGrid" alignment="CENTER" gridLinesVisible="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="612.0" prefWidth="835.0" styleClass="calendar-grid" VBox.vgrow="ALWAYS">
                                         <columnConstraints>
                                             <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" />
                                             <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" percentWidth="14.285714" />
