@@ -25,8 +25,11 @@ import java.util.ResourceBundle;
 @Controller
 public class HolidaysController implements Initializable {
 
-    @Autowired private HolidayService holidayService;
-    @Autowired private UserSession userSession;
+    @Autowired
+    private HolidayService holidayService;
+
+    @Autowired
+    private UserSession userSession;
 
     @FXML private TableView<Holiday> holidaysTable;
     @FXML private TableColumn<Holiday, Long> holidaysID;
@@ -35,15 +38,17 @@ public class HolidaysController implements Initializable {
 
     @FXML private TextField holidaysNameField;
     @FXML private DatePicker holidaysDatePicker;
-    @FXML private TextField searchField; // Προσθήκη search
+    @FXML private TextField searchField;
     @FXML private Button holidaysRemoveBtn;
     @FXML private Button holidaysAddBtn;
-    @FXML private VBox loadingOverlay; // Προσθήκη loading
+    @FXML private VBox loadingOverlay;
 
     private final ObservableList<Holiday> masterData = FXCollections.observableArrayList();
     private FilteredList<Holiday> filteredData;
     private Holiday selectedHoliday = null;
-    private boolean isAdmin;
+
+    // ✅ Admin OR HR
+    private boolean isPrivileged = false;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -55,11 +60,17 @@ public class HolidaysController implements Initializable {
 
     private void setupSecurity() {
         User currentUser = userSession.getCurrentUser();
-        isAdmin = currentUser != null && currentUser.getRole() != null && "ROLE_ADMIN".equals(currentUser.getRole().getName());
 
-        holidaysAddBtn.setDisable(!isAdmin);
-        holidaysNameField.setDisable(!isAdmin);
-        holidaysDatePicker.setDisable(!isAdmin);
+        if (currentUser != null && currentUser.getRole() != null) {
+            String roleName = currentUser.getRole().getName();
+            isPrivileged =
+                    "Admin".equalsIgnoreCase(roleName) ||
+                            "HR".equalsIgnoreCase(roleName);
+        }
+
+        holidaysAddBtn.setDisable(!isPrivileged);
+        holidaysNameField.setDisable(!isPrivileged);
+        holidaysDatePicker.setDisable(!isPrivileged);
     }
 
     private void setupTable() {
@@ -67,18 +78,23 @@ public class HolidaysController implements Initializable {
         holidaysName.setCellValueFactory(new PropertyValueFactory<>("name"));
         holidaysDate.setCellValueFactory(new PropertyValueFactory<>("date"));
 
-        holidaysTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
-            if (newSel != null) {
-                selectedHoliday = newSel;
-                holidaysNameField.setText(newSel.getName());
-                holidaysDatePicker.setValue(newSel.getDate());
-                holidaysAddBtn.setText("Update Holiday");
-            } else {
-                clearForm();
-            }
-        });
+        holidaysTable.getSelectionModel()
+                .selectedItemProperty()
+                .addListener((obs, oldSel, newSel) -> {
+                    if (newSel != null && isPrivileged) {
+                        selectedHoliday = newSel;
+                        holidaysNameField.setText(newSel.getName());
+                        holidaysDatePicker.setValue(newSel.getDate());
+                        holidaysAddBtn.setText("Update Holiday");
+                    } else {
+                        clearForm();
+                    }
+                });
 
-        holidaysRemoveBtn.disableProperty().bind(holidaysTable.getSelectionModel().selectedItemProperty().isNull().or(new SimpleBooleanProperty(!isAdmin)));
+        holidaysRemoveBtn.disableProperty().bind(
+                holidaysTable.getSelectionModel().selectedItemProperty().isNull()
+                        .or(new SimpleBooleanProperty(!isPrivileged))
+        );
     }
 
     private void setupSearch() {
@@ -89,23 +105,33 @@ public class HolidaysController implements Initializable {
             filteredData.setPredicate(h -> {
                 if (newVal == null || newVal.isBlank()) return true;
                 String lower = newVal.toLowerCase();
-                return h.getName().toLowerCase().contains(lower) || h.getDate().toString().contains(lower);
+                return h.getName().toLowerCase().contains(lower)
+                        || h.getDate().toString().contains(lower);
             });
         });
     }
 
     @FXML
-    private void handleRefresh() { loadHolidays(); }
+    private void handleRefresh() {
+        loadHolidays();
+    }
 
     private void loadHolidays() {
         if (loadingOverlay != null) loadingOverlay.setVisible(true);
 
         Task<List<Holiday>> task = new Task<>() {
-            @Override protected List<Holiday> call() { return holidayService.getAllHolidays(); }
+            @Override
+            protected List<Holiday> call() {
+                return holidayService.getAllHolidays();
+            }
         };
 
         task.setOnSucceeded(e -> {
             masterData.setAll(task.getValue());
+            if (loadingOverlay != null) loadingOverlay.setVisible(false);
+        });
+
+        task.setOnFailed(e -> {
             if (loadingOverlay != null) loadingOverlay.setVisible(false);
         });
 
@@ -114,7 +140,7 @@ public class HolidaysController implements Initializable {
 
     @FXML
     private void handleAddOrUpdateHoliday() {
-        if (!isAdmin) return;
+        if (!isPrivileged) return;
 
         String name = holidaysNameField.getText();
         LocalDate date = holidaysDatePicker.getValue();
@@ -141,7 +167,7 @@ public class HolidaysController implements Initializable {
 
     @FXML
     private void handleRemoveHoliday() {
-        if (!isAdmin || selectedHoliday == null) return;
+        if (!isPrivileged || selectedHoliday == null) return;
 
         holidayService.deleteHoliday(selectedHoliday.getId());
         loadHolidays();
