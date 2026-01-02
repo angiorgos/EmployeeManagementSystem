@@ -25,8 +25,11 @@
                 </HBox>
 
                 <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);">
-                    <StackPane alignment="CENTER_LEFT">
-                        <TextField fx:id="searchField" promptText="Search actions, users or dates..."
+
+                    <DatePicker fx:id="dateFilter" prefHeight="35.0" prefWidth="160.0" promptText="Filter by Date" />
+
+                    <StackPane alignment="CENTER_LEFT" HBox.hgrow="NEVER">
+                        <TextField fx:id="searchField" promptText="Search actions or users..."
                                    prefHeight="35.0" prefWidth="300.0"
                                    styleClass="text-field"
                                    style="-fx-padding: 0 10 0 35;" />
@@ -37,12 +40,16 @@
                         </FontIcon>
                     </StackPane>
 
+                    <Button onAction="#onResetFilters" styleClass="btn-secondary" text="Reset" prefHeight="35.0" />
+
                     <Region HBox.hgrow="ALWAYS" />
 
-                    <Button onAction="#onRefresh" styleClass="btn-secondary" text="Refresh">
-                    </Button>
-                    <Button onAction="#onClearLogs" styleClass="btn-danger" text="Clear History">
-                    </Button>
+                    <HBox spacing="10">
+                        <Button onAction="#onRefresh" styleClass="btn-secondary" text="Refresh" prefHeight="35.0">
+                            <graphic><FontIcon iconLiteral="mdi2r-refresh" iconSize="16"/></graphic>
+                        </Button>
+                        <Button onAction="#onClearLogs" styleClass="btn-danger" text="Clear History" prefHeight="35.0" />
+                    </HBox>
                 </HBox>
 
                 <TableView fx:id="logsTable" styleClass="styled-table" VBox.vgrow="ALWAYS">
