@@ -120,7 +120,7 @@ public class ScheduleController2 implements Initializable {
                 updateSubmitEnabled();
                 updateDeleteEnabled();
                 if (!ok) clearPreview();
-                else refreshPreviewFromPickers(); // Αν επιλεγεί υπάλληλος, δείξε τυχόν επιλεγμένες ώρες
+                else refreshPreviewFromPickers(); // Αν επιλεγεί υπάλληλος, δείξε τυχόν επιλεγμένες ώρες.
             });
         }
 
