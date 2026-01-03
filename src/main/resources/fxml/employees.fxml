@@ -88,30 +88,27 @@
                     </VBox>
 
                     <VBox GridPane.columnIndex="0" GridPane.rowIndex="2">
+                        <Label style="-fx-font-weight: bold;" text="Address" /> <TextField fx:id="addressField" styleClass="search-field" promptText="Street, Number, City"/>
+                    </VBox>
+                    <VBox GridPane.columnIndex="1" GridPane.rowIndex="2">
                         <Label style="-fx-font-weight: bold;" text="SSN / AFM *" />
                         <TextField fx:id="ssnField" styleClass="search-field" />
                     </VBox>
-                    <VBox GridPane.columnIndex="1" GridPane.rowIndex="2">
+
+                    <VBox GridPane.columnIndex="0" GridPane.rowIndex="3">
                         <Label style="-fx-font-weight: bold;" text="Department" />
                         <ComboBox fx:id="departmentCombo" maxWidth="Infinity" styleClass="search-field" />
                     </VBox>
-
-                    <VBox GridPane.columnIndex="0" GridPane.rowIndex="3">
+                    <VBox GridPane.columnIndex="1" GridPane.rowIndex="3">
                         <Label style="-fx-font-weight: bold;" text="Salary (€)" />
                         <TextField fx:id="salaryField" promptText="0.00" styleClass="search-field" />
                     </VBox>
 
-                    <VBox GridPane.columnIndex="1" GridPane.rowIndex="3">
+                    <VBox GridPane.columnIndex="0" GridPane.rowIndex="4">
                         <Label style="-fx-font-weight: bold;" text="Hire Date *" />
                         <DatePicker fx:id="hireDateField" maxWidth="Infinity" styleClass="search-field" />
                     </VBox>
 
-                    <rowConstraints>
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                    </rowConstraints>
                 </GridPane>
 
                 <Region VBox.vgrow="ALWAYS" />
