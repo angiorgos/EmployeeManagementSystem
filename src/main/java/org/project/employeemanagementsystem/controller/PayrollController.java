@@ -28,7 +28,6 @@ import org.project.employeemanagementsystem.service.EmployeeService;
 import org.project.employeemanagementsystem.service.PaymentService;
 import org.project.employeemanagementsystem.service.SystemSettingService;
 import org.springframework.stereotype.Controller;
-import org.kordamp.ikonli.javafx.FontIcon; // Χρειάζεται μόνο αν έχεις εικονίδιο στο κουμπί του Toolbar
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -49,7 +48,7 @@ public class PayrollController implements Initializable {
     private final SystemSettingService settingService;
     private final AttendanceService attendanceService;
 
-    // KEYS SETTINGS
+    // --- KEYS SETTINGS ---
     private static final String KEY_WORK_HOURS = "payroll.standard_hours";
     private static final String KEY_OVERTIME = "payroll.overtime_rate";
     private static final String KEY_SUNDAY = "payroll.sunday_rate";
@@ -65,12 +64,14 @@ public class PayrollController implements Initializable {
         this.attendanceService = attendanceService;
     }
 
-    // FXML FIELDS
+    // --- FXML FIELDS ---
     @FXML private Label lblPendingCount;
     @FXML private DatePicker monthPicker;
     @FXML private TextField searchField;
     @FXML private Button btnGenerate;
     @FXML private Button btnFinalize;
+
+    // Loading Overlay
     @FXML private VBox loadingOverlay;
 
     @FXML private TableView<Payment> payrollTable;
@@ -94,25 +95,28 @@ public class PayrollController implements Initializable {
         monthPicker.setValue(LocalDate.now());
         setupTableColumns();
 
+        // 1. Setup SortedList Logic
         filteredData = new FilteredList<>(masterData, p -> true);
         sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(payrollTable.comparatorProperty());
         payrollTable.setItems(sortedData);
         payrollTable.getSortOrder().add(colId);
 
+        // 2. Load Data
         Platform.runLater(this::loadData);
 
         searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
         monthPicker.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
     }
 
+    // --- LOAD DATA ---
     private void loadData() {
         loadingOverlay.setVisible(true);
         loadingOverlay.setOpacity(1.0);
 
         Task<List<Payment>> task = new Task<>() {
             @Override
-            protected List<Payment> call() {
+            protected List<Payment> call() throws Exception {
                 return paymentService.getAllPayments();
             }
         };
@@ -120,7 +124,16 @@ public class PayrollController implements Initializable {
         task.setOnSucceeded(e -> {
             masterData.setAll(task.getValue());
             applyFilters();
-            fadeOutLoading();
+
+            PauseTransition delay = new PauseTransition(Duration.seconds(0.5));
+            delay.setOnFinished(ev -> {
+                FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), loadingOverlay);
+                fadeOut.setFromValue(1.0);
+                fadeOut.setToValue(0.0);
+                fadeOut.setOnFinished(evt -> loadingOverlay.setVisible(false));
+                fadeOut.play();
+            });
+            delay.play();
         });
 
         task.setOnFailed(e -> {
@@ -129,18 +142,6 @@ public class PayrollController implements Initializable {
         });
 
         new Thread(task).start();
-    }
-
-    private void fadeOutLoading() {
-        PauseTransition delay = new PauseTransition(Duration.seconds(0.5));
-        delay.setOnFinished(ev -> {
-            FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), loadingOverlay);
-            fadeOut.setFromValue(1.0);
-            fadeOut.setToValue(0.0);
-            fadeOut.setOnFinished(evt -> loadingOverlay.setVisible(false));
-            fadeOut.play();
-        });
-        delay.play();
     }
 
     // ================= ACTIONS =================
@@ -159,10 +160,29 @@ public class PayrollController implements Initializable {
         Task<Void> task = new Task<>() {
             @Override
             protected Void call() throws Exception {
+                double stdHours = settingService.getDouble(KEY_WORK_HOURS, 176.0);
+                double otRate   = settingService.getDouble(KEY_OVERTIME, 1.50);
+                double sunRate  = settingService.getDouble(KEY_SUNDAY, 1.75);
+                double taxRate  = settingService.getDouble(KEY_TAX, 0.40);
+                double empSplit = settingService.getDouble(KEY_EMPLOYER_SHARE, 0.60);
+
                 List<Employee> employees = employeeService.getAllEmployees();
+
                 for (Employee emp : employees) {
                     if (emp.getSalary() == null) continue;
-                    executePayrollCalculation(emp, selectedDate, null);
+
+                    double realHours = attendanceService.calculateTotalHoursWorked(emp, selectedDate);
+                    double sundayHours = attendanceService.calculateSundayHours(emp, selectedDate);
+
+                    double overtimeHours = 0.0;
+                    if (realHours > stdHours) {
+                        overtimeHours = realHours - stdHours;
+                    }
+
+                    paymentService.calculateAndSavePayroll(
+                            emp, selectedDate, stdHours, overtimeHours, sundayHours,
+                            otRate, sunRate, taxRate, empSplit
+                    );
                 }
                 return null;
             }
@@ -182,10 +202,12 @@ public class PayrollController implements Initializable {
     }
 
     /**
-     * MASS RECALCULATE
+     * Η ΝΕΑ ΜΕΘΟΔΟΣ ΓΙΑ ΜΑΖΙΚΟ RECALCULATE
+     * (Χωρίς refactoring, απλά η λογική μέσα εδώ όπως ζήτησες)
      */
     @FXML
     public void recalculateAllDrafts() {
+        // Βρίσκουμε τα PENDING από τη φιλτραρισμένη λίστα
         List<Payment> pendingList = filteredData.stream()
                 .filter(p -> "PENDING".equalsIgnoreCase(p.getStatus()))
                 .collect(Collectors.toList());
@@ -198,7 +220,7 @@ public class PayrollController implements Initializable {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
                 "Recalculate " + pendingList.size() + " pending drafts?\n" +
                         "This will update amounts based on current settings and salaries.");
-        styleAlert(confirm); // Εφαρμογή theme στον διάλογο
+        styleAlert(confirm); // Εφαρμογή theme
 
         if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
 
@@ -208,15 +230,51 @@ public class PayrollController implements Initializable {
         Task<Void> task = new Task<>() {
             @Override
             protected Void call() throws Exception {
+                // Λήψη ρυθμίσεων
+                double stdHours = settingService.getDouble(KEY_WORK_HOURS, 176.0);
+                double otRate   = settingService.getDouble(KEY_OVERTIME, 1.50);
+                double sunRate  = settingService.getDouble(KEY_SUNDAY, 1.75);
+                double taxRate  = settingService.getDouble(KEY_TAX, 0.40);
+                double empSplit = settingService.getDouble(KEY_EMPLOYER_SHARE, 0.60);
+
                 for (Payment payment : pendingList) {
+                    // 1. Φρέσκα δεδομένα υπαλλήλου
                     Employee freshEmp = employeeService.getEmployeeById(payment.getEmployee().getId())
                             .orElse(payment.getEmployee());
 
+                    // 2. Υπολογισμός Ημερομηνίας
                     DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MM/yyyy");
                     YearMonth ym = YearMonth.parse(payment.getMonthYear(), fmt);
                     LocalDate calcDate = ym.atDay(1);
 
-                    executePayrollCalculation(freshEmp, calcDate, payment);
+                    // 3. Υπολογισμός Ωρών
+                    double realHours = attendanceService.calculateTotalHoursWorked(freshEmp, calcDate);
+                    double sundayHours = attendanceService.calculateSundayHours(freshEmp, calcDate);
+                    double overtimeHours = Math.max(0, realHours - stdHours);
+
+                    // 4. Μαθηματικά (Update Logic)
+                    double hourlyRate = (stdHours > 0) ? freshEmp.getSalary() / stdHours : 0;
+                    double otPay = overtimeHours * hourlyRate * otRate;
+                    double sunPay = sundayHours * hourlyRate * sunRate;
+                    double bonus = (payment.getBonus() != null) ? payment.getBonus() : 0.0;
+
+                    double grossPay = freshEmp.getSalary() + otPay + sunPay + bonus;
+                    double tax = grossPay * taxRate;
+                    double employerCost = grossPay * empSplit;
+                    double netPay = grossPay - tax;
+
+                    // 5. Ενημέρωση Αντικειμένου
+                    payment.setBaseSalary(freshEmp.getSalary());
+                    payment.setHoursWorked(stdHours);
+                    payment.setOvertimeHours(overtimeHours);
+                    payment.setSundayHours(sundayHours);
+                    payment.setGrossPay(grossPay);
+                    payment.setDeductions(tax);
+                    payment.setEmployerTax(employerCost);
+                    payment.setAmount(netPay);
+
+                    // 6. Αποθήκευση
+                    paymentService.savePayment(payment);
                 }
                 return null;
             }
@@ -235,92 +293,6 @@ public class PayrollController implements Initializable {
         new Thread(task).start();
     }
 
-    /**
-     * DRY Logic: Κοινός υπολογισμός
-     */
-    private void executePayrollCalculation(Employee emp, LocalDate date, Payment existingPayment) throws Exception {
-        double stdHours = settingService.getDouble(KEY_WORK_HOURS, 176.0);
-        double otRate   = settingService.getDouble(KEY_OVERTIME, 1.50);
-        double sunRate  = settingService.getDouble(KEY_SUNDAY, 1.75);
-        double taxRate  = settingService.getDouble(KEY_TAX, 0.40);
-        double empSplit = settingService.getDouble(KEY_EMPLOYER_SHARE, 0.60);
-
-        double realHours = attendanceService.calculateTotalHoursWorked(emp, date);
-        double sundayHours = attendanceService.calculateSundayHours(emp, date);
-        double overtimeHours = Math.max(0, realHours - stdHours);
-
-        if (existingPayment != null) {
-            double hourlyRate = (stdHours > 0) ? emp.getSalary() / stdHours : 0;
-            double otPay = overtimeHours * hourlyRate * otRate;
-            double sunPay = sundayHours * hourlyRate * sunRate;
-            double bonus = (existingPayment.getBonus() != null) ? existingPayment.getBonus() : 0.0;
-
-            double grossPay = emp.getSalary() + otPay + sunPay + bonus;
-            double tax = grossPay * taxRate;
-            double employerCost = grossPay * empSplit;
-            double netPay = grossPay - tax;
-
-            existingPayment.setBaseSalary(emp.getSalary());
-            existingPayment.setHoursWorked(realHours);
-            existingPayment.setOvertimeHours(overtimeHours);
-            existingPayment.setSundayHours(sundayHours);
-            existingPayment.setGrossPay(grossPay);
-            existingPayment.setDeductions(tax);
-            existingPayment.setEmployerTax(employerCost);
-            existingPayment.setAmount(netPay);
-
-            paymentService.savePayment(existingPayment);
-
-        } else {
-            paymentService.calculateAndSavePayroll(
-                    emp, date, stdHours, overtimeHours, sundayHours,
-                    otRate, sunRate, taxRate, empSplit
-            );
-        }
-    }
-
-    @FXML
-    public void finalizePayments() {
-        List<Payment> pending = filteredData.stream()
-                .filter(p -> "PENDING".equalsIgnoreCase(p.getStatus()))
-                .collect(Collectors.toList());
-
-        if (pending.isEmpty()) {
-            showSimpleAlert(Alert.AlertType.WARNING, "No Pending Payments", "All listed payments are already paid!");
-            return;
-        }
-
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Mark " + pending.size() + " payments as PAID?");
-        styleAlert(alert);
-        if (alert.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
-
-        loadingOverlay.setVisible(true);
-        loadingOverlay.setOpacity(1.0);
-
-        Task<Void> task = new Task<>() {
-            @Override
-            protected Void call() throws Exception {
-                for (Payment p : pending) {
-                    paymentService.updatePaymentStatus(p, "PAID");
-                }
-                return null;
-            }
-        };
-
-        task.setOnSucceeded(e -> {
-            loadData();
-            showSimpleAlert(Alert.AlertType.INFORMATION, "Success", "Payments finalized successfully!");
-        });
-
-        task.setOnFailed(e -> {
-            loadingOverlay.setVisible(false);
-            showSimpleAlert(Alert.AlertType.ERROR, "Error", "Failed: " + task.getException().getMessage());
-        });
-
-        new Thread(task).start();
-    }
-
-    // --- DIALOGS & EXPORT ---
 
     @FXML
     public void openSettingsDialog() {
@@ -364,36 +336,6 @@ public class PayrollController implements Initializable {
                 } catch (Exception e) {
                     showSimpleAlert(Alert.AlertType.ERROR, "Error", "Invalid input!");
                 }
-            }
-        });
-    }
-
-    private void openBonusDialog(Payment payment) {
-        String currentBonus = (payment.getBonus() != null) ? payment.getBonus().toString() : "0.0";
-        TextInputDialog dialog = new TextInputDialog(currentBonus);
-        dialog.setTitle("Add Bonus");
-        dialog.setHeaderText("Bonus for: " + payment.getEmployee().getLastName());
-        styleAlert(dialog);
-
-        dialog.showAndWait().ifPresent(amountStr -> {
-            try {
-                double newBonus = Double.parseDouble(amountStr);
-                double taxRate = settingService.getDouble(KEY_TAX, 0.40);
-                double empShare = settingService.getDouble(KEY_EMPLOYER_SHARE, 0.60);
-
-                Payment updatedPayment = paymentService.updateBonus(payment, newBonus, taxRate, empShare);
-
-                payment.setBonus(updatedPayment.getBonus());
-                payment.setGrossPay(updatedPayment.getGrossPay());
-                payment.setDeductions(updatedPayment.getDeductions());
-                payment.setEmployerTax(updatedPayment.getEmployerTax());
-                payment.setAmount(updatedPayment.getAmount());
-
-                payrollTable.refresh();
-                updateSummaryCards(filteredData);
-
-            } catch (NumberFormatException e) {
-                showSimpleAlert(Alert.AlertType.ERROR, "Error", "Invalid bonus amount!");
             }
         });
     }
@@ -464,67 +406,45 @@ public class PayrollController implements Initializable {
         }
     }
 
-    // --- TABLE SETUP & HELPERS ---
+    @FXML
+    public void finalizePayments() {
+        List<Payment> pending = filteredData.stream()
+                .filter(p -> "PENDING".equalsIgnoreCase(p.getStatus()))
+                .collect(Collectors.toList());
 
-    private void setupTableColumns() {
-        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colSsn.setCellValueFactory(cell -> new SimpleStringProperty(
-                cell.getValue().getEmployee().getSsn() != null ? cell.getValue().getEmployee().getSsn() : "-"));
-        colName.setCellValueFactory(cell -> new SimpleStringProperty(
-                cell.getValue().getEmployee().getLastName() + " " + cell.getValue().getEmployee().getFirstName()));
-        colMonth.setCellValueFactory(new PropertyValueFactory<>("monthYear"));
-        colGross.setCellValueFactory(new PropertyValueFactory<>("grossPay"));
-        colDeductions.setCellValueFactory(new PropertyValueFactory<>("deductions"));
-        colEmployerTax.setCellValueFactory(new PropertyValueFactory<>("employerTax"));
-        colAmount.setCellValueFactory(new PropertyValueFactory<>("amount"));
-        colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+        if (pending.isEmpty()) {
+            showSimpleAlert(Alert.AlertType.WARNING, "No Pending Payments", "All listed payments are already paid!");
+            return;
+        }
 
-        colStatus.setCellFactory(column -> new TableCell<>() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Mark " + pending.size() + " payments as PAID?");
+        styleAlert(alert);
+        if (alert.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
+
+        loadingOverlay.setVisible(true);
+        loadingOverlay.setOpacity(1.0);
+
+        Task<Void> task = new Task<>() {
             @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (item == null || empty) { setText(null); setStyle(""); }
-                else {
-                    setText(item);
-                    if ("PAID".equalsIgnoreCase(item)) setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
-                    else setStyle("-fx-text-fill: #F59E0B; -fx-font-weight: bold;");
+            protected Void call() throws Exception {
+                for (Payment p : pending) {
+                    paymentService.updatePaymentStatus(p, "PAID");
                 }
+                return null;
             }
+        };
+
+        task.setOnSucceeded(e -> {
+            loadData();
+            showSimpleAlert(Alert.AlertType.INFORMATION, "Success", "Payments finalized successfully!");
         });
 
-        // ΕΠΑΝΑΦΟΡΑ ΣΕ ΚΕΙΜΕΝΟ ΟΠΩΣ ΖΗΤΗΣΕΣ
-        colActions.setCellFactory(param -> new TableCell<>() {
-            private final Button btnInfo = new Button("Info");   // Text back
-            private final Button btnBonus = new Button("Bonus"); // Text back
-            private final HBox pane = new HBox(5, btnInfo, btnBonus);
-
-            {
-                // Info Style
-                btnInfo.getStyleClass().add("table-btn");
-                btnInfo.setStyle("-fx-background-color: #3B82F6; -fx-text-fill: white;");
-
-                // Bonus Style
-                btnBonus.getStyleClass().add("table-btn");
-                btnBonus.setStyle("-fx-background-color: #F59E0B; -fx-text-fill: white;");
-
-                btnInfo.setOnAction(e -> showPaymentDetails(getTableView().getItems().get(getIndex())));
-
-                btnBonus.setOnAction(e -> {
-                    Payment p = getTableView().getItems().get(getIndex());
-                    if ("PAID".equalsIgnoreCase(p.getStatus())) {
-                        showSimpleAlert(Alert.AlertType.WARNING, "Locked", "Already Paid!");
-                    } else {
-                        openBonusDialog(p);
-                    }
-                });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                setGraphic(empty ? null : pane);
-            }
+        task.setOnFailed(e -> {
+            loadingOverlay.setVisible(false);
+            showSimpleAlert(Alert.AlertType.ERROR, "Error", "Failed to finalize payments: " + task.getException().getMessage());
         });
+
+        new Thread(task).start();
     }
 
     private void showPaymentDetails(Payment p) {
@@ -556,6 +476,86 @@ public class PayrollController implements Initializable {
         );
         alert.setContentText(content);
         alert.showAndWait();
+    }
+
+    private void openBonusDialog(Payment payment) {
+        String currentBonus = (payment.getBonus() != null) ? payment.getBonus().toString() : "0.0";
+        TextInputDialog dialog = new TextInputDialog(currentBonus);
+        dialog.setTitle("Add Bonus");
+        dialog.setHeaderText("Bonus for: " + payment.getEmployee().getLastName());
+        styleAlert(dialog);
+
+        dialog.showAndWait().ifPresent(amountStr -> {
+            try {
+                double newBonus = Double.parseDouble(amountStr);
+                double taxRate = settingService.getDouble(KEY_TAX, 0.40);
+                double empShare = settingService.getDouble(KEY_EMPLOYER_SHARE, 0.60);
+
+                Payment updatedPayment = paymentService.updateBonus(payment, newBonus, taxRate, empShare);
+
+                // Update In Memory
+                payment.setBonus(updatedPayment.getBonus());
+                payment.setGrossPay(updatedPayment.getGrossPay());
+                payment.setDeductions(updatedPayment.getDeductions());
+                payment.setEmployerTax(updatedPayment.getEmployerTax());
+                payment.setAmount(updatedPayment.getAmount());
+
+                payrollTable.refresh();
+                updateSummaryCards(filteredData);
+
+            } catch (NumberFormatException e) {
+                showSimpleAlert(Alert.AlertType.ERROR, "Error", "Invalid bonus amount!");
+            }
+        });
+    }
+
+    private void setupTableColumns() {
+        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        colSsn.setCellValueFactory(cell -> new SimpleStringProperty(
+                cell.getValue().getEmployee().getSsn() != null ? cell.getValue().getEmployee().getSsn() : "-"));
+        colName.setCellValueFactory(cell -> new SimpleStringProperty(
+                cell.getValue().getEmployee().getLastName() + " " + cell.getValue().getEmployee().getFirstName()));
+        colMonth.setCellValueFactory(new PropertyValueFactory<>("monthYear"));
+        colGross.setCellValueFactory(new PropertyValueFactory<>("grossPay"));
+        colDeductions.setCellValueFactory(new PropertyValueFactory<>("deductions"));
+        colEmployerTax.setCellValueFactory(new PropertyValueFactory<>("employerTax"));
+        colAmount.setCellValueFactory(new PropertyValueFactory<>("amount"));
+        colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+
+        colStatus.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item == null || empty) { setText(null); setStyle(""); }
+                else {
+                    setText(item);
+                    if ("PAID".equalsIgnoreCase(item)) setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
+                    else setStyle("-fx-text-fill: #F59E0B; -fx-font-weight: bold;");
+                }
+            }
+        });
+
+        colActions.setCellFactory(param -> new TableCell<>() {
+            private final Button btnInfo = new Button("Info");
+            private final Button btnBonus = new Button("Bonus");
+            private final HBox pane = new HBox(5, btnInfo, btnBonus);
+            {
+                btnInfo.getStyleClass().add("table-btn"); btnInfo.setStyle("-fx-background-color: #3B82F6; -fx-text-fill: white;");
+                btnBonus.getStyleClass().add("table-btn"); btnBonus.setStyle("-fx-background-color: #F59E0B; -fx-text-fill: white;");
+
+                btnInfo.setOnAction(e -> showPaymentDetails(getTableView().getItems().get(getIndex())));
+                btnBonus.setOnAction(e -> {
+                    Payment p = getTableView().getItems().get(getIndex());
+                    if ("PAID".equalsIgnoreCase(p.getStatus())) showSimpleAlert(Alert.AlertType.WARNING, "Locked", "Already Paid!");
+                    else openBonusDialog(p);
+                });
+            }
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : pane);
+            }
+        });
     }
 
     private void applyFilters() {
