@@ -24,6 +24,7 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.ResourceBundle;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @Controller
 public class EmployeesController implements Initializable {
@@ -123,7 +124,7 @@ public class EmployeesController implements Initializable {
         Employee employeeToSave = new Employee();
         if (currentEditingEmployee != null) {
             employeeToSave.setId(currentEditingEmployee.getId());
-            // Κρατάμε το υπάρχον exitDate αν υπάρχει (για να μην ενεργοποιηθεί ξανά κατά λάθος)
+            // Κρατάμε το υπάρχον exitDate αν υπάρχει
             employeeToSave.setExitDate(currentEditingEmployee.getExitDate());
         }
 
@@ -154,6 +155,8 @@ public class EmployeesController implements Initializable {
         Task<Void> saveTask = new Task<>() {
             @Override
             protected Void call() {
+                // Εδώ γίνεται η δουλειά στο background. Αν αποτύχει, πετάει Exception
+                // το οποίο πιάνουμε στο setOnFailed
                 employeeService.saveEmployee(employeeToSave);
                 return null;
             }
@@ -167,11 +170,32 @@ public class EmployeesController implements Initializable {
             showInfoAlert("Success", "Employee saved successfully!");
         });
 
+        // --- ΕΔΩ ΕΙΝΑΙ Η ΑΛΛΑΓΗ ΓΙΑ ΤΟ DUPLICATE KEY ---
         saveTask.setOnFailed(e -> {
             loadingOverlay.setVisible(false);
             currentEditingEmployee = null;
-            Throwable ex = saveTask.getException();
-            showErrorAlert("Save Failed", ex.getMessage() != null ? ex.getMessage() : "Unexpected error");
+
+            Throwable ex = saveTask.getException(); // Παίρνουμε το λάθος
+            String errorMessage = "Unexpected error";
+
+            // Έλεγχος αν είναι σφάλμα βάσης (Duplicate Key)
+            if (ex instanceof DataIntegrityViolationException) {
+                // Παίρνουμε το πιο συγκεκριμένο μήνυμα (π.χ. από την PostgreSQL)
+                String specificError = ((DataIntegrityViolationException) ex).getMostSpecificCause().getMessage();
+
+                if (specificError != null && specificError.contains("employees_ssn_key")) {
+                    errorMessage = "This SSN already exists for another employee!";
+                } else if (specificError != null && specificError.contains("employees_email_key")) {
+                    errorMessage = "This Email already exists!";
+                } else {
+                    errorMessage = "Database constraint violation.";
+                }
+            } else {
+                // Οποιοδήποτε άλλο σφάλμα
+                errorMessage = ex.getMessage() != null ? ex.getMessage() : "Unknown error occurred.";
+            }
+
+            showErrorAlert("Save Failed", errorMessage);
         });
 
         new Thread(saveTask).start();

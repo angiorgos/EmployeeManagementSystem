@@ -5,7 +5,6 @@
 <?import javafx.scene.web.WebView?>
 <?import javafx.scene.text.Font?>
 
-<?import org.kordamp.ikonli.javafx.FontIcon?>
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="768.0" prefWidth="1366.0" stylesheets="@../theme.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.project.employeemanagementsystem.controller.DashboardController">
 
     <top>
@@ -26,48 +25,57 @@
                     </Label>
 
                     <HBox spacing="20.0" alignment="CENTER">
-
                         <VBox styleClass="kpi-card, card-blue" HBox.hgrow="ALWAYS">
                             <Label styleClass="kpi-title" text="Total Employees"/>
                             <Label fx:id="totalEmployeesLabel" styleClass="kpi-value" text="0"/>
                         </VBox>
-
                         <VBox styleClass="kpi-card, card-green" HBox.hgrow="ALWAYS">
                             <Label styleClass="kpi-title" text="Working Today"/>
                             <Label fx:id="workingTodayLabel" styleClass="kpi-value" text="0"/>
                         </VBox>
-
                         <VBox styleClass="kpi-card, card-orange" HBox.hgrow="ALWAYS">
                             <Label styleClass="kpi-title" text="On Leave Today"/>
                             <Label fx:id="onLeaveLabel" styleClass="kpi-value" text="0"/>
                         </VBox>
-
                         <VBox styleClass="kpi-card, card-red" HBox.hgrow="ALWAYS">
-                            <Label styleClass="kpi-title" text="Pending Leave Requests"/>
+                            <Label styleClass="kpi-title" text="Pending Requests"/>
                             <Label fx:id="pendingRequestsLabel" styleClass="kpi-value" text="0"/>
                         </VBox>
-
                     </HBox>
 
                     <FlowPane hgap="20.0" vgap="20.0" alignment="TOP_CENTER">
 
                         <VBox prefHeight="350.0" prefWidth="550.0" styleClass="chart-card">
-                            <Label styleClass="card-title" text="Hires Overview (Monthly)" />
+                            <HBox alignment="CENTER_LEFT" spacing="10">
+                                <Label styleClass="card-title" text="Hires Overview" />
+                                <Region HBox.hgrow="ALWAYS" />
+                                <ComboBox fx:id="hiresYearCombo" prefWidth="105.0" styleClass="small-combo"/>
+                            </HBox>
                             <WebView fx:id="hiresWebView" VBox.vgrow="ALWAYS" />
                         </VBox>
 
                         <VBox prefHeight="350.0" prefWidth="550.0" styleClass="chart-card">
-                            <Label styleClass="card-title" text="Employees per Department" />
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="card-title" text="Employees per Department" />
+                            </HBox>
                             <WebView fx:id="deptWebView" VBox.vgrow="ALWAYS" />
                         </VBox>
 
                         <VBox prefHeight="350.0" prefWidth="550.0" styleClass="chart-card">
-                            <Label styleClass="card-title" text="Leave Statistics (Trend)" />
+                            <HBox alignment="CENTER_LEFT" spacing="10">
+                                <Label styleClass="card-title" text="Leave Statistics" />
+                                <Region HBox.hgrow="ALWAYS" />
+                                <ComboBox fx:id="leavesYearCombo" prefWidth="105.0" styleClass="small-combo"/>
+                            </HBox>
                             <WebView fx:id="leavesWebView" VBox.vgrow="ALWAYS" />
                         </VBox>
 
                         <VBox prefHeight="350.0" prefWidth="550.0" styleClass="chart-card">
-                            <Label styleClass="card-title" text="Attendance (Last 7 Days)" />
+                            <HBox alignment="CENTER_LEFT" spacing="10">
+                                <Label styleClass="card-title" text="Attendance Overview" />
+                                <Region HBox.hgrow="ALWAYS" />
+                                <ComboBox fx:id="attendanceYearCombo" prefWidth="105.0" styleClass="small-combo"/>
+                            </HBox>
                             <WebView fx:id="attendanceWebView" VBox.vgrow="ALWAYS" />
                         </VBox>
 
@@ -77,18 +85,10 @@
             </ScrollPane>
 
             <VBox fx:id="loadingOverlay" alignment="CENTER" spacing="20.0" style="-fx-background-color: #F3F4F6;">
-
                 <ProgressIndicator styleClass="loading-spinner" prefWidth="60.0" prefHeight="60.0" />
-
-                <VBox alignment="CENTER" spacing="5.0">
-                    <Label text="Loading Dashboard" textFill="#111827">
-                        <font><Font name="System Bold" size="20.0"/></font>
-                    </Label>
-                    <Label text="Please wait..." textFill="#6B7280">
-                        <font><Font size="14.0"/></font>
-                    </Label>
-                </VBox>
-
+                <Label text="Loading Dashboard..." textFill="#111827">
+                    <font><Font name="System Bold" size="20.0"/></font>
+                </Label>
             </VBox>
 
         </StackPane>

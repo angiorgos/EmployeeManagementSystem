@@ -856,3 +856,89 @@
 .cal-btn .ikonli-font-icon {
     -fx-icon-color: #4B5563;
 }
+
+/* =========================================
+   SMALL COMBO BOX STYLE (FIXED)
+   ========================================= */
+
+/* 1. Το βασικό κουτί (Container) */
+.small-combo {
+    -fx-pref-height: 30px;
+    -fx-min-height: 30px;
+    -fx-max-height: 30px;
+    -fx-font-size: 12px;
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 6;
+    -fx-border-color: #D1D5DB; /* Light Gray Border */
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+    -fx-padding: 0 5 0 5;
+}
+
+/* Hover στο κουτί */
+.small-combo:hover {
+    -fx-border-color: #3B82F6; /* Blue border */
+    -fx-background-color: #F9FAFB;
+}
+
+/* Όταν είναι ανοιχτό */
+.small-combo:showing {
+    -fx-background-color: #EFF6FF;
+    -fx-border-color: #3B82F6;
+}
+
+/* 2. ΤΟ ΚΕΙΜΕΝΟ ΜΕΣΑ ΣΤΟ ΚΟΥΜΠΙ (ΤΟ ΠΡΟΒΛΗΜΑ ΠΟΥ ΕΙΧΕΣ)
+   Εξασφαλίζουμε ότι το κείμενο που φαίνεται όταν είναι κλειστό
+   είναι ΠΑΝΤΑ διάφανο/λευκό και ΟΧΙ μπλε. */
+.small-combo .list-cell,
+.small-combo .list-cell:filled:selected,
+.small-combo .list-cell:filled:selected:hover {
+    -fx-background-color: transparent;
+    -fx-text-fill: #374151; /* Dark Gray Text */
+    -fx-padding: 0 0 0 5; /* Padding left */
+}
+
+/* 3. Το Βελάκι (Arrow) */
+.small-combo .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.small-combo .arrow {
+    -fx-background-color: #6B7280; /* Gray arrow */
+    -fx-pref-width: 7px;
+    -fx-pref-height: 7px;
+}
+
+.small-combo:hover .arrow {
+    -fx-background-color: #3B82F6; /* Blue arrow on hover */
+}
+
+/* 4. Η ΛΙΣΤΑ ΠΟΥ ΑΝΟΙΓΕΙ (DROPDOWN MENU) */
+.small-combo .list-view {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-border-color: #E5E7EB;
+    /* Σκιά για ομορφιά */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 4);
+}
+
+/* Τα αντικείμενα ΜΕΣΑ στη λίστα */
+.small-combo .list-view .list-cell {
+    -fx-padding: 5 10 5 10;
+    -fx-background-color: transparent;
+    -fx-text-fill: #374151;
+}
+
+/* Hover πάνω στα αντικείμενα της λίστας */
+.small-combo .list-view .list-cell:hover {
+    -fx-background-color: #EFF6FF; /* Ανοιχτό μπλε */
+    -fx-text-fill: #1D4ED8;
+}
+
+/* ΕΠΙΛΕΓΜΕΝΟ αντικείμενο ΜΕΣΑ στη λίστα (Αυτό θέλουμε Μπλε) */
+.small-combo .list-view .list-cell:filled:selected,
+.small-combo .list-view .list-cell:filled:selected:hover {
+    -fx-background-color: #3B82F6; /* Έντονο Μπλε */
+    -fx-text-fill: white;
+}

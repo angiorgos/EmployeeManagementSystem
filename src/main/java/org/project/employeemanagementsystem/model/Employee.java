@@ -60,4 +60,9 @@ public class Employee {
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
     private List<Attendance> attendances;
+
+    public boolean isActive() {
+        // Ενεργός αν το exitDate είναι κενό (null)
+        return this.exitDate == null;
+    }
 }
