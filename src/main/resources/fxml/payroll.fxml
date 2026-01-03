@@ -52,8 +52,14 @@
                         <Button fx:id="btnFinalize" onAction="#finalizePayments" styleClass="btn-success" text="Confirm &amp; Pay">
                             <graphic> <FontIcon iconColor="white" iconLiteral="mdi2c-check-circle" /> </graphic>
                         </Button>
+
                         <Button onAction="#exportToExcel" styleClass="btn-success" text="Export Excel">
                             <graphic> <FontIcon iconColor="white" iconLiteral="mdi2f-file-excel" /> </graphic>
+                        </Button>
+                        <Button onAction="#recalculateAllDrafts" styleClass="btn-secondary" text="Recalculate Pending">
+                            <graphic>
+                                <FontIcon iconColor="#374151" iconLiteral="mdi2r-refresh" />
+                            </graphic>
                         </Button>
                         <Button onAction="#openSettingsDialog" styleClass="btn-secondary" text="Config">
                             <graphic> <FontIcon iconColor="#374151" iconLiteral="mdi2c-cog" /> </graphic>

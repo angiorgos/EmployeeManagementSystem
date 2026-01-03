@@ -134,4 +134,18 @@ public class PaymentService {
 
         systemLogService.log("UPDATE_PAYMENT_STATUS", details);
     }
+
+    @Transactional
+    public void savePayment(Payment payment) {
+        paymentRepository.save(payment);
+
+        // Προαιρετικά: Καταγραφή στο Log
+        String details = String.format("Payment Updated Manually/Recalculated: %s %s | Month: %s | Net: %.2f €",
+                payment.getEmployee().getFirstName(),
+                payment.getEmployee().getLastName(),
+                payment.getMonthYear(),
+                payment.getAmount());
+
+        systemLogService.log("UPDATE_PAYMENT", details);
+    }
 }
