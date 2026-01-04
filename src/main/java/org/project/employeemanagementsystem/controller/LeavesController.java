@@ -73,7 +73,7 @@ public class LeavesController implements Initializable {
                                     );
 
                             remainingDaysLabel.setText(
-                                    "Remaining Days: " + remaining
+                                    String.valueOf(remaining)
                             );
 
                             if (remaining <= 0) {
