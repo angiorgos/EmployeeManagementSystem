@@ -61,6 +61,7 @@ public class EmployeesController implements Initializable {
     @FXML private TextField salaryField;
     @FXML private ComboBox<Department> departmentCombo;
     @FXML private DatePicker hireDateField;
+    @FXML private TextField addressField;
 
     private final ObservableList<Employee> masterData = FXCollections.observableArrayList();
     private FilteredList<Employee> filteredData;
@@ -134,6 +135,7 @@ public class EmployeesController implements Initializable {
         employeeToSave.setPhone(phoneField.getText());
         employeeToSave.setSsn(ssnField.getText());
         employeeToSave.setDepartment(departmentCombo.getValue());
+        employeeToSave.setAddress(addressField.getText());
 
         // Χειρισμός Hire Date
         if (hireDateField.getValue() != null) {
@@ -404,6 +406,7 @@ public class EmployeesController implements Initializable {
             phoneField.setText(emp.getPhone());
             ssnField.setText(emp.getSsn());
             salaryField.setText(String.valueOf(emp.getSalary()));
+            addressField.setText(emp.getAddress());
             departmentCombo.setValue(emp.getDepartment());
             if (hireDateField != null) hireDateField.setValue(emp.getHireDate());
         }
@@ -420,6 +423,7 @@ public class EmployeesController implements Initializable {
         phoneField.clear(); ssnField.clear(); salaryField.clear();
         if (hireDateField != null) hireDateField.setValue(null);
         departmentCombo.setValue(null); resetFieldStyles();
+        phoneField.clear(); addressField.clear();
         currentEditingEmployee = null;
     }
 
