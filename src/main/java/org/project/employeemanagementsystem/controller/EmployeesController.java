@@ -116,7 +116,10 @@ public class EmployeesController implements Initializable {
     @FXML
     public void handleSaveEmployee() {
         resetFieldStyles();
-        if (!validateForm()) return;
+        if (!validateForm()) {
+            showErrorAlert("Validation Error", "Please fill in all required fields (First Name, Last Name, Email, SSN, Hire Date).");
+            return;
+        }
 
         loadingOverlay.setVisible(true);
         loadingOverlay.setOpacity(1.0);
