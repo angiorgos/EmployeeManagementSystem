@@ -20,6 +20,8 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     // Find requests by status (e.g., all PENDING requests for the Admin to see)
     List<LeaveRequest> findByStatus(LeaveStatus status);
 
+    List<LeaveRequest> findByEmployeeAndStatusNot(Employee employee, LeaveStatus status);
+
     // Βρίσκει όλες τις αιτήσεις ενός υπαλλήλου για συγκεκριμένο τύπο και status
     List<LeaveRequest> findByEmployeeAndLeaveTypeAndStatus(Employee employee, LeaveType leaveType, LeaveStatus status);
 }

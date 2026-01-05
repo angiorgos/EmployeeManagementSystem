@@ -56,33 +56,43 @@ public class LeaveRequestService {
     }
 
     // --- 3. SUBMIT NEW REQUEST (Για το Tab 1 - Πάντα PENDING) ---
-    @Transactional
-    public void submitRequest(LeaveRequest request) {
-        if (request.getEndDate().isBefore(request.getStartDate())) {
-            throw new RuntimeException("End date cannot be before start date");
+    public void submitRequest(LeaveRequest newRequest) {
+        // 1. Βασικός έλεγχος ημερομηνιών
+        if (newRequest.getStartDate().isAfter(newRequest.getEndDate())) {
+            throw new RuntimeException("Start date cannot be after end date!");
         }
 
-        int requestedDays = calculateWorkDays(request.getStartDate(), request.getEndDate());
-        if (requestedDays == 0) {
-            throw new RuntimeException("You selected only weekends or holidays!");
+        // 2. Έλεγχος Επικάλυψης (Overlap Check)
+        checkForOverlap(newRequest);
+
+        // 3. Αποθήκευση
+        newRequest.setStatus(LeaveStatus.PENDING);
+        leaveRequestRepository.save(newRequest);
+    }
+
+    private void checkForOverlap(LeaveRequest newReq) {
+        // Ζητάμε από τη βάση όλες τις αιτήσεις που ΔΕΝ είναι REJECTED
+        // (Δηλαδή φέρνει Approved και Pending)
+        List<LeaveRequest> activeRequests = leaveRequestRepository.findByEmployeeAndStatusNot(
+                newReq.getEmployee(),
+                LeaveStatus.REJECTED
+        );
+
+        // Τρέχουμε loop στη Java για να βρούμε αν τρακάρουν
+        for (LeaveRequest existing : activeRequests) {
+
+            // Λογική επικάλυψης:
+            // (NewStart <= ExistingEnd) AND (NewEnd >= ExistingStart)
+            boolean isOverlapping = !newReq.getStartDate().isAfter(existing.getEndDate()) &&
+                    !newReq.getEndDate().isBefore(existing.getStartDate());
+
+            if (isOverlapping) {
+                throw new RuntimeException(
+                        "A request already exists in this time period! " +
+                                existing.getStartDate() + " - " + existing.getEndDate()
+                );
+            }
         }
-
-        int remaining = getRemainingDays(request.getEmployee(), request.getLeaveType());
-        if (requestedDays > remaining) {
-            throw new RuntimeException("Not enough leave balance! Remaining: " + remaining + ", Requested: " + requestedDays);
-        }
-
-        // ΕΔΩ ΕΙΝΑΙ Η ΛΟΓΙΚΗ ΔΗΜΙΟΥΡΓΙΑΣ
-        request.setStatus(LeaveStatus.PENDING);
-        leaveRequestRepository.save(request);
-
-        // --- AUDIT LOG ---
-        String details = String.format("Employee: %s %s, Type: %s, Days: %d (%s to %s)",
-                request.getEmployee().getFirstName(), request.getEmployee().getLastName(),
-                request.getLeaveType().getName(), requestedDays,
-                request.getStartDate(), request.getEndDate());
-
-        systemLogService.log("CREATE_LEAVE_REQUEST", details);
     }
 
     // --- 4. UPDATE EXISTING REQUEST (Για το Tab 2 - Admin Actions) ---
