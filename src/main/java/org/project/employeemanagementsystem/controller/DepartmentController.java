@@ -167,20 +167,48 @@ public class DepartmentController implements Initializable {
             return;
         }
 
+        // Αν είναι Edit, κρατάμε τα παλιά δεδομένα προσωρινά σε περίπτωση λάθους
+        String oldName = (selectedDepartment != null) ? selectedDepartment.getName() : "";
+        String oldDesc = (selectedDepartment != null) ? selectedDepartment.getDescription() : "";
+
         if (selectedDepartment == null) {
             selectedDepartment = new Department();
         }
+
+        // Ενημερώνουμε το αντικείμενο
         selectedDepartment.setName(name);
         selectedDepartment.setDescription(desc);
 
-        departmentService.saveDepartment(selectedDepartment);
+        try {
+            // Προσπάθεια αποθήκευσης
+            departmentService.saveDepartment(selectedDepartment);
 
-        Alert alert = new Alert(Alert.AlertType.INFORMATION, "Department saved successfully!");
-        styleDialog(alert);
-        alert.showAndWait();
+            // Επιτυχία
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, "Department saved successfully!");
+            styleDialog(alert);
+            alert.showAndWait();
 
-        handleRefresh();
-        handleBackToTable();
+            handleRefresh(); // Ανανέωση πίνακα από τη βάση
+            handleBackToTable();
+
+        } catch (Exception e) {
+            // Σε περίπτωση αποτυχίας (π.χ. Duplicate Name)
+
+            // 1. Επαναφέρουμε τα δεδομένα του αντικειμένου (γιατί αλλάξαμε τα setters πιο πάνω)
+            // ώστε ο πίνακας να μην δείχνει ψεύτικα δεδομένα αν δεν κλείσει η φόρμα
+            if (selectedDepartment.getId() != null) {
+                selectedDepartment.setName(oldName);
+                selectedDepartment.setDescription(oldDesc);
+                departmentTable.refresh();
+            } else {
+                selectedDepartment = null; // Αν ήταν New, το επαναφέρουμε σε null
+            }
+
+            // 2. Εμφάνιση μηνύματος λάθους
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Error: " + e.getMessage());
+            styleDialog(alert);
+            alert.showAndWait();
+        }
     }
 
     private void addActionButtonsToTable() {

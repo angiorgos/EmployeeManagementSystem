@@ -8,15 +8,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class DepartmentService {
 
     private final DepartmentRepository departmentRepository;
     private final EmployeeRepository employeeRepository;
-    private final SystemLogService systemLogService; // <--- Προσθήκη για Audit Log
+    private final SystemLogService systemLogService;
 
-    // Constructor Injection
     @Autowired
     public DepartmentService(DepartmentRepository departmentRepository,
                              EmployeeRepository employeeRepository,
@@ -32,13 +32,21 @@ public class DepartmentService {
 
     @Transactional
     public void saveDepartment(Department department) {
-        boolean isNew = (department.getId() == null);
+        // 1. Έλεγχος αν υπάρχει ήδη Τμήμα με αυτό το όνομα
+        // Υποθέτουμε ότι στο Repository έχεις: Department findByName(String name);
+        Department existing = departmentRepository.findByName(department.getName());
 
-        // Έλεγχος για διπλότυπο όνομα μόνο αν είναι νέο τμήμα
-        if (isNew && departmentRepository.existsByName(department.getName())) {
-            throw new RuntimeException("Department already exists!");
+        if (existing != null) {
+            // Αν είναι νέο τμήμα (id == null) ΚΑΙ υπάρχει ήδη -> Λάθος
+            // Ή αν κάνουμε Edit (id != null) αλλά το όνομα ανήκει σε ΑΛΛΟ id -> Λάθος
+            if (department.getId() == null || !existing.getId().equals(department.getId())) {
+                throw new RuntimeException("Department with name '" + department.getName() + "' already exists!");
+            }
         }
 
+        boolean isNew = (department.getId() == null);
+
+        // Αποθήκευση
         Department savedDept = departmentRepository.save(department);
 
         // --- AUDIT LOG ---
@@ -51,15 +59,11 @@ public class DepartmentService {
         long employeeCount = employeeRepository.countByDepartmentId(department.getId());
 
         if (employeeCount > 0) {
-            // Log failed attempt if you want (Optional)
-            // systemLogService.log("DELETE_DEPARTMENT_FAILED", "Tried to delete " + department.getName() + " but had employees.");
             throw new RuntimeException("Cannot delete Department. It has " + employeeCount + " employees!");
         }
 
-        String deptName = department.getName(); // Κρατάμε το όνομα πριν τη διαγραφή για το log
+        String deptName = department.getName();
         departmentRepository.delete(department);
-
-        // --- AUDIT LOG ---
         systemLogService.log("DELETE_DEPARTMENT", "Deleted Department: " + deptName);
     }
 }
