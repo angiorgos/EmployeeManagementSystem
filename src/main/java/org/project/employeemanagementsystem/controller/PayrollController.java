@@ -95,21 +95,18 @@ public class PayrollController implements Initializable {
         monthPicker.setValue(LocalDate.now());
         setupTableColumns();
 
-        // 1. Setup SortedList Logic
         filteredData = new FilteredList<>(masterData, p -> true);
         sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(payrollTable.comparatorProperty());
         payrollTable.setItems(sortedData);
         payrollTable.getSortOrder().add(colId);
 
-        // 2. Load Data
         Platform.runLater(this::loadData);
 
         searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
         monthPicker.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
     }
 
-    // --- LOAD DATA ---
     private void loadData() {
         loadingOverlay.setVisible(true);
         loadingOverlay.setOpacity(1.0);
@@ -124,16 +121,7 @@ public class PayrollController implements Initializable {
         task.setOnSucceeded(e -> {
             masterData.setAll(task.getValue());
             applyFilters();
-
-            PauseTransition delay = new PauseTransition(Duration.seconds(0.5));
-            delay.setOnFinished(ev -> {
-                FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), loadingOverlay);
-                fadeOut.setFromValue(1.0);
-                fadeOut.setToValue(0.0);
-                fadeOut.setOnFinished(evt -> loadingOverlay.setVisible(false));
-                fadeOut.play();
-            });
-            delay.play();
+            fadeOutLoading();
         });
 
         task.setOnFailed(e -> {
@@ -142,6 +130,18 @@ public class PayrollController implements Initializable {
         });
 
         new Thread(task).start();
+    }
+
+    private void fadeOutLoading() {
+        PauseTransition delay = new PauseTransition(Duration.seconds(0.5));
+        delay.setOnFinished(ev -> {
+            FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), loadingOverlay);
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0.0);
+            fadeOut.setOnFinished(evt -> loadingOverlay.setVisible(false));
+            fadeOut.play();
+        });
+        delay.play();
     }
 
     // ================= ACTIONS =================
@@ -160,29 +160,57 @@ public class PayrollController implements Initializable {
         Task<Void> task = new Task<>() {
             @Override
             protected Void call() throws Exception {
+                // 1. Λήψη Ρυθμίσεων
                 double stdHours = settingService.getDouble(KEY_WORK_HOURS, 176.0);
                 double otRate   = settingService.getDouble(KEY_OVERTIME, 1.50);
                 double sunRate  = settingService.getDouble(KEY_SUNDAY, 1.75);
-                double taxRate  = settingService.getDouble(KEY_TAX, 0.40);
+                double taxRate  = settingService.getDouble(KEY_TAX, 0.40); // Εδώ διαβάζει το 0.5
                 double empSplit = settingService.getDouble(KEY_EMPLOYER_SHARE, 0.60);
 
+                String monthStr = selectedDate.format(DateTimeFormatter.ofPattern("MM/yyyy"));
                 List<Employee> employees = employeeService.getAllEmployees();
 
                 for (Employee emp : employees) {
                     if (emp.getSalary() == null) continue;
+                    // Αν υπάρχει exitDate και είναι πριν τον επιλεγμένο μήνα, τον αγνοούμε
+                    if (emp.getExitDate() != null && emp.getExitDate().isBefore(selectedDate.withDayOfMonth(1))) continue;
 
+                    // --- ΥΠΟΛΟΓΙΣΜΟΙ ---
                     double realHours = attendanceService.calculateTotalHoursWorked(emp, selectedDate);
                     double sundayHours = attendanceService.calculateSundayHours(emp, selectedDate);
+                    double overtimeHours = Math.max(0, realHours - stdHours);
 
-                    double overtimeHours = 0.0;
-                    if (realHours > stdHours) {
-                        overtimeHours = realHours - stdHours;
-                    }
+                    double hourlyRate = (stdHours > 0) ? emp.getSalary() / stdHours : 0;
+                    double otPay = overtimeHours * hourlyRate * otRate;
+                    double sunPay = sundayHours * hourlyRate * sunRate;
 
-                    paymentService.calculateAndSavePayroll(
-                            emp, selectedDate, stdHours, overtimeHours, sundayHours,
-                            otRate, sunRate, taxRate, empSplit
-                    );
+                    double grossPay = emp.getSalary() + otPay + sunPay;
+
+                    // ΚΡΑΤΗΣΕΙΣ: Εδώ εφαρμόζουμε το 0.5 κατευθείαν στον υπάλληλο
+                    double tax = grossPay * taxRate;
+                    double netPay = grossPay - tax;
+                    double employerCost = grossPay * empSplit;
+
+                    // --- ΔΗΜΙΟΥΡΓΙΑ PAYMENT ---
+                    Payment payment = new Payment();
+                    payment.setEmployee(emp);
+                    payment.setMonthYear(monthStr);
+                    payment.setPaymentDate(LocalDate.now());
+
+                    payment.setBaseSalary(round(emp.getSalary()));
+                    payment.setHoursWorked(stdHours);
+                    payment.setOvertimeHours(round(overtimeHours));
+                    payment.setSundayHours(round(sundayHours));
+
+                    payment.setGrossPay(round(grossPay));
+                    payment.setDeductions(round(tax));          // ΣΩΣΤΟ
+                    payment.setEmployerTax(round(employerCost));
+                    payment.setAmount(round(netPay));           // ΣΩΣΤΟ
+
+                    payment.setStatus("PENDING");
+                    payment.setBonus(0.0);
+
+                    paymentService.savePayment(payment);
                 }
                 return null;
             }
@@ -195,104 +223,12 @@ public class PayrollController implements Initializable {
 
         task.setOnFailed(e -> {
             loadingOverlay.setVisible(false);
+            e.getSource().getException().printStackTrace();
             showSimpleAlert(Alert.AlertType.ERROR, "Error", "Calculation failed: " + task.getException().getMessage());
         });
 
         new Thread(task).start();
     }
-
-    /**
-     * Η ΝΕΑ ΜΕΘΟΔΟΣ ΓΙΑ ΜΑΖΙΚΟ RECALCULATE
-     * (Χωρίς refactoring, απλά η λογική μέσα εδώ όπως ζήτησες)
-     */
-    @FXML
-    public void recalculateAllDrafts() {
-        // Βρίσκουμε τα PENDING από τη φιλτραρισμένη λίστα
-        List<Payment> pendingList = filteredData.stream()
-                .filter(p -> "PENDING".equalsIgnoreCase(p.getStatus()))
-                .collect(Collectors.toList());
-
-        if (pendingList.isEmpty()) {
-            showSimpleAlert(Alert.AlertType.WARNING, "No Drafts", "No pending drafts found to recalculate.");
-            return;
-        }
-
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                "Recalculate " + pendingList.size() + " pending drafts?\n" +
-                        "This will update amounts based on current settings and salaries.");
-        styleAlert(confirm); // Εφαρμογή theme
-
-        if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
-
-        loadingOverlay.setVisible(true);
-        loadingOverlay.setOpacity(1.0);
-
-        Task<Void> task = new Task<>() {
-            @Override
-            protected Void call() throws Exception {
-                // Λήψη ρυθμίσεων
-                double stdHours = settingService.getDouble(KEY_WORK_HOURS, 176.0);
-                double otRate   = settingService.getDouble(KEY_OVERTIME, 1.50);
-                double sunRate  = settingService.getDouble(KEY_SUNDAY, 1.75);
-                double taxRate  = settingService.getDouble(KEY_TAX, 0.40);
-                double empSplit = settingService.getDouble(KEY_EMPLOYER_SHARE, 0.60);
-
-                for (Payment payment : pendingList) {
-                    // 1. Φρέσκα δεδομένα υπαλλήλου
-                    Employee freshEmp = employeeService.getEmployeeById(payment.getEmployee().getId())
-                            .orElse(payment.getEmployee());
-
-                    // 2. Υπολογισμός Ημερομηνίας
-                    DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MM/yyyy");
-                    YearMonth ym = YearMonth.parse(payment.getMonthYear(), fmt);
-                    LocalDate calcDate = ym.atDay(1);
-
-                    // 3. Υπολογισμός Ωρών
-                    double realHours = attendanceService.calculateTotalHoursWorked(freshEmp, calcDate);
-                    double sundayHours = attendanceService.calculateSundayHours(freshEmp, calcDate);
-                    double overtimeHours = Math.max(0, realHours - stdHours);
-
-                    // 4. Μαθηματικά (Update Logic)
-                    double hourlyRate = (stdHours > 0) ? freshEmp.getSalary() / stdHours : 0;
-                    double otPay = overtimeHours * hourlyRate * otRate;
-                    double sunPay = sundayHours * hourlyRate * sunRate;
-                    double bonus = (payment.getBonus() != null) ? payment.getBonus() : 0.0;
-
-                    double grossPay = freshEmp.getSalary() + otPay + sunPay + bonus;
-                    double tax = grossPay * taxRate;
-                    double employerCost = grossPay * empSplit;
-                    double netPay = grossPay - tax;
-
-                    // 5. Ενημέρωση Αντικειμένου
-                    payment.setBaseSalary(freshEmp.getSalary());
-                    payment.setHoursWorked(stdHours);
-                    payment.setOvertimeHours(overtimeHours);
-                    payment.setSundayHours(sundayHours);
-                    payment.setGrossPay(grossPay);
-                    payment.setDeductions(tax);
-                    payment.setEmployerTax(employerCost);
-                    payment.setAmount(netPay);
-
-                    // 6. Αποθήκευση
-                    paymentService.savePayment(payment);
-                }
-                return null;
-            }
-        };
-
-        task.setOnSucceeded(e -> {
-            loadData();
-            showSimpleAlert(Alert.AlertType.INFORMATION, "Success", "All pending drafts recalculated!");
-        });
-
-        task.setOnFailed(e -> {
-            loadingOverlay.setVisible(false);
-            showSimpleAlert(Alert.AlertType.ERROR, "Error", "Recalculation failed: " + task.getException().getMessage());
-        });
-
-        new Thread(task).start();
-    }
-
 
     @FXML
     public void openSettingsDialog() {
@@ -441,7 +377,7 @@ public class PayrollController implements Initializable {
 
         task.setOnFailed(e -> {
             loadingOverlay.setVisible(false);
-            showSimpleAlert(Alert.AlertType.ERROR, "Error", "Failed to finalize payments: " + task.getException().getMessage());
+            showSimpleAlert(Alert.AlertType.ERROR, "Error", "Failed to finalize: " + task.getException().getMessage());
         });
 
         new Thread(task).start();
@@ -488,12 +424,12 @@ public class PayrollController implements Initializable {
         dialog.showAndWait().ifPresent(amountStr -> {
             try {
                 double newBonus = Double.parseDouble(amountStr);
+                // Διαβάζουμε τις τρέχουσες ρυθμίσεις για να υπολογιστεί σωστά ο φόρος στο μπόνους
                 double taxRate = settingService.getDouble(KEY_TAX, 0.40);
                 double empShare = settingService.getDouble(KEY_EMPLOYER_SHARE, 0.60);
 
                 Payment updatedPayment = paymentService.updateBonus(payment, newBonus, taxRate, empShare);
 
-                // Update In Memory
                 payment.setBonus(updatedPayment.getBonus());
                 payment.setGrossPay(updatedPayment.getGrossPay());
                 payment.setDeductions(updatedPayment.getDeductions());
@@ -594,5 +530,10 @@ public class PayrollController implements Initializable {
         try {
             dialog.getDialogPane().getStylesheets().add(getClass().getResource("/theme.css").toExternalForm());
         } catch (Exception e) { /* ignore */ }
+    }
+
+    // --- Helper Rounding ---
+    private double round(double value) {
+        return Math.round(value * 100.0) / 100.0;
     }
 }
