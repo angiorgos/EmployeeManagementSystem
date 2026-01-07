@@ -129,7 +129,7 @@ public class PayrollController implements Initializable {
         new Thread(task).start();
     }
 
-    // ================= ACTIONS =================
+    //ACTIONS
 
     @FXML
     public void generatePayroll() {
@@ -204,7 +204,7 @@ public class PayrollController implements Initializable {
         new Thread(task).start();
     }
 
-    // ================= SETTINGS & EXCEL (REALISTIC) =================
+    //SETTINGS & EXCEL
 
     @FXML
     public void openSettingsDialog() {
@@ -223,7 +223,6 @@ public class PayrollController implements Initializable {
         TextField otField = new TextField(String.valueOf(settingService.getDouble(KEY_OVERTIME, 1.50)));
         TextField sunField = new TextField(String.valueOf(settingService.getDouble(KEY_SUNDAY, 1.75)));
 
-        // Τα νέα πεδία ρυθμίσεων
         TextField socialField = new TextField(String.valueOf(settingService.getDouble(KEY_SOCIAL_RATE, 0.14)));
         TextField taxField = new TextField(String.valueOf(settingService.getDouble(KEY_INCOME_TAX_RATE, 0.10)));
         TextField employerField = new TextField(String.valueOf(settingService.getDouble(KEY_EMPLOYER_RATE, 0.22)));
@@ -331,7 +330,7 @@ public class PayrollController implements Initializable {
         }
     }
 
-    // ================= HELPER & UI =================
+    //HELPER & UI
 
     private void showPaymentDetails(Payment p) {
         String currency = settingService.getString(KEY_CURRENCY, "€");

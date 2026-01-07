@@ -62,10 +62,7 @@ public class Navigator {
 
         this.mainStage.setOnCloseRequest(event -> {
             if (userSession.getCurrentUser() != null) {
-                // Καταγραφή στο Log πριν το κλείσιμο
                 logService.log("Application Closed (Auto-Logout)");
-
-                // Καθαρισμός του session
                 userSession.logout();
             }
         });
@@ -157,8 +154,6 @@ public class Navigator {
             }
 
             mainStage.setTitle("EMS App - " + title);
-
-            // ΕΛΕΓΧΟΣ: Ποια οθόνη είναι για να φτιάξουμε το μέγεθος
             if (fxmlPath.equals(LOGIN_VIEW)) {
                 configureLoginWindow();
             } else {

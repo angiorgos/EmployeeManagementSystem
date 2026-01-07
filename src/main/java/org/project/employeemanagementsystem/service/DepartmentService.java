@@ -32,13 +32,10 @@ public class DepartmentService {
 
     @Transactional
     public void saveDepartment(Department department) {
-        // 1. Έλεγχος αν υπάρχει ήδη Τμήμα με αυτό το όνομα
-        // Υποθέτουμε ότι στο Repository έχεις: Department findByName(String name);
+        //Έλεγχος αν υπάρχει ήδη Τμήμα με αυτό το όνομα
         Department existing = departmentRepository.findByName(department.getName());
 
         if (existing != null) {
-            // Αν είναι νέο τμήμα (id == null) ΚΑΙ υπάρχει ήδη -> Λάθος
-            // Ή αν κάνουμε Edit (id != null) αλλά το όνομα ανήκει σε ΑΛΛΟ id -> Λάθος
             if (department.getId() == null || !existing.getId().equals(department.getId())) {
                 throw new RuntimeException("Department with name '" + department.getName() + "' already exists!");
             }
@@ -46,10 +43,8 @@ public class DepartmentService {
 
         boolean isNew = (department.getId() == null);
 
-        // Αποθήκευση
         Department savedDept = departmentRepository.save(department);
 
-        // --- AUDIT LOG ---
         String action = isNew ? "CREATE_DEPARTMENT" : "UPDATE_DEPARTMENT";
         systemLogService.log(action, "Department Name: " + savedDept.getName());
     }

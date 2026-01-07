@@ -69,20 +69,16 @@ public class ScheduleController2 implements Initializable {
     private Consumer<WeekSchedulePayload> onScheduleSaved;
     private Consumer<String> onScheduleDeleted;
 
-    // =========================================================
-    // INITIALIZATION
-    // =========================================================
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         if (weekGrid == null) return;
 
-        // 1. Setup UI & Search
+        //Setup UI & Search
         if (employeeComboBox != null) setupEmployeeSearch();
         installEmployeePlaceholder();
         renderWeekGrid(); // Δημιουργεί το Grid και γεμίζει το cellMap
 
-        // 2. Setup Time Pickers
+        //Setup Time Pickers
         ObservableList<String> times = buildTimes();
         ComboBox[] allBoxes = {monStart, monEnd, tueStart, tueEnd, wedStart, wedEnd, thuStart, thuEnd, friStart, friEnd, satStart, satEnd, sunStart, sunEnd};
         for (ComboBox cb : allBoxes) {
@@ -92,7 +88,7 @@ public class ScheduleController2 implements Initializable {
             attachAutoPreview(cb); // Συνδέει το listener για το live preview
         }
 
-        // 3. Time Constraints (End > Start)
+        //Time Constraints (End > Start)
         enforceEndAfterStart(monStart, monEnd);
         enforceEndAfterStart(tueStart, tueEnd);
         enforceEndAfterStart(wedStart, wedEnd);
@@ -101,10 +97,10 @@ public class ScheduleController2 implements Initializable {
         enforceEndAfterStart(satStart, satEnd);
         enforceEndAfterStart(sunStart, sunEnd);
 
-        // 4. Week Selection Logic
+        //Week Selection Logic
         setupWeekSnapping();
 
-        // 5. Auto-fill Current Week
+        //Auto-fill Current Week
         LocalDate today = LocalDate.now();
         LocalDate thisMonday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
 
@@ -112,7 +108,7 @@ public class ScheduleController2 implements Initializable {
             validFromPicker.setValue(thisMonday);
         }
 
-        // 6. Listeners for UI State (Enable/Disable Buttons)
+        //Listeners for UI State (Enable/Disable Buttons)
         if (employeeComboBox != null) {
             employeeComboBox.valueProperty().addListener((obs, oldV, newV) -> {
                 boolean ok = newV != null && !newV.isBlank();
@@ -132,10 +128,7 @@ public class ScheduleController2 implements Initializable {
         updateDeleteEnabled();
     }
 
-    // =========================================================
     // GRID & PREVIEW LOGIC
-    // =========================================================
-
     private void renderWeekGrid() {
         weekGrid.getChildren().clear();
         cellMap.clear();
@@ -156,7 +149,6 @@ public class ScheduleController2 implements Initializable {
                 GridPane.setHgrow(cell, Priority.ALWAYS);
                 GridPane.setVgrow(cell, Priority.ALWAYS);
 
-                // Αποθήκευση στο cellMap
                 cellMap.put(key(day, hour), cell);
             }
         }
@@ -229,10 +221,7 @@ public class ScheduleController2 implements Initializable {
         cb.valueProperty().addListener((obs, o, n) -> refreshPreviewFromPickers());
     }
 
-    // =========================================================
     // HELPER METHODS
-    // =========================================================
-
     private void setupWeekSnapping() {
         if (validFromPicker == null || validToPicker == null) return;
 
@@ -364,7 +353,6 @@ public class ScheduleController2 implements Initializable {
     private ObservableList<String> buildTimes() {
         ObservableList<String> items = FXCollections.observableArrayList();
         items.add("");
-        // ΑΛΛΑΓΗ: plusHours(1) αντί για plusMinutes(30)
         for (LocalTime t = LocalTime.of(9, 0); !t.isAfter(LocalTime.of(21, 0)); t = t.plusHours(1)) {
             items.add(t.format(TIME_12H));
         }

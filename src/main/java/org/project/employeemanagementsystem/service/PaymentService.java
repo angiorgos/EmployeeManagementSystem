@@ -20,16 +20,15 @@ public class PaymentService {
     private final AttendanceService attendanceService;
     private final SystemSettingService settingService;
 
-    // --- ΝΕΑ KEYS ΓΙΑ ΡΕΑΛΙΣΤΙΚΟ ΥΠΟΛΟΓΙΣΜΟ ---
     private static final String KEY_WORK_HOURS = "payroll.standard_hours";
     private static final String KEY_OVERTIME = "payroll.overtime_rate";
     private static final String KEY_SUNDAY = "payroll.sunday_rate";
 
-    // Ποσοστό Εισφορών Εργαζόμενου (π.χ. 0.14)
+    // Ποσοστό Εισφορών Εργαζόμενου
     private static final String KEY_SOCIAL_RATE = "payroll.social_rate";
-    // Ποσοστό Φόρου Εισοδήματος (π.χ. 0.10)
+    // Ποσοστό Φόρου Εισοδήματος
     private static final String KEY_INCOME_TAX_RATE = "payroll.income_tax_rate";
-    // Ποσοστό Εισφορών Εργοδότη (π.χ. 0.22)
+    // Ποσοστό Εισφορών Εργοδότη
     private static final String KEY_EMPLOYER_RATE = "payroll.employer_rate";
 
     @Autowired
@@ -49,17 +48,15 @@ public class PaymentService {
         return paymentRepository.findAll();
     }
 
-    /**
-     * Δημιουργία Μισθοδοσίας με Ρεαλιστικό Υπολογισμό
-     */
+
     @Transactional
     public void generateMonthlyPayroll(LocalDate selectedDate) {
-        // Λήψη Ρυθμίσεων
+
         double stdHours = settingService.getDouble(KEY_WORK_HOURS, 176.0);
         double otRate   = settingService.getDouble(KEY_OVERTIME, 1.50);
         double sunRate  = settingService.getDouble(KEY_SUNDAY, 1.75);
 
-        // Οι νέοι συντελεστές
+
         double socialRate = settingService.getDouble(KEY_SOCIAL_RATE, 0.14);      // 14% Εισφορές
         double taxRate    = settingService.getDouble(KEY_INCOME_TAX_RATE, 0.10);  // 10% Φόρος
         double emplRate   = settingService.getDouble(KEY_EMPLOYER_RATE, 0.22);    // 22% Εργοδοτικές
@@ -72,7 +69,7 @@ public class PaymentService {
             if (emp.getSalary() == null) continue;
             if (emp.getExitDate() != null && emp.getExitDate().isBefore(selectedDate.withDayOfMonth(1))) continue;
 
-            // 1. Υπολογισμός Μικτών (Gross)
+            //Υπολογισμός Μικτών
             double realHours = attendanceService.calculateTotalHoursWorked(emp, selectedDate);
             double sundayHours = attendanceService.calculateSundayHours(emp, selectedDate);
             double overtimeHours = Math.max(0, realHours - stdHours);
@@ -83,24 +80,23 @@ public class PaymentService {
 
             double grossPay = emp.getSalary() + otPay + sunPay;
 
-            // --- Ο ΡΕΑΛΙΣΤΙΚΟΣ ΥΠΟΛΟΓΙΣΜΟΣ ---
 
-            // Βήμα Α: Εισφορές Εργαζόμενου (Επί του Μικτού)
+
+            // Εισφορές Εργαζόμενου (Επί του Μικτού)
             double employeeDeductions = grossPay * socialRate;
 
-            // Βήμα Β: Φορολογητέο Εισόδημα (Μικτά - Εισφορές)
+            // Φορολογητέο Εισόδημα (Μικτά - Εισφορές)
             double taxableIncome = grossPay - employeeDeductions;
 
-            // Βήμα Γ: Φόρος (Επί του Φορολογητέου)
+            // Φόρος (Επί του Φορολογητέου)
             double incomeTax = taxableIncome * taxRate;
 
-            // Βήμα Δ: Καθαρά (Μικτά - Εισφορές - Φόρος)
+            // Καθαρά (Μικτά - Εισφορές - Φόρος)
             double netPay = grossPay - employeeDeductions - incomeTax;
 
-            // Βήμα Ε: Κόστος Εργοδότη (Επί του Μικτού, δεν αφαιρείται από τον υπάλληλο)
+            //Κόστος Εργοδότη (Επί του Μικτού, δεν αφαιρείται από τον υπάλληλο)
             double employerCost = grossPay * emplRate;
 
-            // --- ΔΗΜΙΟΥΡΓΙΑ OBJECT ---
             Payment p = new Payment();
             p.setEmployee(emp);
             p.setMonthYear(monthStr);
@@ -112,10 +108,10 @@ public class PaymentService {
             p.setBonus(0.0);
 
             p.setGrossPay(round(grossPay));
-            p.setDeductions(round(employeeDeductions)); // Εισφορές
-            p.setTotalTax(round(incomeTax));            // Φόρος (Τώρα χρησιμοποιείται!)
-            p.setEmployerTax(round(employerCost));      // Εργοδοτικές
-            p.setAmount(round(netPay));                 // Καθαρά
+            p.setDeductions(round(employeeDeductions));
+            p.setTotalTax(round(incomeTax));
+            p.setEmployerTax(round(employerCost));
+            p.setAmount(round(netPay));
 
             p.setStatus("PENDING");
             paymentRepository.save(p);
@@ -130,14 +126,11 @@ public class PaymentService {
         double taxRate    = settingService.getDouble(KEY_INCOME_TAX_RATE, 0.10);
         double emplRate   = settingService.getDouble(KEY_EMPLOYER_RATE, 0.22);
 
-        // Βρίσκουμε τον μισθό εργασίας (χωρίς το παλιό bonus)
         double oldBonus = (payment.getBonus() != null) ? payment.getBonus() : 0.0;
         double workPay = payment.getGrossPay() - oldBonus;
 
-        // Νέα Μικτά
         double newGross = workPay + newBonus;
 
-        // Επανυπολογισμός με τη ρεαλιστική μέθοδο
         double employeeDeductions = newGross * socialRate;
         double taxableIncome = newGross - employeeDeductions;
         double incomeTax = taxableIncome * taxRate;
@@ -147,7 +140,7 @@ public class PaymentService {
         payment.setBonus(newBonus);
         payment.setGrossPay(round(newGross));
         payment.setDeductions(round(employeeDeductions));
-        payment.setTotalTax(round(incomeTax)); // Ενημερώνουμε και τον φόρο
+        payment.setTotalTax(round(incomeTax));
         payment.setEmployerTax(round(employerCost));
         payment.setAmount(round(netPay));
 

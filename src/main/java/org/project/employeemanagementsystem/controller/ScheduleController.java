@@ -32,7 +32,7 @@ public class ScheduleController implements Initializable {
     @Autowired private EmployeeService employeeService;
     @Autowired private UserSession userSession; // <-- Added for role-based tab
 
-    // --- FXML ELEMENTS ---
+    //FXML ELEMENTS
     @FXML private TabPane scheduleTabs;
     @FXML private BorderPane newScheduleView;
     @FXML private ScheduleController2 newScheduleViewController;
@@ -49,7 +49,7 @@ public class ScheduleController implements Initializable {
     @FXML private ToggleButton monthBtn;
     @FXML private ToggleButton weekBtn;
 
-    // --- STATE ---
+    //STATE
     private YearMonth currentMonth = YearMonth.now();
     private LocalDate currentWeekStart = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
     private LocalDate selectedDate = LocalDate.now();

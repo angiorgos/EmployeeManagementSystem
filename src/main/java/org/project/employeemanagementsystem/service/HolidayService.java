@@ -12,9 +12,9 @@ import java.util.List;
 public class HolidayService {
 
     private final HolidayRepository holidayRepository;
-    private final SystemLogService systemLogService; // <--- Προσθήκη για Audit Log
+    private final SystemLogService systemLogService; //
 
-    // Constructor Injection
+
     @Autowired
     public HolidayService(HolidayRepository holidayRepository, SystemLogService systemLogService) {
         this.holidayRepository = holidayRepository;
@@ -31,7 +31,6 @@ public class HolidayService {
 
         Holiday savedHoliday = holidayRepository.save(holiday);
 
-        // --- AUDIT LOG ---
         String action = isNew ? "CREATE_HOLIDAY" : "UPDATE_HOLIDAY";
         String details = "Holiday: " + savedHoliday.getName() + " (" + savedHoliday.getDate() + ")";
 
@@ -50,7 +49,6 @@ public class HolidayService {
 
         holidayRepository.delete(holiday);
 
-        // --- AUDIT LOG ---
         systemLogService.log("DELETE_HOLIDAY", "Deleted: " + holidayInfo);
     }
 }

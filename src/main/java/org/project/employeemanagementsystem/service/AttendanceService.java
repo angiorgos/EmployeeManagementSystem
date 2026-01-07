@@ -19,7 +19,7 @@ import java.util.Optional;
 public class AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
-    private final SystemLogService systemLogService; // <--- Προσθήκη για Audit Log
+    private final SystemLogService systemLogService;
 
     // Constructor Injection (Best Practice)
     @Autowired

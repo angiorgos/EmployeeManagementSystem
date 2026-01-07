@@ -68,7 +68,7 @@ public class UsersController implements Initializable {
 
     private byte[] currentImageBytes = null; // Προσωρινή αποθήκευση bytes για τη βάση
 
-    // --- DATA LISTS ---
+    //DATA LISTS
     private ObservableList<User> masterData = FXCollections.observableArrayList();
     private FilteredList<User> filteredData;
     private User selectedUser;
@@ -299,21 +299,17 @@ public class UsersController implements Initializable {
         }
 
         try {
-            // ΒΗΜΑ 1: Αποθήκευση User
             User savedUser = userService.saveUser(selectedUser);
 
-            // ΒΗΜΑ 2: Αποσύνδεση παλιού
             if (savedUser.getEmployee() != null && !savedUser.getEmployee().getId().equals(empFromDb.getId())) {
                 Employee oldEmp = savedUser.getEmployee();
                 oldEmp.setUser(null);
                 employeeService.saveEmployee(oldEmp);
             }
 
-            // ΒΗΜΑ 3: Σύνδεση νέου
             empFromDb.setUser(savedUser);
             employeeService.saveEmployee(empFromDb);
 
-            // REFRESH: Εδώ κάνουμε πλήρη ανανέωση για να είμαστε σίγουροι
             handleRefresh();
             handleBackToTable();
 
@@ -401,7 +397,6 @@ public class UsersController implements Initializable {
                         try {
                             userService.deleteUser(user);
 
-                            // ΑΛΛΑΓΗ ΕΔΩ: Επιστροφή στο κλασικό refresh από τη βάση
                             loadUsers();
 
                             showAlert(Alert.AlertType.INFORMATION, "User deleted.");

@@ -57,7 +57,7 @@ public class LogsController implements Initializable {
             return new SimpleStringProperty("-");
         });
 
-        // Στήλη Χρήστη (username ή αντικείμενο User)
+        // Στήλη Χρήστη
         colUser.setCellValueFactory(c -> {
             String displayUser = c.getValue().getUsername();
             if (displayUser == null && c.getValue().getUser() != null) {
@@ -69,7 +69,7 @@ public class LogsController implements Initializable {
         // Στήλη Ενέργειας
         colAction.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getAction()));
 
-        // Styling για σφάλματα (κόκκινο χρώμα αν περιέχει "Failed" ή "Error")
+        //για σφάλματα
         colAction.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -94,11 +94,7 @@ public class LogsController implements Initializable {
     private void setupFilters() {
         filteredData = new FilteredList<>(masterData, p -> true);
         logsTable.setItems(filteredData);
-
-        // Listener για το Search Field (Action ή User)
         searchField.textProperty().addListener((obs, oldVal, newVal) -> updatePredicate());
-
-        // Listener για το Date Picker
         dateFilter.valueProperty().addListener((obs, oldVal, newVal) -> updatePredicate());
     }
 
@@ -107,15 +103,12 @@ public class LogsController implements Initializable {
         LocalDate filterDate = dateFilter.getValue();
 
         filteredData.setPredicate(log -> {
-            // 1. Έλεγχος Ημερομηνίας
             if (filterDate != null) {
                 if (log.getTimestamp() == null) return false;
                 if (!log.getTimestamp().toLocalDate().equals(filterDate)) {
                     return false;
                 }
             }
-
-            // 2. Έλεγχος Κειμένου (Action ή Username)
             if (!searchText.isEmpty()) {
                 String action = (log.getAction() != null) ? log.getAction().toLowerCase() : "";
                 String user = (log.getUsername() != null) ? log.getUsername().toLowerCase() : "";

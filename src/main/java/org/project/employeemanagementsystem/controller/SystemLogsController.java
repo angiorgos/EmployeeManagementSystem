@@ -20,13 +20,13 @@ public class SystemLogsController implements Initializable {
 
     private final SystemLogService systemLogService;
 
-    // --- FXML Elements ---
+    //FXML Elements
     @FXML private TableView<SystemLog> logsTable;
     @FXML private TableColumn<SystemLog, String> actionColumn;
     @FXML private TableColumn<SystemLog, String> timestampColumn;
     @FXML private TableColumn<SystemLog, String> userColumn;
 
-    // Constructor Injection
+
     @Autowired
     public SystemLogsController(SystemLogService systemLogService) {
         this.systemLogService = systemLogService;
@@ -50,9 +50,6 @@ public class SystemLogsController implements Initializable {
             }
         });
 
-        // Sorting κατά φθίνουσα σειρά ημερομηνίας (αν το θέλεις)
-        // timestampColumn.setSortType(TableColumn.SortType.DESCENDING);
-        // logsTable.getSortOrder().add(timestampColumn);
     }
 
     private void loadLogs() {
@@ -61,16 +58,13 @@ public class SystemLogsController implements Initializable {
 
     @FXML
     public void handleClearLogs() {
-        // 1. Δημιουργία Confirmation Alert
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Clear System Logs");
         alert.setHeaderText("Are you sure you want to delete ALL logs?");
         alert.setContentText("This action cannot be undone.");
 
-        // 2. Εφαρμογή του CSS (Theme)
         applyTheme(alert);
 
-        // 3. Εμφάνιση και έλεγχος απάντησης
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             systemLogService.clearAllLogs();
@@ -87,7 +81,7 @@ public class SystemLogsController implements Initializable {
 
         if (cssResource != null) {
             dialogPane.getStylesheets().add(cssResource.toExternalForm());
-            dialogPane.getStyleClass().add("my-dialog"); // Προαιρετικό class για extra styling στο CSS
+            dialogPane.getStyleClass().add("my-dialog");
         } else {
             System.err.println("Warning: theme.css not found for Alert!");
         }

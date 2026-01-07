@@ -64,7 +64,7 @@ public class SidebarController implements Initializable {
         boolean isHR = "HR".equalsIgnoreCase(role);
         boolean isAccountant = "Accountant".equalsIgnoreCase(role);
 
-        /* ================= WORKFORCE ================= */
+        //WORKFORCE
         boolean showWorkforce = isAdmin || isHR;
 
         workforceHeader.setVisible(showWorkforce);
@@ -79,9 +79,7 @@ public class SidebarController implements Initializable {
         usersBtn.setVisible(isAdmin);
         usersBtn.setManaged(isAdmin);
 
-        /* ================= TIME & ATTENDANCE ================= */
-        // Header always visible
-        // Only attendance button restricted to Admin & HR
+        //TIME & ATTENDANCE
         attendanceBtn.setVisible(isAdmin || isHR);
         attendanceBtn.setManaged(isAdmin || isHR);
 
@@ -98,7 +96,7 @@ public class SidebarController implements Initializable {
         holidaysBtn.setVisible(true);
         holidaysBtn.setManaged(true);
 
-        /* ================= FINANCIALS ================= */
+        //FINANCIALS
         boolean showFinancials = isAdmin || isAccountant;
 
         financialsHeader.setVisible(showFinancials);
@@ -107,7 +105,7 @@ public class SidebarController implements Initializable {
         payrollBtn.setVisible(showFinancials);
         payrollBtn.setManaged(showFinancials);
 
-        /* ================= SYSTEM ================= */
+        // SYSTEM
         // SYSTEM header always visible
         systemHeader.setVisible(true);
         systemHeader.setManaged(true);

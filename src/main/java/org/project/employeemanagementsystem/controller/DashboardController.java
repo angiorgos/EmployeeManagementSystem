@@ -186,24 +186,14 @@ public class DashboardController implements Initializable {
         initChart(leavesWebView, "chart_leaves.html", monthsLabels, getMonthlyDataString(leavesPerMonth));
     }
 
-    // 3. ATTENDANCE CHART UPDATE
+    // 3. ATTENDANCE CHART
     private void updateAttendanceChart(int year) {
-        // ΣΗΜΕΙΩΣΗ: Αφού διαλέγουμε έτος, δεν έχει νόημα να δείξουμε "Last 7 days".
-        // Οπότε δείχνουμε "Attendance Records per Month" για το έτος που επιλέχθηκε.
-
         Map<Month, Long> attendancePerMonth = cachedAttendance.stream()
                 .filter(a -> a.getDate().getYear() == year)
                 .collect(Collectors.groupingBy(a -> a.getDate().getMonth(), Collectors.counting()));
 
         String monthsLabels = "['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']";
 
-        // Χρησιμοποιούμε το chart_hires.html ή φτιάχνεις ένα copy (chart_attendance_year.html)
-        // αν θες να αλλάξεις χρώματα, αλλά η δομή δεδομένων είναι ίδια (Bar Chart ανά μήνα).
-        // Εδώ χρησιμοποιώ το "chart_attendance.html" αλλά του στέλνω μήνες αντί για μέρες.
-        // ΠΡΟΣΟΧΗ: Το chart_attendance.html ίσως περιμένει μέρες.
-        // Αν θες να φαίνεται σαν Bar Chart ανά μήνα, καλύτερα να χρησιμοποιήσεις τη λογική του chart_hires (Bar chart).
-
-        // Για ευκολία εδώ χρησιμοποιώ τη λογική Bar Chart (όπως στα Hires)
         initChart(attendanceWebView, "chart_hires.html", monthsLabels, getMonthlyDataString(attendancePerMonth));
     }
 
@@ -232,8 +222,6 @@ public class DashboardController implements Initializable {
                 return;
             }
 
-            // Φόρτωση μόνο αν δεν έχει ήδη φορτωθεί η σελίδα (για να αποφύγουμε το flickering στο update)
-            // Αλλά επειδή αλλάζουμε δεδομένα, συχνά το reload είναι πιο ασφαλές για καθαρό chart.
             engine.load(resource.toExternalForm());
 
             engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {

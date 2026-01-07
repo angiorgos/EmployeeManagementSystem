@@ -34,13 +34,10 @@ public class TopbarController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // 1. Εμφάνισε τα δεδομένα την πρώτη φορά που φορτώνει
         updateUserDisplay();
-
-        // 2. ΠΡΟΣΘΗΚΗ LISTENER: Αν αλλάξει ο χρήστης (από το UserService), τρέξε ξανά το update!
         userSession.currentUserProperty().addListener((observable, oldUser, newUser) -> {
             if (newUser != null) {
-                updateUserDisplay(); // <--- Μαγεία!
+                updateUserDisplay();
             }
         });
     }

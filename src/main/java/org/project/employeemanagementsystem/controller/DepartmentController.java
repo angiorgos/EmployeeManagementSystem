@@ -188,23 +188,18 @@ public class DepartmentController implements Initializable {
             styleDialog(alert);
             alert.showAndWait();
 
-            handleRefresh(); // Ανανέωση πίνακα από τη βάση
+            handleRefresh();
             handleBackToTable();
 
         } catch (Exception e) {
-            // Σε περίπτωση αποτυχίας (π.χ. Duplicate Name)
-
-            // 1. Επαναφέρουμε τα δεδομένα του αντικειμένου (γιατί αλλάξαμε τα setters πιο πάνω)
-            // ώστε ο πίνακας να μην δείχνει ψεύτικα δεδομένα αν δεν κλείσει η φόρμα
             if (selectedDepartment.getId() != null) {
                 selectedDepartment.setName(oldName);
                 selectedDepartment.setDescription(oldDesc);
                 departmentTable.refresh();
             } else {
-                selectedDepartment = null; // Αν ήταν New, το επαναφέρουμε σε null
+                selectedDepartment = null;
             }
 
-            // 2. Εμφάνιση μηνύματος λάθους
             Alert alert = new Alert(Alert.AlertType.ERROR, "Error: " + e.getMessage());
             styleDialog(alert);
             alert.showAndWait();
@@ -232,7 +227,6 @@ public class DepartmentController implements Initializable {
                     formViewContainer.setVisible(true);
                 });
 
-                // --- DELETE ACTION (ΔΙΟΡΘΩΜΕΝΟ) ---
                 btnDelete.setOnAction(event -> {
                     Department dept = getTableView().getItems().get(getIndex());
 
@@ -253,11 +247,9 @@ public class DepartmentController implements Initializable {
                             info.showAndWait();
 
                         } catch (RuntimeException e) {
-                            // ΕΔΩ ΠΙΑΝΟΥΜΕ ΤΟ ΣΦΑΛΜΑ ΑΠΟ ΤΟ SERVICE
                             Alert errorAlert = new Alert(Alert.AlertType.ERROR);
                             errorAlert.setTitle("Deletion Failed");
                             errorAlert.setHeaderText("Cannot Delete Department");
-                            // Το e.getMessage() θα εμφανίσει: "Cannot delete Department. It has X employees!"
                             errorAlert.setContentText(e.getMessage());
                             styleDialog(errorAlert);
                             errorAlert.showAndWait();

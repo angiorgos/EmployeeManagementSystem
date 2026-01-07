@@ -48,7 +48,7 @@ public class LeaveTypesController implements Initializable {
     private FilteredList<LeaveType> filteredData;
     private LeaveType selectedLeaveType = null;
 
-    // ✅ Admin OR HR
+    // Admin OR HR
     private boolean isPrivileged = false;
 
     @Override

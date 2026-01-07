@@ -42,7 +42,7 @@ public class LeavesController2 {
 
         User currentUser = userSession.getCurrentUser();
 
-        // ✅ ADMIN OR HR HAVE SAME PRIVILEGES
+        // ADMIN OR HR HAVE SAME PRIVILEGES
         if (currentUser != null && currentUser.getRole() != null) {
             String roleName = currentUser.getRole().getName();
             isPrivileged =
@@ -54,23 +54,22 @@ public class LeavesController2 {
             currentEmployee = currentUser.getEmployee();
         }
 
-        // --- Status filter setup
+        //Status filter setup
         List<LeaveStatus> statuses = new ArrayList<>();
         statuses.add(null); // All
         statuses.addAll(List.of(LeaveStatus.values()));
         statusFilterCombo.setItems(FXCollections.observableArrayList(statuses));
         statusFilterCombo.setPromptText("All");
 
-        // --- Filtering listeners
+        // Filtering listeners
         searchField.textProperty().addListener((obs, o, n) -> refreshUIOnly());
         statusFilterCombo.valueProperty().addListener((obs, o, n) -> refreshUIOnly());
 
-        // --- FlowPane layout
+        //FlowPane layout
         requestsFlowPane.setHgap(15);
         requestsFlowPane.setVgap(15);
         requestsFlowPane.setPadding(new Insets(10));
 
-        // --- Initial load
         loadDataFromDB();
     }
 
@@ -83,7 +82,7 @@ public class LeavesController2 {
 
         List<LeaveRequest> fetched = leaveRequestService.getAllRequests();
 
-        // ✅ NON-PRIVILEGED USERS SEE ONLY THEIR OWN REQUESTS
+        // NON-PRIVILEGED USERS SEE ONLY THEIR OWN REQUESTS
         if (!isPrivileged && currentEmployee != null) {
             Long empId = currentEmployee.getId();
             fetched = fetched.stream()

@@ -17,7 +17,7 @@ public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
     private final SystemSettingService settingService;
-    private final SystemLogService systemLogService; // <--- Προσθήκη Audit
+    private final SystemLogService systemLogService;
 
     // Constructor Injection
     @Autowired
@@ -37,15 +37,12 @@ public class ScheduleService {
         return scheduleRepository.findByDateBetween(startDate, endDate);
     }
 
-    /**
-     * Κάνει Validation και Αποθήκευση.
-     * Επιστρέφει "OK", ή μήνυμα λάθους (ERROR...), ή μήνυμα προειδοποίησης (WARNING...).
-     */
+
     @Transactional
     public String validateAndSave(Schedule newSchedule) {
         boolean isNew = (newSchedule.getId() == null);
 
-        // --- 1. ΕΛΕΓΧΟΣ OVERLAP (Δεν αλλάζει) ---
+
         List<Schedule> daysShifts = scheduleRepository.findByEmployeeAndDate(newSchedule.getEmployee(), newSchedule.getDate());
         for (Schedule existing : daysShifts) {
             if (existing.getId().equals(newSchedule.getId())) continue;
@@ -55,11 +52,11 @@ public class ScheduleService {
             }
         }
 
-        // --- 2. ΥΠΟΛΟΓΙΣΜΟΣ ΕΒΔΟΜΑΔΙΑΙΟΥ ΟΡΙΟΥ ---
+        //ΥΠΟΛΟΓΙΣΜΟΣ ΕΒΔΟΜΑΔΙΑΙΟΥ ΟΡΙΟΥ
         double monthlySetting = settingService.getDouble("payroll.standard_hours", 173.33);
         double weeklyLimit = (monthlySetting * 12) / 52.0;
 
-        // --- 3. ΥΠΟΛΟΓΙΣΜΟΣ ΤΡΕΧΟΥΣΩΝ ΩΡΩΝ ---
+        //ΥΠΟΛΟΓΙΣΜΟΣ ΤΡΕΧΟΥΣΩΝ ΩΡΩΝ
         LocalDate date = newSchedule.getDate();
         LocalDate startOfWeek = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate endOfWeek = date.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
@@ -78,7 +75,7 @@ public class ScheduleService {
         totalMinutes += Duration.between(newSchedule.getStartTime(), newSchedule.getEndTime()).toMinutes();
         double totalHours = totalMinutes / 60.0;
 
-        // --- 4. ΣΥΓΚΡΙΣΗ ---
+
         String result = "OK";
 
         if (totalHours > weeklyLimit) {
@@ -87,7 +84,6 @@ public class ScheduleService {
 
         scheduleRepository.save(newSchedule);
 
-        // --- AUDIT LOG ---
         String action = isNew ? "CREATE_SCHEDULE" : "UPDATE_SCHEDULE";
         String details = String.format("Employee: %s %s, Date: %s, Time: %s-%s",
                 newSchedule.getEmployee().getFirstName(), newSchedule.getEmployee().getLastName(),
@@ -110,7 +106,6 @@ public class ScheduleService {
 
         scheduleRepository.delete(schedule);
 
-        // --- AUDIT LOG ---
         systemLogService.log("DELETE_SCHEDULE", details);
     }
 }

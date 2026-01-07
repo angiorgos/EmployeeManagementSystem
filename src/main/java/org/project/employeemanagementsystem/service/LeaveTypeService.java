@@ -12,7 +12,7 @@ import java.util.List;
 public class LeaveTypeService {
 
     private final LeaveTypeRepository leaveTypeRepository;
-    private final SystemLogService systemLogService; // <--- Προσθήκη για Audit Log
+    private final SystemLogService systemLogService;
 
     // Constructor Injection
     @Autowired
@@ -30,8 +30,6 @@ public class LeaveTypeService {
         boolean isNew = (leaveType.getId() == null);
 
         LeaveType savedType = leaveTypeRepository.save(leaveType);
-
-        // --- AUDIT LOG ---
         String action = isNew ? "CREATE_LEAVE_TYPE" : "UPDATE_LEAVE_TYPE";
         String details = "Type: " + savedType.getName() + " (Max Days: " + savedType.getMaxDays() + ")";
 
@@ -50,7 +48,6 @@ public class LeaveTypeService {
 
         leaveTypeRepository.delete(type);
 
-        // --- AUDIT LOG ---
         systemLogService.log("DELETE_LEAVE_TYPE", "Deleted Type: " + typeName);
     }
 }

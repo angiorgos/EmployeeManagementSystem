@@ -18,8 +18,6 @@ public class LoginController {
     @Autowired private AuthService authService;
     @Autowired private Navigator navigator;
     @Autowired private UserSession userSession;
-
-    // ΑΥΤΟ ΔΙΟΡΘΩΝΕΙ ΤΟ ΣΦΑΛΜΑ ΠΡΟΣΒΑΣΗΣ
     @Autowired private org.project.employeemanagementsystem.service.SystemLogService logService;
 
     @FXML private TextField usernameField;
@@ -35,13 +33,9 @@ public class LoginController {
 
         if (user != null) {
             userSession.login(user);
-
-            // ΤΩΡΑ ΔΟΥΛΕΥΕΙ: Καλούμε το τοπικό logService
             logService.log("User Login Success");
-
             navigator.goToDashboard();
         } else {
-            // Καταγραφή αποτυχίας (θα εμφανιστεί ως "System" στα logs)
             logService.log("Failed login attempt for username: " + username);
             errorLabel.setText("Wrong credentials!");
         }

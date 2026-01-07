@@ -72,8 +72,6 @@ public class EmployeesController implements Initializable {
         setupTableColumns();
         setupDepartmentCombo();
         setupValidationListeners();
-
-        // ΝΕΟ: Εφαρμογή στυλ για τους ανενεργούς υπαλλήλους (Soft Deleted)
         setupRowStyling();
 
         filteredData = new FilteredList<>(masterData, p -> true);
@@ -93,7 +91,6 @@ public class EmployeesController implements Initializable {
         Task<List<Employee>> task = new Task<>() {
             @Override
             protected List<Employee> call() throws Exception {
-                // Φέρνουμε ΟΛΟΥΣ (και τους ανενεργούς) για να φαίνεται το ιστορικό
                 return employeeService.getAllEmployees();
             }
         };
@@ -124,7 +121,6 @@ public class EmployeesController implements Initializable {
         loadingOverlay.setVisible(true);
         loadingOverlay.setOpacity(1.0);
 
-        // Safe creation of object to avoid hibernate session issues
         Employee employeeToSave = new Employee();
         if (currentEditingEmployee != null) {
             employeeToSave.setId(currentEditingEmployee.getId());
@@ -183,9 +179,8 @@ public class EmployeesController implements Initializable {
             Throwable ex = saveTask.getException(); // Παίρνουμε το λάθος
             String errorMessage = "Unexpected error";
 
-            // Έλεγχος αν είναι σφάλμα βάσης (Duplicate Key)
+            // Έλεγχος αν είναι σφάλμα βάσης
             if (ex instanceof DataIntegrityViolationException) {
-                // Παίρνουμε το πιο συγκεκριμένο μήνυμα (π.χ. από την PostgreSQL)
                 String specificError = ((DataIntegrityViolationException) ex).getMostSpecificCause().getMessage();
 
                 if (specificError != null && specificError.contains("employees_ssn_key")) {
@@ -308,7 +303,7 @@ public class EmployeesController implements Initializable {
         colDepartment.setCellValueFactory(cell -> new javafx.beans.property.SimpleStringProperty(
                 cell.getValue().getDepartment() != null ? cell.getValue().getDepartment().getName() : "-"));
 
-        // --- DYNAMIC ACTIONS COLUMN ---
+
         colActions.setCellFactory(param -> new TableCell<>() {
             private final Button btnEdit = new Button("Edit");
             // Αυτό το κουμπί θα αλλάζει ρόλο (Delete ή Rehire)
@@ -318,7 +313,6 @@ public class EmployeesController implements Initializable {
             {
                 btnEdit.getStyleClass().addAll("table-btn", "table-btn-edit");
 
-                // Edit Logic (Ίδιο)
                 btnEdit.setOnAction(e -> showForm(getTableView().getItems().get(getIndex())));
             }
 
@@ -330,7 +324,6 @@ public class EmployeesController implements Initializable {
                 } else {
                     Employee emp = getTableView().getItems().get(getIndex());
 
-                    // Δυναμική αλλαγή κουμπιού
                     if (emp.getExitDate() == null) {
                         // --- ΕΝΕΡΓΟΣ ΥΠΑΛΛΗΛΟΣ: Δείξε DELETE ---
                         btnAction.setText("Delete");

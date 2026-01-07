@@ -47,7 +47,7 @@ public class HolidaysController implements Initializable {
     private FilteredList<Holiday> filteredData;
     private Holiday selectedHoliday = null;
 
-    // ✅ Admin OR HR
+    //  Admin OR HR
     private boolean isPrivileged = false;
 
     @Override

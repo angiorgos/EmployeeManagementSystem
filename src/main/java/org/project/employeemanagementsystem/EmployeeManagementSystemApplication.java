@@ -10,8 +10,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 public class EmployeeManagementSystemApplication {
 
     public static void main(String[] args) {
-        // Αντί να τρέξει το Spring απευθείας, λέμε στο JavaFX να ξεκινήσει
-        // και του δίνουμε την κλάση που διαχειρίζεται τα γραφικά (JavaFxApplication)
         Application.launch(JavaFxApplication.class, args);
     }
 

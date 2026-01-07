@@ -22,7 +22,7 @@ public class UserService {
     private final SystemLogRepository systemLogRepository;
     private final PasswordEncoder passwordEncoder;
     private final SystemLogService systemLogService;
-    private final UserSession userSession; // <--- Προσθήκη
+    private final UserSession userSession;
 
     @Autowired
     public UserService(UserRepository userRepository,
@@ -30,7 +30,7 @@ public class UserService {
                        SystemLogRepository systemLogRepository,
                        PasswordEncoder passwordEncoder,
                        SystemLogService systemLogService,
-                       UserSession userSession) { // <--- Προσθήκη στον Constructor
+                       UserSession userSession) {
         this.userRepository = userRepository;
         this.employeeRepository = employeeRepository;
         this.systemLogRepository = systemLogRepository;
@@ -49,8 +49,6 @@ public class UserService {
 
     public User saveUser(User user) {
         boolean isNew = (user.getId() == null);
-
-        // --- PASSWORD LOGIC ---
         if (isNew) {
             if (userRepository.findByUsername(user.getUsername()).isPresent()) {
                 throw new IllegalArgumentException("Username already exists!");
@@ -68,19 +66,14 @@ public class UserService {
         }
 
 
-
-        // --- SAVE ---
         User savedUser = userRepository.save(user);
 
-        // --- UPDATE SESSION (ΤΟ ΣΗΜΑΝΤΙΚΟ ΚΟΜΜΑΤΙ) ---
-        // Αν ο χρήστης που πειράξαμε είναι αυτός που είναι συνδεδεμένος, ενημερώνουμε το Session
         if (userSession.getCurrentUser() != null &&
                 userSession.getCurrentUser().getId().equals(savedUser.getId())) {
 
-            userSession.setCurrentUser(savedUser); // Αυτό θα πυροδοτήσει το Topbar!
+            userSession.setCurrentUser(savedUser);
         }
 
-        // --- AUDIT LOG ---
         String action = isNew ? "CREATE_USER" : "UPDATE_USER";
         String roleName = (savedUser.getRole() != null) ? savedUser.getRole().getName() : "No Role";
         systemLogService.log(action, "Username: " + savedUser.getUsername() + " | Role: " + roleName);
@@ -90,43 +83,31 @@ public class UserService {
 
     public void deleteUser(User user) {
         String usernameToDelete = user.getUsername();
-
-        // Βήμα 1: Αποσύνδεση από Υπάλληλο
         if (user.getEmployee() != null) {
             Employee emp = user.getEmployee();
             emp.setUser(null);
             employeeRepository.save(emp);
         }
 
-        // Βήμα 2: Διαγραφή Ιστορικού (Cleanup)
-        // Σβήνουμε τα logs που ΑΝΗΚΟΥΝ σε αυτόν τον χρήστη για να μην χτυπήσει FK
         List<SystemLog> logs = systemLogRepository.findByUser(user);
         systemLogRepository.deleteAll(logs);
 
-        // Βήμα 3: Τελική Διαγραφή Χρήστη
         userRepository.delete(user);
 
-        // --- AUDIT LOG ---
-        // Καταγράφουμε ότι ΕΓΙΝΕ η διαγραφή (αυτό το log θα έχει user=null ή τον admin που το έκανε)
         systemLogService.log("DELETE_USER", "Deleted User account: " + usernameToDelete);
     }
 
 
     public void removeProfilePicture(User user) {
-        // 1. Αφαίρεση φωτογραφίας
         user.setProfilePicture(null);
-
-        // 2. Αποθήκευση στη βάση
         User savedUser = userRepository.save(user);
 
-        // 3. Ενημέρωση Session (Αν ο χρήστης που επεξεργαζόμαστε είναι ο συνδεδεμένος)
         if (userSession.getCurrentUser() != null &&
                 userSession.getCurrentUser().getId().equals(savedUser.getId())) {
 
-            userSession.setCurrentUser(savedUser); // <--- Αυτό ενημερώνει το Topbar!
+            userSession.setCurrentUser(savedUser);
         }
 
-        // 4. Audit Log
         systemLogService.log("REMOVE_PROFILE_PICTURE", "Removed picture for user: " + user.getUsername());
     }
 

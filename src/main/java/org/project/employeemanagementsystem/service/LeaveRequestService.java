@@ -19,7 +19,7 @@ public class LeaveRequestService {
     private final HolidayRepository holidayRepository;
     private final LeaveTypeRepository leaveTypeRepository;
     private final UserSession userSession;
-    private final SystemLogService systemLogService; // <--- Προσθήκη για Audit Log
+    private final SystemLogService systemLogService;
 
     @Autowired
     public LeaveRequestService(LeaveRequestRepository leaveRequestRepository,
@@ -34,7 +34,7 @@ public class LeaveRequestService {
         this.systemLogService = systemLogService;
     }
 
-    // --- 1. CURRENT USER HELPER ---
+    //CURRENT USER HELPER
     public Employee getLoggedInEmployee() {
         User currentUser = userSession.getCurrentUser();
         if (currentUser == null) {
@@ -46,7 +46,7 @@ public class LeaveRequestService {
         return currentUser.getEmployee();
     }
 
-    // --- 2. GETTERS ---
+
     public List<LeaveRequest> getAllRequests() {
         return leaveRequestRepository.findAll();
     }
@@ -55,17 +55,15 @@ public class LeaveRequestService {
         return leaveTypeRepository.findAll();
     }
 
-    // --- 3. SUBMIT NEW REQUEST (Για το Tab 1 - Πάντα PENDING) ---
+    //SUBMIT NEW REQUEST
     public void submitRequest(LeaveRequest newRequest) {
-        // 1. Βασικός έλεγχος ημερομηνιών
+
         if (newRequest.getStartDate().isAfter(newRequest.getEndDate())) {
             throw new RuntimeException("Start date cannot be after end date!");
         }
 
-        // 2. Έλεγχος Επικάλυψης (Overlap Check)
         checkForOverlap(newRequest);
 
-        // 3. Αποθήκευση
         newRequest.setStatus(LeaveStatus.PENDING);
         leaveRequestRepository.save(newRequest);
     }
@@ -78,11 +76,7 @@ public class LeaveRequestService {
                 LeaveStatus.REJECTED
         );
 
-        // Τρέχουμε loop στη Java για να βρούμε αν τρακάρουν
         for (LeaveRequest existing : activeRequests) {
-
-            // Λογική επικάλυψης:
-            // (NewStart <= ExistingEnd) AND (NewEnd >= ExistingStart)
             boolean isOverlapping = !newReq.getStartDate().isAfter(existing.getEndDate()) &&
                     !newReq.getEndDate().isBefore(existing.getStartDate());
 
@@ -95,13 +89,11 @@ public class LeaveRequestService {
         }
     }
 
-    // --- 4. UPDATE EXISTING REQUEST (Για το Tab 2 - Admin Actions) ---
+    //UPDATE EXISTING REQUEST
     @Transactional
     public void updateRequestStatus(LeaveRequest request) {
         // Σώζουμε το request όπως μας ήρθε (π.χ. APPROVED ή REJECTED)
         leaveRequestRepository.save(request);
-
-        // --- AUDIT LOG ---
         String details = String.format("Request ID: %d, New Status: %s, Employee: %s %s",
                 request.getId(), request.getStatus(),
                 request.getEmployee().getFirstName(), request.getEmployee().getLastName());
@@ -109,7 +101,7 @@ public class LeaveRequestService {
         systemLogService.log("UPDATE_LEAVE_STATUS", details);
     }
 
-    // --- 5. CALCULATIONS ---
+    //CALCULATIONS
     public int getRemainingDays(Employee employee, LeaveType leaveType) {
         int maxAllowed = leaveType.getMaxDays();
         List<LeaveRequest> approvedRequests = leaveRequestRepository

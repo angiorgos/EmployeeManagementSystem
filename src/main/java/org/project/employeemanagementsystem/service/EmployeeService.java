@@ -16,14 +16,13 @@ public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final SystemLogService systemLogService; // <--- Προσθήκη Audit
 
-    // Constructor Injection
     @Autowired
     public EmployeeService(EmployeeRepository employeeRepository, SystemLogService systemLogService) {
         this.employeeRepository = employeeRepository;
         this.systemLogService = systemLogService;
     }
 
-    // ===================== READ =====================
+    //READ
 
     public List<Employee> getAllEmployees() {
         return employeeRepository.findAll();
@@ -37,13 +36,11 @@ public class EmployeeService {
         return employeeRepository.findById(id);
     }
 
-    // ===================== CREATE / UPDATE =====================
+    // CREATE / UPDATE
 
     public void saveEmployee(Employee employee) {
-        // Έλεγχος αν είναι νέος υπάλληλος (πριν το save, γιατί μετά θα πάρει ID)
         boolean isNew = (employee.getId() == null);
 
-        // Validation Email
         employeeRepository.findByEmail(employee.getEmail())
                 .ifPresent(existing -> {
                     if (employee.getId() == null ||
@@ -54,7 +51,6 @@ public class EmployeeService {
 
         Employee savedEmployee = employeeRepository.save(employee);
 
-        // --- AUDIT LOG ---
         String action = isNew ? "CREATE_EMPLOYEE" : "UPDATE_EMPLOYEE";
         String details = "Employee: " + savedEmployee.getFirstName() + " " + savedEmployee.getLastName()
                 + " (ID: " + savedEmployee.getId() + ")";
@@ -62,7 +58,7 @@ public class EmployeeService {
         systemLogService.log(action, details);
     }
 
-    // ===================== DELETE =====================
+    //DELETE
 
     public void deleteEmployee(Long id) {
         // Βρίσκουμε τον υπάλληλο ΠΡΙΝ τη διαγραφή για να καταγράψουμε το όνομα
@@ -77,7 +73,7 @@ public class EmployeeService {
         systemLogService.log("DELETE_EMPLOYEE", "Deleted Employee: " + fullName);
     }
 
-    // ===================== SOFT DELETE (TERMINATION) =====================
+    //SOFT DELETE (TERMINATION)
 
     public void softDeleteEmployee(Long id) {
         Employee employee = employeeRepository.findById(id)
@@ -95,7 +91,7 @@ public class EmployeeService {
                 "Soft Deleted (Exit Date Set): " + employee.getFirstName() + " " + employee.getLastName());
     }
 
-    // ===================== REHIRE =====================
+    //REHIRE
 
     public void rehireEmployee(Long id) {
         Employee employee = employeeRepository.findById(id)
@@ -106,11 +102,10 @@ public class EmployeeService {
         }
 
         employee.setExitDate(null);
-        // employee.setHireDate(java.time.LocalDate.now()); // Optional
+        employee.setHireDate(java.time.LocalDate.now());
 
         employeeRepository.save(employee);
 
-        // --- AUDIT LOG ---
         systemLogService.log("REHIRE_EMPLOYEE",
                 "Re-activated Employee: " + employee.getFirstName() + " " + employee.getLastName());
     }
